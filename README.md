@@ -7,6 +7,16 @@ A local MCP server for querying SAP Help Portal documentation. Uses a local cach
 - [Node.js](https://nodejs.org/) v18+
 - [Claude Code CLI](https://claude.ai/code)
 
+### Check Node.js version
+
+Run the following command in your terminal:
+
+```bash
+node --version
+```
+
+If the output is `v18.x.x` or higher, you're good to go. If Node.js is not installed or the version is too low, download and install the latest LTS version from [nodejs.org](https://nodejs.org).
+
 ## Installation
 
 ```bash
