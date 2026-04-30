@@ -5,7 +5,7 @@ A local MCP server for querying SAP Help Portal documentation. Uses a local cach
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) v18+
-- [Claude Code CLI](https://claude.ai/code)
+- [Claude Code CLI](https://pages.github.tools.sap/D061192/aiwarmups/ClaudeCodeInAction/) — follow this guide to install and configure Claude Code
 
 ### Check Node.js version
 
@@ -19,30 +19,66 @@ If the output is `v18.x.x` or higher, you're good to go. If Node.js is not insta
 
 ## Installation
 
-```bash
-# 1. Clone the repository
-git clone <repo-url>
-cd sap-help
+**Step 1: Clone the repository**
 
-# 2. Install dependencies
+```bash
+git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
+cd BusinessNetwork-Help-MCP
+```
+
+**Step 2: Install dependencies**
+
+```bash
 npm install
-
-# 3. Build the local cache (fetches all configured SAP Help pages)
-node refresh-cache.js
-
-# 4. Register the MCP server with Claude Code
-claude mcp add sap-help node /absolute/path/to/sap-help/index.js
 ```
 
-For step 4, replace `/absolute/path/to/sap-help` with the actual path on your machine. For example:
+**Step 3: Build the local cache**
 
 ```bash
-claude mcp add sap-help node /Users/yourname/sap-help/index.js
+node refresh-cache.js
 ```
+
+This fetches all configured SAP Help pages and saves them locally. It may take a few minutes.
+
+**Step 4: Find your absolute path**
+
+You need the full path to the cloned folder for the next step.
+
+- macOS / Linux — run:
+  ```bash
+  pwd
+  ```
+- Windows — run:
+  ```bash
+  cd
+  ```
+
+Copy the output. For example:
+- macOS: `/Users/yourname/BusinessNetwork-Help-MCP`
+- Windows: `C:\Users\yourname\BusinessNetwork-Help-MCP`
+
+**Step 5: Register the MCP server with Claude Code**
+
+- macOS / Linux:
+  ```bash
+  claude mcp add sap-help node /Users/yourname/BusinessNetwork-Help-MCP/index.js
+  ```
+- Windows:
+  ```bash
+  claude mcp add sap-help node C:\Users\yourname\BusinessNetwork-Help-MCP\index.js
+  ```
+
+Replace the path with the actual output from Step 4.
 
 ## Usage
 
-Once registered, the following tools are available in Claude Code:
+Once registered, start Claude Code in your terminal by running:
+
+```bash
+claude
+```
+
+The following tools will be available automatically:
 
 - **`search_sap_docs`** — Search across all cached SAP pages by keyword
 - **`get_sap_page`** — Retrieve full content of a specific SAP Help page by URL
@@ -52,10 +88,10 @@ Once registered, the following tools are available in Claude Code:
 
 The cache is not updated automatically. It is recommended to refresh it manually once a month, or whenever you notice the content may be outdated.
 
-When the MCP is updated, pull the latest changes and refresh your local cache:
+To get the latest updates, pull the latest changes and refresh your local cache:
 
 ```bash
-cd /path/to/sap-help
+cd /path/to/BusinessNetwork-Help-MCP
 git pull
 node refresh-cache.js
 ```
