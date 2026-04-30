@@ -60,6 +60,5 @@ The cache includes the following SAP Help areas:
 - Guided Integration for Trading Partners
 - SAP Ariba Cloud Integration Gateway (CIG)
 - SAP Business Network for Trading Partners
-- BTP
 - LBN Freight Collaboration API
 - LBN Global Track and Trace API
