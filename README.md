@@ -50,10 +50,13 @@ Once registered, the following tools are available in Claude Code:
 
 ## Refreshing the Cache
 
-When SAP documentation is updated, refresh your local cache by running:
+The cache is not updated automatically. It is recommended to refresh it manually once a month, or whenever you notice the content may be outdated.
+
+When the MCP is updated, pull the latest changes and refresh your local cache:
 
 ```bash
 cd /path/to/sap-help
+git pull
 node refresh-cache.js
 ```
 
