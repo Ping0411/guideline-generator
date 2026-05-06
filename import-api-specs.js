@@ -4,7 +4,7 @@ import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CACHE_FILE = join(__dirname, "cache.json");
-const API_DIR = join(process.env.HOME, "Downloads/APIS");
+const API_DIR = join(__dirname, "api-specs");
 
 const cache = JSON.parse(readFileSync(CACHE_FILE, "utf8"));
 
