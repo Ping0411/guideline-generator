@@ -20,15 +20,28 @@ const SAP_SOURCES = [
   "https://help.sap.com/docs/sisgw",
   "https://help.sap.com/docs/btp",
   "https://api.sap.com/package/LbnFreightCollaborationTenderingSubcontracting/overview",
-  "https://api.sap.com/package/LbnGlobalTrackAndTrace/"
+  "https://api.sap.com/package/LbnGlobalTrackAndTrace/",
+  "https://api.sap.com/api/OrderEvents_Provider/resource/Events"
 ];
 
 async function fetchPage(browser, url) {
   const page = await browser.newPage();
   try {
     console.log("Fetching: " + url);
-    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
-    await new Promise(r => setTimeout(r, 2000));
+    const isApiSap = url.startsWith("https://api.sap.com");
+    await page.goto(url, { waitUntil: isApiSap ? "domcontentloaded" : "networkidle2", timeout: isApiSap ? 60000 : 30000 });
+    await new Promise(r => setTimeout(r, isApiSap ? 15000 : 2000));
+    if (isApiSap) {
+      try {
+        await page.waitForSelector('button.opblock-summary-control', { timeout: 15000 });
+      } catch (e) {
+        console.log("Warning: opblock buttons not found for " + url);
+      }
+      await page.evaluate(() => {
+        document.querySelectorAll('button.opblock-summary-control[aria-expanded="false"], button.opblock-control-arrow[aria-expanded="false"]').forEach(btn => btn.click());
+      });
+      await new Promise(r => setTimeout(r, 3000));
+    }
     const result = await page.evaluate(() => {
       const title = document.title;
       const selectors = ["main", "article", ".content", ".help-content", "#content", "body"];
@@ -37,7 +50,7 @@ async function fetchPage(browser, url) {
         const el = document.querySelector(sel);
         if (el) { content = el.innerText; break; }
       }
-      return { title, content: content.replace(/\s+/g, " ").trim().slice(0, 8000) };
+      return { title, content: content.replace(/\s+/g, " ").trim().slice(0, 20000) };
     });
     return { url, ...result, success: true, cachedAt: new Date().toISOString() };
   } catch (err) {
@@ -50,9 +63,8 @@ async function fetchPage(browser, url) {
 
 async function main() {
   console.log("Starting cache refresh...");
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  const browser = await puppeteer.connect({
+    browserURL: "http://localhost:9222"
   });
 
   const cache = {};
@@ -60,7 +72,7 @@ async function main() {
     cache[url] = await fetchPage(browser, url);
   }
 
-  await browser.close();
+  await browser.disconnect();
   writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
   console.log("Cache saved to " + CACHE_FILE);
   console.log("Total pages cached: " + Object.keys(cache).length);
