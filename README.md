@@ -34,11 +34,19 @@ npm install
 
 **Step 3: Build the local cache**
 
+First, import the bundled API specs:
+
+```bash
+node import-api-specs.js
+```
+
+Then fetch the SAP Help pages:
+
 ```bash
 node refresh-cache.js
 ```
 
-This fetches all configured SAP Help pages and saves them locally. It may take a few minutes.
+This may take a few minutes.
 
 **Step 4: Find your absolute path**
 
@@ -88,11 +96,12 @@ The following tools will be available automatically:
 
 The cache is not updated automatically. It is recommended to refresh it manually once a month, or whenever you notice the content may be outdated.
 
-To get the latest updates, pull the latest changes and refresh your local cache:
+To get the latest updates, pull the latest changes and rebuild your local cache:
 
 ```bash
 cd /path/to/BusinessNetwork-Help-MCP
 git pull
+node import-api-specs.js
 node refresh-cache.js
 ```
 
@@ -109,5 +118,20 @@ The cache includes the following SAP Help areas:
 - Guided Integration for Trading Partners
 - SAP Ariba Cloud Integration Gateway (CIG)
 - SAP Business Network for Trading Partners
-- LBN Freight Collaboration API
-- LBN Global Track and Trace API
+
+### Bundled API Specs (LBN Freight Collaboration & GTT)
+
+- Provider API for Order Events (FC)
+- Provider API for Order Events (GTT)
+- Consumer API for Order Tracking (FC)
+- Consumer API for Order Tracking (GTT)
+- Consumer API for Freight Subcontracting
+- Provider API for Freight Subcontracting
+- Consumer API for Freight Tendering
+- Provider API for Freight Tendering
+- Provider API for Freight Booking Confirmation
+- Consumer API for Freight Booking Request
+- Provider API for Invoicing
+- Provider API for Invoice Cancellation
+- Consumer API for Transportation Document
+- Provider API for Transportation Document
