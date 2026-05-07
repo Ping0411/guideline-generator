@@ -47,6 +47,10 @@ async function main() {
   const SPLIT_DIR = join(process.env.HOME, "Downloads/split");
   await importDir(SPLIT_DIR, "SBN/split/");
 
+  // Import additional split PDF chunks from ~/Downloads/Split1
+  const SPLIT1_DIR = join(process.env.HOME, "Downloads/Split1");
+  await importDir(SPLIT1_DIR, "SBN/split/");
+
   // Import Test Central docs from ~/Downloads/SBN/Test Central
   const TC_DIR = join(process.env.HOME, "Downloads/SBN/Test Central");
   await importDir(TC_DIR, "SBN/TestCentral/");
