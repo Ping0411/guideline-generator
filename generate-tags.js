@@ -243,6 +243,16 @@ const FILENAME_TAGS = [
     ],
   },
 
+  // ── SBN Supplier Admin Guide ──────────────────────────────────────────────
+  {
+    pattern: /SBN.Supplier.Administration.Guide/i,
+    tags: [
+      "supplier", "sbn", "notification", "email notification", "undeliverable",
+      "user management", "roles", "trading relationship",
+      "enterprise account", "standard account", "company profile", "anid",
+    ],
+  },
+
   // ── SBN BTP Supplier Admin ─────────────────────────────────────────────────
   {
     pattern: /SBN BTP Supplier.*Administration/i,
