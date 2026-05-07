@@ -76,17 +76,13 @@ The following tools will be available automatically:
 - **`get_sap_page`** — Retrieve full content of a specific SAP Help page by URL
 - **`list_sap_sources`** — List all cached pages and their status
 
-## Refreshing the Cache
+## Keeping Up to Date
 
-The cache is not updated automatically. It is recommended to refresh it manually once a month, or whenever you notice the content may be outdated.
-
-To get the latest updates, pull the latest changes and rebuild your local cache:
+The cache is maintained centrally and updated as needed. To get the latest content, simply pull the latest changes:
 
 ```bash
 cd /path/to/BusinessNetwork-Help-MCP
 git pull
-node import-api-specs.js
-node refresh-cache.js
 ```
 
 ## Covered Documentation
