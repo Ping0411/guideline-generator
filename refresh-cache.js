@@ -18,7 +18,8 @@ const SAP_SOURCES = [
   "https://help.sap.com/docs/sisgw/sap-ariba-cloud-integration-gateway-how-to-guide-for-suppliers/sap-ariba-cloud-integration-gateway-and-ariba-network-are-renamed-in-this-document",
   "https://help.sap.com/docs/business-network-for-trading-partners",
   "https://help.sap.com/docs/sisgw",
-  "https://help.sap.com/docs/btp"
+  "https://help.sap.com/docs/btp",
+  "https://www.sap.com/products/business-network/suppliers/pricing.html"
 ];
 
 async function fetchPage(browser, url) {
