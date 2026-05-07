@@ -32,23 +32,7 @@ cd BusinessNetwork-Help-MCP
 npm install
 ```
 
-**Step 3: Build the local cache**
-
-First, import the bundled API specs:
-
-```bash
-node import-api-specs.js
-```
-
-Then fetch the SAP Help pages:
-
-```bash
-node refresh-cache.js
-```
-
-This may take a few minutes.
-
-**Step 4: Find your absolute path**
+**Step 3: Find your absolute path**
 
 You need the full path to the cloned folder for the next step.
 
@@ -65,7 +49,7 @@ Copy the output. For example:
 - macOS: `/Users/yourname/BusinessNetwork-Help-MCP`
 - Windows: `C:\Users\yourname\BusinessNetwork-Help-MCP`
 
-**Step 5: Register the MCP server with Claude Code**
+**Step 4: Register the MCP server with Claude Code**
 
 - macOS / Linux:
   ```bash
