@@ -41,7 +41,19 @@ function logMiss(query) {
   } catch (e) {}
 }
 
-function searchCache(query) {
+const SCOPE_PREFIXES = {
+  SBN: ["file://SBN/"],
+  BNL: ["file://api-specs/", "https://help.sap.com/docs/business-network-for-logistics", "https://help.sap.com/docs/business-network-global-track-and-trace", "https://help.sap.com/docs/business-network-logistics-provider"],
+};
+
+function matchesScope(url, scope) {
+  if (!scope) return true;
+  const prefixes = SCOPE_PREFIXES[scope.toUpperCase()];
+  if (!prefixes) return true;
+  return prefixes.some(p => url.startsWith(p));
+}
+
+function searchCache(query, scope) {
   const cache = loadCache();
   const tags = loadTags();
   const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
@@ -56,6 +68,7 @@ function searchCache(query) {
 
   for (const [url, page] of Object.entries(cache)) {
     if (!page.success) continue;
+    if (!matchesScope(url, scope)) continue;
     const text = page.content.toLowerCase();
     const title = page.title.toLowerCase();
 
@@ -90,16 +103,19 @@ const server = new McpServer({ name: "sap-help", version: "2.0.0" });
 
 server.tool(
   "search_sap_docs",
-  { query: z.string().describe("Search keyword, e.g. carrier integration, cXML, invoice") },
-  async ({ query }) => {
+  {
+    query: z.string().describe("Search keyword, e.g. carrier integration, cXML, invoice"),
+    scope: z.enum(["SBN", "BNL"]).optional().describe("Limit search to a product area: SBN (SAP Business Network) or BNL (Business Network for Logistics). Omit to search all documents.")
+  },
+  async ({ query, scope }) => {
     const cache = loadCache();
     if (Object.keys(cache).length === 0) {
       return { content: [{ type: "text", text: "Cache is empty. Please run: node refresh-cache.js" }] };
     }
-    const results = searchCache(query);
+    const results = searchCache(query, scope);
     if (results.length === 0) {
       logMiss(query);
-      return { content: [{ type: "text", text: "No results found for: " + query }] };
+      return { content: [{ type: "text", text: "No results found for: " + query + (scope ? ` (scope: ${scope})` : "") }] };
     }
     const text = results.map(r =>
       "[" + r.title + "]\nURL: " + r.url + "\nExcerpt: " + r.excerpt

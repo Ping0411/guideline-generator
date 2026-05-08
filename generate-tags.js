@@ -440,6 +440,44 @@ const FILENAME_TAGS = [
     ],
   },
 
+  // ── Supplier Integration Overview (EN + JPN) ──────────────────────────────
+  {
+    pattern: /IK20.*Supplier.*Integration.*Overview.*JPN/i,
+    tags: [
+      "supplier", "integration", "onboarding", "sbn", "cxml", "edi",
+      "managed gateway", "cig", "purchase order", "po", "order confirmation", "oc",
+      "advance ship notice", "asn", "invoice", "authentication", "certificate",
+      "project plan", "uat", "trading partner", "japanese",
+    ],
+  },
+  {
+    pattern: /IK20.*Supplier.*Integration.*Overview/i,
+    tags: [
+      "supplier", "integration", "onboarding", "sbn", "cxml", "edi",
+      "managed gateway", "cig", "purchase order", "po", "order confirmation", "oc",
+      "advance ship notice", "asn", "invoice", "authentication", "certificate",
+      "project plan", "uat", "trading partner",
+    ],
+  },
+
+  // ── Integration Overview for Buyers ───────────────────────────────────────
+  {
+    pattern: /INT Integration Overview eBook_Buyers/i,
+    tags: [
+      "buyer", "integration", "onboarding", "sbn", "cxml", "edi",
+      "managed gateway", "cig", "purchase order", "po", "invoice",
+      "supplier", "trading partner", "project plan",
+    ],
+  },
+  {
+    pattern: /INT Integration Overview_Buyers/i,
+    tags: [
+      "buyer", "integration", "onboarding", "sbn", "cxml", "edi",
+      "managed gateway", "cig", "purchase order", "po", "invoice",
+      "supplier", "trading partner", "project plan",
+    ],
+  },
+
   // ── Pricing / account docs ─────────────────────────────────────────────────
   {
     pattern: /Enterprise.account.fee.model/i,
