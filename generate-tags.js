@@ -18,7 +18,7 @@ const TAGS_FILE = join(__dirname, "tags.json");
 // Format: each entry is either a string (single tag) or [abbrev, fullname] pair (both added)
 const DOMAIN_TERMS = [
   // Core SAP products & platforms
-  "sap", "ariba", "sbn", "cig", "btp", "s4hana", "erp", "ecc",
+  "sap", "ariba", "sbn", "cig", "btp", "s4hana", "erp", "ecc", "scc",
   ["lbn", "logistics business network"],
   ["bnl", "business network for logistics"],
   "business network", "business network for logistics",
@@ -235,11 +235,19 @@ const FILENAME_TAGS = [
   {
     pattern: /SupplyChainCollaborationConfiguration/i,
     tags: [
-      "supply chain", "supply chain collaboration", "sbn",
+      "supply chain", "supply chain collaboration", "scc", "sbn",
       "component consumption", "replenishment order", "forecast",
       "planning", "quality inspection", "quality notification",
       "supplier managed inventory", "supply chain monitor",
       "scheduling agreement", "collaboration",
+    ],
+  },
+  {
+    pattern: /Configuration.Guide.for.Business.*Network.Collaboration/i,
+    tags: [
+      "supply chain", "supply chain collaboration", "scc", "sbn",
+      "collaboration", "configuration", "scheduling agreement",
+      "replenishment order", "forecast", "planning", "supplier managed inventory",
     ],
   },
 

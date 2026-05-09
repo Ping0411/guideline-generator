@@ -50,6 +50,9 @@ const FILES_TO_SPLIT = [
   join(process.env.HOME, "Downloads/SBN/Test Central/Talking points for Introducing Test Central.pdf"),
   join(process.env.HOME, "Downloads/SBN/Test Central/Test Central - How to Guide for Suppliers.pdf"),
   join(process.env.HOME, "Downloads/SBN/Test Central/Test Central Setup Checklist.pdf"),
+  // SBN new docs
+  join(process.env.HOME, "Downloads/SBN/Configuration Guide for Business Network Collaboration.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SupplyChainCollaborationConfiguration_SBN.pdf"),
   // SBN0508 new docs
   join(process.env.HOME, "Downloads/SBN0508/IK20 INT Supplier Integration Overview_Suppliers_JPN.pdf"),
   join(process.env.HOME, "Downloads/SBN0508/IK20 INT Supplier Integration Overview_Suppliers.pdf"),

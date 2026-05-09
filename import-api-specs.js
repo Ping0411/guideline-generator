@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, readdirSync, statSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { PDFParse } from "pdf-parse";
@@ -49,7 +49,11 @@ async function main() {
 
   // Import Test Central docs from ~/Downloads/SBN/Test Central
   const TC_DIR = join(process.env.HOME, "Downloads/SBN/Test Central");
-  await importDir(TC_DIR, "SBN/TestCentral/");
+  if (existsSync(TC_DIR)) {
+    await importDir(TC_DIR, "SBN/TestCentral/");
+  } else {
+    console.log("Skipping Test Central dir (not found)");
+  }
 
   writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
   console.log("\nDone. Total cached: " + Object.keys(cache).length);
