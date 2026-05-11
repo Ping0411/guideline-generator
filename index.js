@@ -137,6 +137,8 @@ Determine scope based on question content:
 - BNL: carrier / freight / freight order / freight booking / logistics invoice / track and trace / EDI for logistics → scope: "BNL"
 - Unclear: omit scope to search all documents
 
+Before searching, check if a dedicated guide exists: if the question involves specific operation steps, configuration UI, or field-level details, and a dedicated guide (e.g. How to Guide, Setup Guide, Admin Guide) likely exists in the cache, first call list_sap_sources to confirm the filename, then use get_sap_page to read it directly. Reserve search_sap_docs for situations where you don't know which document contains the answer. Do NOT call list_sap_sources for every question — only when a dedicated guide is likely to exist.
+
 Use a funnel approach:
 - First search: use the simplest core keyword (2-3 words max) — avoid long descriptive phrases
 - Follow-up search: add specific terms once relevant documents are located
