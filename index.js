@@ -145,6 +145,7 @@ Step 4 — Choose the right tool:
 - If a dedicated guide likely exists (How to Guide, Setup Guide, Admin Guide): call list_sap_sources first to confirm filename, then get_sap_page to read directly
 - If unsure which document contains the answer: use search_sap_docs with core keywords
 - Do NOT call list_sap_sources for every question — only when a dedicated guide is likely to exist
+- Match document audience to question subject: if the question is about what suppliers do/see/need → prioritize supplier-facing documents; if about buyers → prioritize buyer-facing documents.
 
 Step 5 — Extract the answer using full semantic understanding. Keywords locate the document; the answer comes from reading and interpreting the content.
 
