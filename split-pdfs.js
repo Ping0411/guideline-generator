@@ -9,6 +9,8 @@ const { PDFDocument } = require(join(__dirname, "node_modules/pdf-lib/cjs/index.
 
 const PAGES_PER_CHUNK = 10;
 const OUTPUT_DIR = join(process.env.HOME, "Downloads/split");
+const X12_OUTPUT_DIR = join(process.env.HOME, "Downloads/split/X12");
+const EDIFACT_OUTPUT_DIR = join(process.env.HOME, "Downloads/split/EDIFACT");
 const BNL_OUTPUT_DIR = join(__dirname, "api-specs/split");
 
 const FILES_TO_SPLIT = [
@@ -55,6 +57,7 @@ const FILES_TO_SPLIT = [
   // SBN new docs
   join(process.env.HOME, "Downloads/SBN/Configuration Guide for Business Network Collaboration.pdf"),
   join(process.env.HOME, "Downloads/SBN/SupplyChainCollaborationConfiguration_SBN.pdf"),
+  join(process.env.HOME, "Downloads/SBN/Standard B2B Formats on Managed Gateway and SBN.pdf"),
   // SBN EDI X12 4010 docs
   join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AG824 4010 Inbound.pdf"),
   join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AG824 4010 Outbound.pdf"),
@@ -103,6 +106,22 @@ const FILES_TO_SPLIT = [
   join(process.env.HOME, "Downloads/SBN0508/IK20 INT Supplier Integration Overview_Suppliers.pdf"),
   join(process.env.HOME, "Downloads/SBN0508/INT Integration Overview eBook_Buyers.pdf"),
   join(process.env.HOME, "Downloads/SBN0508/INT Integration Overview_Buyers.pdf"),
+  // SBN EDI EDIFACT D96A docs
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT DELFOR Order based D96A Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT DELFOR ProductActivity based D96A Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT DELJIT D96A Order based Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT DESADV D96A Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT IFTMIN D96A Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT IFTSTA D96A Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT INVOIC D96A Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP_EDIFACT ORDCHG_D96A Out.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP_EDIFACT ORDERS_D96A Out.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT ORDRSP D96A Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT RECADV D96A Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT REMADV D96A Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT CONTRL D3 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT CONTRL D3 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network EDIFACT INVOIC D01B Inbound.pdf"),
   // BNL docs
   join(process.env.HOME, "Downloads/BNL/01SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community.pdf"),
   join(process.env.HOME, "Downloads/BNL/02SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community.pdf"),
@@ -148,11 +167,15 @@ const FILES_TO_SPLIT = [
 ];
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
+mkdirSync(X12_OUTPUT_DIR, { recursive: true });
+mkdirSync(EDIFACT_OUTPUT_DIR, { recursive: true });
 mkdirSync(BNL_OUTPUT_DIR, { recursive: true });
 
 async function splitPDF(filePath) {
   const isBNL = filePath.includes("/Downloads/BNL/");
-  const outDir = isBNL ? BNL_OUTPUT_DIR : OUTPUT_DIR;
+  const isX12 = filePath.includes(" X12 ");
+  const isEDIFACT = filePath.includes(" EDIFACT ") || filePath.includes("_EDIFACT ");
+  const outDir = isBNL ? BNL_OUTPUT_DIR : isX12 ? X12_OUTPUT_DIR : isEDIFACT ? EDIFACT_OUTPUT_DIR : OUTPUT_DIR;
   const fileName = filePath.split("/").pop().replace(".pdf", "");
   const buffer = readFileSync(filePath);
   const srcDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
@@ -184,6 +207,8 @@ async function main() {
     }
   }
   console.log(`\nDone. SBN split files saved to: ${OUTPUT_DIR}`);
+  console.log(`      X12 split files saved to: ${X12_OUTPUT_DIR}`);
+  console.log(`      EDIFACT split files saved to: ${EDIFACT_OUTPUT_DIR}`);
   console.log(`      BNL split files saved to: ${BNL_OUTPUT_DIR}`);
 }
 

@@ -47,12 +47,36 @@ async function main() {
   const SPLIT_DIR = join(process.env.HOME, "Downloads/split");
   await importDir(SPLIT_DIR, "SBN/split/");
 
+  // Import X12 EDI split PDF chunks from ~/Downloads/split/X12
+  const X12_SPLIT_DIR = join(process.env.HOME, "Downloads/split/X12");
+  if (existsSync(X12_SPLIT_DIR)) {
+    await importDir(X12_SPLIT_DIR, "SBN/split/X12/");
+  } else {
+    console.log("Skipping X12 split dir (not found)");
+  }
+
+  // Import EDIFACT EDI split PDF chunks from ~/Downloads/split/EDIFACT
+  const EDIFACT_SPLIT_DIR = join(process.env.HOME, "Downloads/split/EDIFACT");
+  if (existsSync(EDIFACT_SPLIT_DIR)) {
+    await importDir(EDIFACT_SPLIT_DIR, "SBN/split/EDIFACT/");
+  } else {
+    console.log("Skipping EDIFACT split dir (not found)");
+  }
+
   // Import Test Central docs from ~/Downloads/SBN/Test Central
   const TC_DIR = join(process.env.HOME, "Downloads/SBN/Test Central");
   if (existsSync(TC_DIR)) {
     await importDir(TC_DIR, "SBN/TestCentral/");
   } else {
     console.log("Skipping Test Central dir (not found)");
+  }
+
+  // Import BNL split PDF chunks from api-specs/split
+  const BNL_SPLIT_DIR = join(__dirname, "api-specs/split");
+  if (existsSync(BNL_SPLIT_DIR)) {
+    await importDir(BNL_SPLIT_DIR, "api-specs/split/");
+  } else {
+    console.log("Skipping BNL split dir (not found)");
   }
 
   writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));

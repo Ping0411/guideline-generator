@@ -82,7 +82,9 @@ const TAGS_FILE = join(__dirname, "tags.json");
 // - Only include terms that have real discriminating power across the document set
 const DOMAIN_TERMS = [
   // Specific SAP products & platforms (discriminating — not every doc mentions these)
-  "ariba", "cig", "btp", "s4hana", "ecc", "scc",
+  // Note: "btp" is intentionally excluded from full-text matching — assigned via FILENAME_TAGS only
+  // to avoid false positives from filenames containing "NON BTP"
+  "ariba", "cig", "s4hana", "ecc", "scc",
   ["fc", "freight collaboration"],
   ["gtt", "global track and trace"],
 
@@ -100,7 +102,7 @@ const DOMAIN_TERMS = [
   "summary invoice", "credit memo",
 
   // Invoice specifics
-  "invoice rules", "transaction rules",
+  "invoice rules", "transaction rules", "customer relationship",
   "digital signature", "archiving", "peppol",
 
   // Logistics specifics — only phrases, not single words
@@ -165,6 +167,7 @@ const FILENAME_TAGS = [
       "tax", "digital signature", "archiving", "scheduled payment", "contract",
       "credential", "authentication", "url", "routing", "supplier",
     ],
+    excludeTags: ["erp", "tolerance", "test account", "iata", "proof of delivery", "gtt", "fc"],
   },
   {
     pattern: /cXMLGettingStarted/i,
@@ -188,6 +191,7 @@ const FILENAME_TAGS = [
       "notifications", "audit log", "reports", "user management",
       "catalog", "fieldglass", "routing", "purchase order", "invoice",
     ],
+    excludeTags: ["erp", "btp", "goods receipt", "gr", "iata", "proof of delivery", "gtt", "fc"],
   },
   {
     // BTP buyer admin guide
@@ -197,6 +201,7 @@ const FILENAME_TAGS = [
       "purchase order", "invoice", "notifications", "user management",
       "routing", "company profile", "anid", "order routing",
     ],
+    excludeTags: ["erp", "goods receipt", "gr", "iata", "proof of delivery", "gtt", "fc"],
   },
 
   // ── Invoicing guides ───────────────────────────────────────────────────────
@@ -208,6 +213,7 @@ const FILENAME_TAGS = [
       "tax invoice", "external tax", "esignature", "digital signature",
       "invoice archiving", "peppol", "test account", "vat",
     ],
+    excludeTags: ["punchout", "erp", "order confirmation", "oc", "ship notice", "asn", "advance ship notice", "iata", "proof of delivery", "gtt", "fc"],
   },
   {
     pattern: /Inovice part2/i,
@@ -216,6 +222,7 @@ const FILENAME_TAGS = [
       "vat", "tax invoice", "invoice archiving", "trustweaver", "sbn", "cxml",
       "tax", "archiving",
     ],
+    excludeTags: ["fc", "trading partner", "edi", "iata", "proof of delivery", "gtt", "erp"],
   },
   {
     pattern: /Invoice.error.messages/i,
@@ -224,6 +231,7 @@ const FILENAME_TAGS = [
       "invoice rules", "purchase order", "po", "credit memo", "asn",
       "non-po invoice", "payment",
     ],
+    excludeTags: ["edi", "iata", "proof of delivery", "gtt", "fc", "erp", "trading partner"],
   },
 
   // ── CIG guides ─────────────────────────────────────────────────────────────
@@ -294,14 +302,31 @@ const FILENAME_TAGS = [
     ],
   },
 
-  // ── SBN Supplier Admin Guide ──────────────────────────────────────────────
+  // ── SBN Supplier Admin Guide (16.26.00 version) ──────────────────────────
   {
-    pattern: /SBN.Supplier.Administration.Guide/i,
+    pattern: /^sbn supplier administration guide/i,
     tags: [
       "supplier", "sbn", "notification", "email notification", "undeliverable",
       "user management", "roles", "trading relationship",
       "enterprise account", "standard account", "company profile", "anid",
     ],
+  },
+
+  // ── NON BTP SAP Business Network Supplier Administration Guide ────────────
+  {
+    pattern: /NON.BTP.*Supplier.Administration/i,
+    tags: [
+      "supplier", "sbn", "company profile", "user management", "roles",
+      "customer relationship", "customer relationships", "trading relationship",
+      "transaction rules", "purchase order rules", "po rules",
+      "order confirmation rules", "ship notice rules", "invoice rules",
+      "enterprise account", "standard account", "anid",
+      "notification", "email notification",
+      "vat", "tax verification", "identity verification",
+      "account linking", "generative ai",
+      "transaction data download", "document archive",
+    ],
+    excludeTags: ["btp", "punchout", "change order"],
   },
 
   // ── SBN BTP Supplier Admin ─────────────────────────────────────────────────
@@ -881,6 +906,566 @@ const FILENAME_TAGS = [
       "standard account", "bronze", "silver", "gold", "platinum",
     ],
   },
+
+  // ── Standard B2B Formats overview ─────────────────────────────────────────
+  {
+    pattern: /Standard.B2B.Formats.on.Managed.Gateway/i,
+    tags: [
+      "edi", "x12", "edifact", "ansi x12", "4010", "d96a", "managed gateway",
+      "cig", "b2b", "format", "sbn", "supplier", "integration",
+      "purchase order", "invoice", "asn", "ship notice",
+    ],
+  },
+
+  // ── X12 EDI guides (ANSI X12 4010) ───────────────────────────────────────
+  // Shared base tags applied to ALL X12 4010 documents
+  {
+    pattern: /X12.*4010/i,
+    tags: [
+      "edi", "x12", "ansi x12", "4010", "sbn", "managed gateway",
+      "isa", "gs", "st", "se", "ge", "iea", "segment", "element",
+      "loop", "envelope", "interchange",
+    ],
+    excludeTags: [
+      "iata", "proof of delivery", "gtt", "fc", "scc", "cig", "cxml",
+      "trading partner", "tolerance", "punchout", "catalog",
+      "transaction rules", "non-po invoice",
+    ],
+  },
+
+  // 810 Invoice (inbound from supplier)
+  {
+    pattern: /X12.IN810.4010.Inbound/i,
+    tags: [
+      "invoice", "810", "in810", "inbound",
+      "big", "big07", "invoice type", "summary invoice", "credit memo",
+      "cur", "currency",
+      "ref", "ref qualifier", "invoice number",
+      "n1", "n3", "n4", "party identification", "ship to", "bill to", "remit to",
+      "dtm", "date", "invoice date", "delivery date",
+      "it1", "line item", "unit price",
+      "ctp", "pricing", "csd",
+      "pam", "amount qualifier",
+      "pid", "product description",
+      "sac", "service allowance charge", "accounting distribution", "b840",
+      "txi", "tax", "tax type", "vat", "gst", "tax total",
+      "tds", "total invoice amount",
+      "amt", "monetary amount",
+      "ctt", "transaction totals",
+      "n9", "reference identification",
+    ],
+  },
+
+  // 850 Purchase Order (outbound to supplier)
+  {
+    pattern: /X12.PO850.4010.Outbound/i,
+    tags: [
+      "purchase order", "po", "850", "po850", "outbound",
+      "beg", "po number", "po type",
+      "cur", "currency",
+      "ref", "contract number",
+      "n1", "n3", "n4", "ship to", "bill to", "supplier",
+      "dtm", "ship date", "delivery date",
+      "po1", "line item", "unit price", "quantity",
+      "pid", "product description",
+      "sac", "allowance charge",
+      "ctt", "transaction totals",
+    ],
+  },
+
+  // 850 Sales Order (inbound from buyer ERP)
+  {
+    pattern: /X12.PO850.Salesorder.4010.Inbound/i,
+    tags: [
+      "purchase order", "sales order", "850", "po850", "inbound",
+      "beg", "po number",
+      "n1", "ship to", "bill to",
+      "po1", "line item", "quantity", "unit price",
+    ],
+  },
+
+  // 856 Ship Notice / ASN (inbound = from supplier)
+  {
+    pattern: /X12.SH856.4010.Inbound/i,
+    tags: [
+      "advance ship notice", "asn", "ship notice", "856", "sh856", "inbound",
+      "bsn", "shipment number", "ship date",
+      "dtm", "date",
+      "n1", "ship from", "ship to",
+      "hl", "hierarchical level", "shipment", "order", "pack", "item",
+      "td1", "carrier details", "weight",
+      "td5", "carrier routing",
+      "ref", "po number", "tracking number",
+      "po1", "line item", "quantity",
+      "man", "marks numbers",
+      "ctt", "transaction totals",
+    ],
+  },
+
+  // 856 Ship Notice (outbound = to buyer ERP)
+  {
+    pattern: /X12.SH856.4010.Outbound/i,
+    tags: [
+      "advance ship notice", "asn", "ship notice", "856", "sh856", "outbound",
+      "bsn", "hl", "hierarchical level",
+      "n1", "td1", "td5", "ref", "po1",
+    ],
+    excludeTags: ["change order", "gr", "goods receipt", "vat", "invoice", "credit memo", "order confirmation", "oc"],
+  },
+
+  // 855 Purchase Order Acknowledgment (OC, inbound from supplier)
+  {
+    pattern: /X12.PR855.4010.Inbound/i,
+    tags: [
+      "order confirmation", "oc", "po acknowledgment", "855", "pr855", "inbound",
+      "bak", "po number", "acknowledgment type",
+      "ref", "dtm",
+      "n1", "po1", "line item", "quantity", "price",
+    ],
+    excludeTags: ["gr", "goods receipt", "vat", "asn", "ship notice", "advance ship notice", "credit memo", "change order"],
+  },
+
+  // 860 Purchase Order Change Request (outbound to supplier)
+  {
+    pattern: /X12.PC860.4010.Outbound/i,
+    tags: [
+      "purchase order change", "change order", "860", "pc860", "outbound",
+      "bca", "po number", "change type",
+      "ref", "dtm",
+      "n1", "po1", "line item",
+    ],
+    excludeTags: ["asn", "ship notice", "advance ship notice", "gr", "goods receipt", "service sheet", "erp", "vat", "order confirmation", "oc", "invoice", "credit memo"],
+  },
+
+  // 997 Functional Acknowledgment
+  {
+    pattern: /X12.FA997.4010/i,
+    tags: [
+      "functional acknowledgment", "ack", "997", "fa997",
+      "ak1", "ak2", "ak5", "ak9",
+      "accepted", "rejected", "error",
+    ],
+    excludeTags: ["po", "purchase order", "invoice", "asn", "ship notice", "advance ship notice", "credit memo", "gr", "goods receipt", "vat"],
+  },
+
+  // 846 Inventory Inquiry/Advice
+  {
+    pattern: /X12.IB846.4010.Inbound/i,
+    tags: [
+      "inventory", "846", "ib846", "inbound",
+      "bia", "inventory inquiry",
+      "lin", "product", "quantity on hand",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+  {
+    pattern: /X12.IB846.Consignment.4010.Outbound/i,
+    tags: [
+      "inventory", "consignment", "846", "ib846", "outbound",
+      "bia", "consignment inventory",
+      "lin", "product", "quantity",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+  {
+    pattern: /X12.IB846.MO.PO.4010.Inbound/i,
+    tags: [
+      "inventory", "846", "ib846", "move order", "inbound",
+      "bia", "lin", "quantity",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+  {
+    pattern: /X12.IB846.SMI.4010.Outbound/i,
+    tags: [
+      "inventory", "supplier managed inventory", "smi", "846", "ib846", "outbound",
+      "bia", "lin", "quantity",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+
+  // 830 Planning Schedule
+  {
+    pattern: /X12.PS830.4010.Inbound/i,
+    tags: [
+      "planning schedule", "forecast", "830", "ps830", "inbound",
+      "bfr", "schedule type",
+      "lin", "product", "fsb", "quantity", "delivery date",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+  {
+    pattern: /X12.PS830.Order.4010.Outbound/i,
+    tags: [
+      "planning schedule", "order based", "830", "ps830", "outbound",
+      "bfr", "lin", "fsb",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+  {
+    pattern: /X12.PS830.ProductActivity.4010.Outbound/i,
+    tags: [
+      "planning schedule", "product activity", "830", "ps830", "outbound",
+      "bfr", "lin", "product activity",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+
+  // 862 Shipping Schedule
+  {
+    pattern: /X12.SS862.4010.Outbound/i,
+    tags: [
+      "shipping schedule", "862", "ss862", "outbound",
+      "bss", "schedule type",
+      "lin", "product", "sdq", "quantity", "ship date",
+    ],
+    excludeTags: ["gr", "goods receipt", "erp", "ship notice", "invoice", "credit memo", "vat"],
+  },
+
+  // 866 Production Sequence
+  {
+    pattern: /X12.SQ866.4010.Inbound/i,
+    tags: [
+      "production sequence", "866", "sq866", "inbound",
+      "bps", "sequence",
+      "lin", "product", "quantity",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+
+  // 832 Price/Sales Catalog
+  {
+    pattern: /X12.SC832.4010.Inbound/i,
+    tags: [
+      "catalog", "price catalog", "832", "sc832", "inbound",
+      "bct", "catalog number",
+      "lin", "product", "ctp", "price",
+    ],
+    excludeTags: ["gr", "erp", "ship notice", "invoice", "credit memo", "vat", "change order"],
+  },
+
+  // 820 Payment Order / Remittance Advice
+  {
+    pattern: /X12.RA820.4010.Outbound/i,
+    tags: [
+      "payment", "remittance", "820", "ra820", "outbound",
+      "bpr", "payment method", "eft", "ach",
+      "ref", "invoice number", "check number",
+      "rdm", "dtm", "ent", "rmr",
+    ],
+    excludeTags: ["po", "purchase order", "credit memo", "gr", "goods receipt", "asn", "ship notice", "advance ship notice", "change order", "vat"],
+  },
+
+  // 861 Receiving Advice
+  {
+    pattern: /X12.RC861.4010/i,
+    tags: [
+      "receiving advice", "goods receipt", "gr", "861", "rc861",
+      "bra", "po number",
+      "n1", "ref", "dtm",
+      "lin", "quantity received",
+    ],
+    excludeTags: ["po", "purchase order", "asn", "ship notice", "advance ship notice", "invoice", "credit memo", "change order", "vat"],
+  },
+
+  // 943 Warehouse Stock Transfer Shipment Advice
+  {
+    pattern: /X12.AR943.4010/i,
+    tags: [
+      "warehouse", "stock transfer", "shipment advice", "943", "ar943",
+      "w06", "n1", "lin", "quantity",
+    ],
+    excludeTags: ["ship notice", "gr", "invoice", "credit memo", "vat", "order confirmation", "oc"],
+  },
+
+  // 944 Warehouse Stock Transfer Receipt Advice
+  {
+    pattern: /X12.RE944.4010/i,
+    tags: [
+      "warehouse", "stock transfer", "receipt advice", "944", "re944",
+      "w07", "n1", "lin", "quantity received",
+    ],
+    excludeTags: ["ship notice", "invoice", "credit memo", "vat", "order confirmation", "oc"],
+  },
+
+  // 945 Warehouse Shipping Advice
+  {
+    pattern: /X12.SW945.4010/i,
+    tags: [
+      "warehouse", "shipping advice", "945", "sw945",
+      "w27", "n1", "lin", "quantity",
+    ],
+    excludeTags: ["ship notice", "gr", "invoice", "credit memo", "vat", "order confirmation", "oc"],
+  },
+
+  // 940 Warehouse Shipping Order
+  {
+    pattern: /X12.OW940.4010.Outbound/i,
+    tags: [
+      "warehouse", "shipping order", "940", "ow940", "outbound",
+      "w01", "n1", "lin", "quantity",
+    ],
+    excludeTags: ["ship notice", "gr", "goods receipt", "order confirmation", "oc", "erp", "invoice", "credit memo", "vat"],
+  },
+
+  // 824 Application Advice
+  {
+    pattern: /X12.AG824.4010/i,
+    tags: [
+      "application advice", "acknowledgment", "824", "ag824",
+      "bgn", "ota", "error", "rejection",
+    ],
+    excludeTags: ["po", "purchase order", "ship notice", "invoice", "credit memo", "vat", "gr", "goods receipt"],
+  },
+
+  // 947 Warehouse Inventory Adjustment Advice
+  {
+    pattern: /X12.AW947.4010.Inbound/i,
+    tags: [
+      "warehouse", "inventory adjustment", "947", "aw947", "inbound",
+      "wia", "lin", "quantity adjustment",
+    ],
+    excludeTags: ["asn", "ship notice", "gr", "erp", "invoice", "credit memo", "vat", "change order"],
+  },
+
+  // 865 Canada Customs Invoice (CA865)
+  {
+    pattern: /X12.CA865.4010.Inbound/i,
+    tags: [
+      "customs", "customs invoice", "canada", "865", "ca865", "inbound",
+      "bci", "n1", "lin", "tariff", "duty",
+    ],
+    excludeTags: ["change order", "gr", "order confirmation", "oc", "ship notice", "asn", "vat"],
+  },
+
+  // 842 Nonconformance Report
+  {
+    pattern: /X12.NC842.4010/i,
+    tags: [
+      "nonconformance", "quality", "842", "nc842",
+      "bni", "n1", "lin", "defect", "rejection",
+    ],
+    excludeTags: ["po", "purchase order", "asn", "ship notice", "advance ship notice", "invoice", "credit memo", "vat", "change order", "gr", "goods receipt", "erp"],
+  },
+
+  // 863 Report of Test Results (Quality Inspection)
+  {
+    pattern: /X12.RT863.*QualityInspectionDecision.4010.Outbound/i,
+    tags: [
+      "quality inspection", "inspection decision", "863", "rt863", "outbound",
+      "bqt", "n1", "lin", "inspection result", "accept", "reject",
+    ],
+    excludeTags: ["po", "purchase order", "ship notice", "advance ship notice", "asn", "gr", "goods receipt", "invoice", "credit memo", "vat"],
+  },
+  {
+    pattern: /X12.RT863.*QualityInspectionRequest.4010.Outbound/i,
+    tags: [
+      "quality inspection", "inspection request", "863", "rt863", "outbound",
+      "bqt", "n1", "lin",
+    ],
+    excludeTags: ["po", "purchase order", "ship notice", "advance ship notice", "asn", "gr", "goods receipt", "invoice", "credit memo", "vat"],
+  },
+  {
+    pattern: /X12.RT863.*QualityInspectionResult.4010.Inbound/i,
+    tags: [
+      "quality inspection", "inspection result", "863", "rt863", "inbound",
+      "bqt", "n1", "lin", "test result",
+    ],
+    excludeTags: ["po", "purchase order", "ship notice", "advance ship notice", "asn", "gr", "goods receipt", "invoice", "credit memo", "vat"],
+  },
+
+  // 214 Transportation Carrier Shipment Status
+  {
+    pattern: /X12.QM214.4010.Inbound/i,
+    tags: [
+      "shipment status", "transportation status", "214", "qm214", "inbound",
+      "b10", "ms1", "ms2", "at7", "at8", "status code", "tracking",
+    ],
+    excludeTags: ["po", "purchase order", "invoice", "credit memo", "gr", "goods receipt", "ship notice", "vat"],
+  },
+
+  // 864 Text Message
+  {
+    pattern: /X12.TX864.4010.Outbound/i,
+    tags: [
+      "text message", "free text", "864", "tx864", "outbound",
+      "bmt", "n1", "nte",
+    ],
+    excludeTags: ["po", "purchase order", "invoice", "credit memo", "gr", "goods receipt", "ship notice", "vat", "asn"],
+  },
+
+  // ── EDIFACT guides ─────────────────────────────────────────────────────────
+  // Shared base tags applied to ALL EDIFACT documents
+  {
+    pattern: /EDIFACT/i,
+    tags: [
+      "edi", "edifact", "sbn", "managed gateway",
+      "unb", "unh", "unt", "unz", "segment", "element",
+      "envelope", "interchange",
+    ],
+    excludeTags: [
+      "iata", "proof of delivery", "gtt", "fc", "scc", "cig", "cxml",
+      "trading partner", "tolerance", "punchout", "catalog",
+      "transaction rules", "non-po invoice",
+    ],
+  },
+
+  // INVOIC D96A Invoice (inbound from supplier)
+  {
+    pattern: /EDIFACT.INVOIC.D96A.Inbound/i,
+    tags: [
+      "invoice", "invoic", "d96a", "inbound",
+      "bgm", "invoice type", "invoice number",
+      "dtm", "invoice date", "delivery date",
+      "rff", "reference", "po number",
+      "nad", "name and address", "ship to", "bill to", "remit to",
+      "moa", "monetary amount", "total amount",
+      "tax", "vat", "gst",
+      "lin", "line item", "quantity", "unit price",
+      "ali", "allowance charge",
+    ],
+    excludeTags: ["gr", "goods receipt", "ship notice", "advance ship notice", "asn", "service sheet", "change order", "order confirmation", "oc"],
+  },
+
+  // INVOIC D01B Invoice (inbound from supplier, newer version)
+  {
+    pattern: /EDIFACT.INVOIC.D01B.Inbound/i,
+    tags: [
+      "invoice", "invoic", "d01b", "inbound",
+      "bgm", "dtm", "rff", "nad", "moa", "tax", "vat", "lin",
+    ],
+    excludeTags: ["gr", "goods receipt", "ship notice", "advance ship notice", "asn", "service sheet", "change order", "order confirmation", "oc"],
+  },
+
+  // ORDERS D96A Purchase Order (outbound to supplier)
+  {
+    pattern: /EDIFACT.ORDERS.D96A/i,
+    tags: [
+      "purchase order", "orders", "d96a", "outbound",
+      "bgm", "po number",
+      "dtm", "rff", "nad",
+      "lin", "pia", "qty", "pri", "unit price",
+    ],
+    excludeTags: ["gr", "goods receipt", "ship notice", "erp", "service sheet", "order confirmation", "oc", "invoice", "credit memo", "vat"],
+  },
+
+  // ORDCHG D96A Purchase Order Change (outbound to supplier)
+  {
+    pattern: /EDIFACT.ORDCHG.D96A/i,
+    tags: [
+      "purchase order change", "change order", "ordchg", "d96a", "outbound",
+      "bgm", "rff", "nad", "lin",
+    ],
+    excludeTags: ["gr", "goods receipt", "ship notice", "erp", "service sheet", "order confirmation", "oc", "invoice", "credit memo", "vat"],
+  },
+
+  // ORDRSP D96A Order Response / Order Confirmation (inbound from supplier)
+  {
+    pattern: /EDIFACT.ORDRSP.D96A.Inbound/i,
+    tags: [
+      "order confirmation", "oc", "order response", "ordrsp", "d96a", "inbound",
+      "bgm", "rff", "dtm", "nad",
+      "lin", "qty", "pri",
+    ],
+    excludeTags: ["gr", "goods receipt", "ship notice", "asn", "invoice", "credit memo", "vat", "change order"],
+  },
+
+  // DESADV D96A Despatch Advice / ASN (inbound from supplier)
+  {
+    pattern: /EDIFACT.DESADV.D96A.Inbound/i,
+    tags: [
+      "advance ship notice", "asn", "despatch advice", "desadv", "d96a", "inbound",
+      "bgm", "dtm", "rff",
+      "nad", "ship from", "ship to",
+      "cps", "hierarchical level",
+      "lin", "qty", "quantity",
+    ],
+    excludeTags: ["gr", "goods receipt", "invoice", "credit memo", "vat", "change order", "order confirmation", "oc"],
+  },
+
+  // RECADV D96A Receiving Advice / GR (outbound to supplier)
+  {
+    pattern: /EDIFACT.RECADV.D96A.Outbound/i,
+    tags: [
+      "receiving advice", "goods receipt", "gr", "recadv", "d96a", "outbound",
+      "bgm", "rff", "dtm",
+      "nad", "lin", "qty", "quantity received",
+    ],
+    excludeTags: ["ship notice", "asn", "invoice", "credit memo", "vat", "change order", "order confirmation", "oc"],
+  },
+
+  // REMADV D96A Remittance Advice / Payment (outbound to supplier)
+  {
+    pattern: /EDIFACT.REMADV.D96A.Outbound/i,
+    tags: [
+      "payment", "remittance", "remadv", "d96a", "outbound",
+      "bgm", "dtm", "rff",
+      "nad", "moa", "doc", "invoice reference",
+    ],
+    excludeTags: ["gr", "ship notice", "asn", "change order", "order confirmation", "oc", "vat"],
+  },
+
+  // DELFOR D96A Delivery Forecast / Planning Schedule
+  {
+    pattern: /EDIFACT.DELFOR.Order.based.D96A.Outbound/i,
+    tags: [
+      "delivery forecast", "planning schedule", "order based", "delfor", "d96a", "outbound",
+      "bgm", "dtm", "nad",
+      "lin", "qty", "schedule", "delivery date",
+    ],
+    excludeTags: ["gr", "ship notice", "invoice", "credit memo", "vat", "order confirmation", "oc"],
+  },
+  {
+    pattern: /EDIFACT.DELFOR.ProductActivity.based.D96A.Outbound/i,
+    tags: [
+      "delivery forecast", "planning schedule", "product activity", "delfor", "d96a", "outbound",
+      "bgm", "dtm", "nad", "lin", "qty",
+    ],
+    excludeTags: ["gr", "ship notice", "invoice", "credit memo", "vat", "order confirmation", "oc"],
+  },
+
+  // DELJIT D96A Delivery Just-In-Time / Shipping Schedule
+  {
+    pattern: /EDIFACT.DELJIT.D96A.Order.based.Outbound/i,
+    tags: [
+      "shipping schedule", "just in time", "jit", "deljit", "d96a", "outbound",
+      "bgm", "dtm", "nad", "lin", "qty", "ship date",
+    ],
+    excludeTags: ["gr", "ship notice", "invoice", "credit memo", "vat", "order confirmation", "oc"],
+  },
+
+  // IFTMIN D96A Freight Order / Transport Instruction (outbound)
+  {
+    pattern: /EDIFACT.IFTMIN.D96A.Outbound/i,
+    tags: [
+      "freight order", "transport instruction", "iftmin", "d96a", "outbound",
+      "bgm", "tsr", "dtm", "nad",
+      "gid", "goods item", "mea", "weight", "volume",
+    ],
+    excludeTags: ["gr", "ship notice", "invoice", "credit memo", "vat", "order confirmation", "oc", "purchase order"],
+  },
+
+  // IFTSTA D96A Transport Status (inbound from carrier)
+  {
+    pattern: /EDIFACT.IFTSTA.D96A.Inbound/i,
+    tags: [
+      "transport status", "shipment status", "tracking", "iftsta", "d96a", "inbound",
+      "bgm", "tsr", "dtm", "nad",
+      "loc", "location", "rff", "status", "event",
+    ],
+    excludeTags: ["gr", "ship notice", "invoice", "credit memo", "vat", "order confirmation", "oc", "purchase order"],
+  },
+
+  // CONTRL D3 Functional Acknowledgment
+  {
+    pattern: /EDIFACT.CONTRL.D3/i,
+    tags: [
+      "functional acknowledgment", "ack", "contrl", "d3",
+      "uci", "ucm", "ucs", "ucd",
+      "accepted", "rejected", "error",
+    ],
+    excludeTags: ["purchase order", "po", "invoice", "ship notice", "gr", "vat"],
+  },
 ];
 
 function extractTags(text, title, docKey) {
@@ -912,9 +1497,12 @@ function extractTags(text, title, docKey) {
 
   // 3. Apply filename-based forced tags (always applied, including API specs)
   const fileName = docKey.split("/").pop().toLowerCase();
-  for (const { pattern, tags } of FILENAME_TAGS) {
+  for (const { pattern, tags, excludeTags } of FILENAME_TAGS) {
     if (pattern.test(fileName)) {
       for (const t of tags) found.add(t);
+      if (excludeTags) {
+        for (const t of excludeTags) found.delete(t);
+      }
     }
   }
 
