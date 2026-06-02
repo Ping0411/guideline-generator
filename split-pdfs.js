@@ -9,6 +9,7 @@ const { PDFDocument } = require(join(__dirname, "node_modules/pdf-lib/cjs/index.
 
 const PAGES_PER_CHUNK = 10;
 const OUTPUT_DIR = join(process.env.HOME, "Downloads/split");
+const BNL_OUTPUT_DIR = join(__dirname, "api-specs/split");
 
 const FILES_TO_SPLIT = [
   join(process.env.HOME, "Downloads/SBN/BuyerAdminGuide for BTP Users including Rules.pdf"),
@@ -32,6 +33,7 @@ const FILES_TO_SPLIT = [
   join(process.env.HOME, "Downloads/SBN/SBN Supplier Account _ Pricing FAQ.pdf"),
   join(process.env.HOME, "Downloads/SBN/uomMappingForANSI_X12Documents.pdf"),
   join(process.env.HOME, "Downloads/SBN/SBN Supplier Administration Guide.pdf"),
+  join(process.env.HOME, "Downloads/SBN/NON BTP-SAP Business Network Supplier Administration  Guide.pdf"),
   // Test Central
   join(process.env.HOME, "Downloads/SBN/Test Central/Buyer Objections and Responses.pdf"),
   join(process.env.HOME, "Downloads/SBN/Test Central/Buyer Test Central FAQ.pdf"),
@@ -53,16 +55,104 @@ const FILES_TO_SPLIT = [
   // SBN new docs
   join(process.env.HOME, "Downloads/SBN/Configuration Guide for Business Network Collaboration.pdf"),
   join(process.env.HOME, "Downloads/SBN/SupplyChainCollaborationConfiguration_SBN.pdf"),
+  // SBN EDI X12 4010 docs
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AG824 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AG824 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AR943 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AR943 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 AW947 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 CA865 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 FA997 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 FA997 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 IB846 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 IB846 Consignment 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 IB846 MO PO 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 IB846 SMI 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 IN810 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 NC842 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 NC842 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 OW940 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PC860 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PO850 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PO850 Salesorder 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PR855 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PS830 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PS830 Order 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 PS830 ProductActivity 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 QM214 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RA820 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RC861 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RC861 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RE944 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RE944 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RT863 QualityInspectionDecision 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RT863 QualityInspectionRequest 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 RT863 QualityInspectionResult 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SC832 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SH856 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SH856 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SM204 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SM204 Multi-Consignment 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SQ866 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SS862 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SW945 4010 Inbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 SW945 4010 Outbound.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SAP Business Network X12 TX864 4010 Outbound.pdf"),
   // SBN0508 new docs
   join(process.env.HOME, "Downloads/SBN0508/IK20 INT Supplier Integration Overview_Suppliers_JPN.pdf"),
   join(process.env.HOME, "Downloads/SBN0508/IK20 INT Supplier Integration Overview_Suppliers.pdf"),
   join(process.env.HOME, "Downloads/SBN0508/INT Integration Overview eBook_Buyers.pdf"),
   join(process.env.HOME, "Downloads/SBN0508/INT Integration Overview_Buyers.pdf"),
+  // BNL docs
+  join(process.env.HOME, "Downloads/BNL/01SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/02SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Activate Your Account.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Administration Guide for Logistics Providers.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Administration Guide for Shippers.pdf"),
+  join(process.env.HOME, "Downloads/BNL/APIs in SAP Business Network Freight  Collaboration.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Assign Codes App - A Key to Seamless Carrier Integ... - SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Business Network for Logistics - Testing BN4L API... - SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Code List_SAP Business Network Freight Collaboration_BNL.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Frequently Asked Questions (FAQs).pdf"),
+  join(process.env.HOME, "Downloads/BNL/Getting Started Guide for Shippers.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_Activate Your Account.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_Administration Guide for Logistics Providers.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_Administration Guide for Solution Owners.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_API Documentation.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_Code List.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_Getting Started Guide for Solution Owners.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_How to Send Notifications.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_SAP_BN4L_Premium_CPI_Migration.pdf"),
+  join(process.env.HOME, "Downloads/BNL/GTT_uide for Model Administrators.pdf"),
+  join(process.env.HOME, "Downloads/BNL/How to connect to Network Partner in Business Netw... - SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/How to Integrate SAP Business Network Global Track and Trace with Ariba Network.pdf"),
+  join(process.env.HOME, "Downloads/BNL/How to Integrate with SAP Business Network  Freight Collaboration (Carrier APIs).pdf"),
+  join(process.env.HOME, "Downloads/BNL/How to Send Messages with Tracking APIs (Global Track and Trace).pdf"),
+  join(process.env.HOME, "Downloads/BNL/Integration Platform Migration Guide.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Integration with SAP Business Network for Logistics without SFTP server- SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Invoice Upload Guide_SAP Business Network Freight Collaboration.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network For Logistics - Carrier Side API and EDI.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network For Logistics - Road EDI Integration- SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network for Logistics_ Get your first... - SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network for Logistics_Carrier Integration Kickoff Deck (carrier-facing).pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network for Logistics- Best Practice.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network Freight Collaboration_BNL_01.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network Freight Collaboration_BNL_02.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP Business Network Global Track and Trace_Product.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP_LBN_EDI_HowToGuide_GTT.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP_LBN_GTT_FAQs.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP_LBN_p44_config_guide.pdf"),
+  join(process.env.HOME, "Downloads/BNL/SAP_LBN_p44_FSD.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Tips & Tricks with SAP Business Network for Logist... - SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/Understanding Network Partner Integration in SAP B... - SAP Community.pdf"),
 ];
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
+mkdirSync(BNL_OUTPUT_DIR, { recursive: true });
 
 async function splitPDF(filePath) {
+  const isBNL = filePath.includes("/Downloads/BNL/");
+  const outDir = isBNL ? BNL_OUTPUT_DIR : OUTPUT_DIR;
   const fileName = filePath.split("/").pop().replace(".pdf", "");
   const buffer = readFileSync(filePath);
   const srcDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
@@ -79,7 +169,7 @@ async function splitPDF(filePath) {
     pages.forEach(p => newDoc.addPage(p));
     const outBytes = await newDoc.save();
     const outName = `${fileName}_Part${i + 1}.pdf`;
-    const outPath = join(OUTPUT_DIR, outName);
+    const outPath = join(outDir, outName);
     writeFileSync(outPath, outBytes);
     console.log(`  → ${outName} (pages ${start + 1}-${end})`);
   }
@@ -93,7 +183,8 @@ async function main() {
       console.error(`SKIP ${file.split("/").pop()}: ${e.message}`);
     }
   }
-  console.log(`\nDone. Split files saved to: ${OUTPUT_DIR}`);
+  console.log(`\nDone. SBN split files saved to: ${OUTPUT_DIR}`);
+  console.log(`      BNL split files saved to: ${BNL_OUTPUT_DIR}`);
 }
 
 main().catch(console.error);
