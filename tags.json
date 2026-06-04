@@ -203,17 +203,19 @@
       "file://api-specs/split/01SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community_Part2.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
+      "booking cancellation",
       "booking confirmation",
-      "carrier",
+      "booking request",
       "edi",
       "fc",
       "freight booking",
       "freight collaboration",
-      "integration",
-      "ocean",
-      "shipper"
+      "freight forwarder",
+      "ocean booking",
+      "rest api",
+      "shipping instruction",
+      "verified gross mass",
+      "vgm"
     ]
   },
   "api-specs/split/02SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community": {
@@ -222,17 +224,19 @@
       "file://api-specs/split/02SAP Business Network for Logistics – Freight Booking API (Ocean)- SAP Community_Part1.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
+      "booking cancellation",
       "booking confirmation",
-      "carrier",
+      "booking request",
       "edi",
       "fc",
       "freight booking",
       "freight collaboration",
-      "integration",
-      "ocean",
-      "shipper"
+      "freight forwarder",
+      "ocean booking",
+      "rest api",
+      "shipping instruction",
+      "verified gross mass",
+      "vgm"
     ]
   },
   "api-specs/split/APIs in SAP Business Network Freight  Collaboration": {
@@ -265,14 +269,15 @@
     ],
     "tags": [
       "assign codes",
-      "bnl",
-      "carrier",
-      "code list",
+      "carrier code",
+      "code mapping",
       "dock appointment",
-      "freight collaboration",
+      "freight order status",
       "freight tendering",
-      "integration",
-      "onboarding"
+      "multiple shippers",
+      "shipper-specific codes",
+      "single integration",
+      "transport mode"
     ]
   },
   "api-specs/split/Business Network for Logistics - Testing BN4L API... - SAP Community": {
@@ -281,15 +286,15 @@
       "file://api-specs/split/Business Network for Logistics - Testing BN4L API... - SAP Community_Part1.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
-      "carrier",
-      "freight collaboration",
+      "accelerator hub",
+      "api hub",
+      "api testing",
       "freight order",
-      "integration",
+      "freight order confirmation",
+      "oauth token",
       "order confirmation",
-      "test environment",
-      "testing"
+      "sandbox",
+      "test environment"
     ]
   },
   "api-specs/split/Code List_SAP Business Network Freight Collaboration_BNL": {
@@ -304,24 +309,22 @@
       "file://api-specs/split/Code List_SAP Business Network Freight Collaboration_BNL_Part7.pdf"
     ],
     "tags": [
-      "bnl",
-      "carrier",
+      "arrival",
+      "charge type",
       "code list",
       "credit memo",
+      "departure",
       "dock appointment",
-      "ecc",
-      "erp",
+      "document type",
+      "event type code",
       "fc",
       "freight collaboration",
       "freight order",
       "iata",
-      "mapping",
-      "order confirmation",
       "proof of delivery",
-      "purchase order",
       "reference data",
-      "shipper",
-      "vat"
+      "stop type",
+      "transport mode code"
     ]
   },
   "api-specs/split/Frequently Asked Questions (FAQs)": {
@@ -334,25 +337,24 @@
       "file://api-specs/split/Frequently Asked Questions (FAQs)_Part5.pdf"
     ],
     "tags": [
-      "bnl",
-      "carrier",
       "credit memo",
+      "data storage",
       "dock appointment",
-      "ecc",
       "fc",
       "freight booking",
       "freight collaboration",
       "freight order",
+      "freight subcontracting",
       "freight tendering",
       "global track and trace",
       "iata",
-      "integration",
-      "onboarding",
+      "incident reporting",
+      "language support",
+      "logistics invoice",
       "order confirmation",
+      "order tracking",
       "proof of delivery",
-      "sbn",
-      "shipper",
-      "tolerance"
+      "troubleshooting"
     ]
   },
   "api-specs/split/GTT_API Documentation": {
@@ -366,23 +368,20 @@
       "file://api-specs/split/GTT_API Documentation_Part6.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
-      "carrier",
-      "ecc",
-      "erp",
+      "consumer api for order tracking",
+      "data contributor",
       "event reporting",
       "fc",
-      "freight booking",
-      "freight order",
       "global track and trace",
       "gtt",
-      "idoc",
-      "integration",
+      "order event",
+      "order tracking",
       "proof of delivery",
-      "sbn",
-      "tracking",
-      "vat"
+      "provider api for order events",
+      "shipper lbn id",
+      "technical id",
+      "tracking payload",
+      "tracking request"
     ]
   },
   "api-specs/split/GTT_Activate Your Account": {
@@ -395,8 +394,8 @@
     "tags": [
       "account activation",
       "ariba",
-      "bnl",
-      "carrier",
+      "business profile",
+      "data contributor",
       "dock appointment",
       "edi",
       "freight collaboration",
@@ -404,11 +403,14 @@
       "freight tendering",
       "global track and trace",
       "gtt",
+      "invitation",
       "logistics provider",
       "onboarding",
       "po",
-      "registration",
-      "sbn"
+      "production environment",
+      "sbn",
+      "test environment",
+      "user management"
     ]
   },
   "api-specs/split/GTT_Administration Guide for Logistics Providers": {
@@ -419,25 +421,33 @@
       "file://api-specs/split/GTT_Administration Guide for Logistics Providers_Part3.pdf"
     ],
     "tags": [
-      "account management",
-      "admin",
       "ariba",
-      "bnl",
       "btp",
-      "carrier",
+      "certificate",
       "cloud connector",
+      "connectivity platform",
+      "data protection",
+      "digicert",
       "dock appointment",
       "edi",
+      "error handling",
       "freight booking",
       "freight collaboration",
       "freight order",
       "freight tendering",
       "global track and trace",
       "gtt",
-      "integration",
-      "logistics provider",
+      "inbound connection",
+      "ip whitelist",
+      "manage integration logs",
+      "multi-cloud",
+      "neo",
+      "oauth",
+      "outbound connection",
       "sbn",
-      "user management"
+      "sftp",
+      "system connections",
+      "user administration"
     ]
   },
   "api-specs/split/GTT_Code List": {
@@ -448,23 +458,24 @@
       "file://api-specs/split/GTT_Code List_Part3.pdf"
     ],
     "tags": [
-      "bnl",
-      "carrier",
+      "arrival",
       "code list",
       "credit memo",
+      "delayed",
+      "departure",
       "dock appointment",
-      "erp",
+      "event type code",
       "fc",
       "freight order",
+      "gate in",
+      "gate out",
+      "geo location",
       "global track and trace",
       "gtt",
-      "iata",
-      "mapping",
-      "order confirmation",
+      "location type",
       "proof of delivery",
-      "purchase order",
-      "reference data",
-      "vat"
+      "proof of pick-up",
+      "reference data"
     ]
   },
   "api-specs/split/GTT_Getting Started Guide for Solution Owners": {
@@ -473,17 +484,20 @@
       "file://api-specs/split/GTT_Getting Started Guide for Solution Owners_Part1.pdf"
     ],
     "tags": [
-      "bnl",
       "btp",
-      "configuration",
+      "btp global account",
       "erp",
       "getting started",
       "global track and trace",
       "gtt",
+      "identity authentication",
       "onboarding",
+      "saml",
       "sbn",
-      "shipper",
-      "solution owner"
+      "solution owner",
+      "sso",
+      "tenant activation",
+      "welcome email"
     ]
   },
   "api-specs/split/GTT_SAP_BN4L_Premium_CPI_Migration": {
@@ -493,11 +507,9 @@
       "file://api-specs/split/GTT_SAP_BN4L_Premium_CPI_Migration_Part2.pdf"
     ],
     "tags": [
-      "bnl",
       "btp",
+      "certificate chain",
       "cloud connector",
-      "cloud integration",
-      "cpi",
       "edi",
       "freight collaboration",
       "freight order",
@@ -505,10 +517,15 @@
       "gtt",
       "integration platform",
       "migration",
+      "multi-cloud",
+      "neo",
+      "outbound connection",
       "po",
-      "premium",
+      "premium user",
       "sbn",
-      "soamanager"
+      "shipper migration",
+      "soamanager",
+      "solution owner migration"
     ]
   },
   "api-specs/split/GTT_uide for Model Administrators": {
@@ -526,22 +543,22 @@
       "file://api-specs/split/GTT_uide for Model Administrators_Part9.pdf"
     ],
     "tags": [
-      "bnl",
+      "actual event",
       "btp",
-      "configuration",
+      "check processes and events",
       "custom model",
-      "ecc",
-      "erp",
+      "deploy model",
+      "event matching",
       "fc",
-      "freight order",
       "global track and trace",
       "gtt",
-      "idoc",
+      "manage models",
+      "milestone",
       "model administrator",
+      "planned event",
       "proof of delivery",
-      "purchase order",
-      "tolerance",
-      "tracked process"
+      "tracked process",
+      "unplanned event"
     ]
   },
   "api-specs/split/How to Integrate SAP Business Network Global Track and Trace with Ariba Network": {
@@ -552,13 +569,13 @@
     "tags": [
       "ariba",
       "ariba network",
-      "bnl",
       "btp",
+      "cross-network tracking",
       "global track and trace",
       "gtt",
-      "integration",
-      "shipper",
-      "tracking"
+      "network connection",
+      "solution owner",
+      "tracking configuration"
     ]
   },
   "api-specs/split/How to Integrate with SAP Business Network  Freight Collaboration (Carrier APIs)": {
@@ -568,18 +585,29 @@
       "file://api-specs/split/How to Integrate with SAP Business Network  Freight Collaboration (Carrier APIs)_Part2.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
-      "carrier",
+      "authentication",
+      "base url",
+      "communication details",
       "dock appointment",
+      "email notification",
+      "entire url",
       "freight booking",
       "freight collaboration",
       "freight order",
+      "freight subcontracting url",
       "freight tendering",
-      "integration",
-      "onboarding",
+      "inbound connection",
+      "ip filtering",
+      "manage integration logs",
+      "network-to-network authentication",
+      "oauth",
       "order confirmation",
-      "tracking"
+      "outbound connection",
+      "provider api endpoint",
+      "shipper-specific authentication",
+      "system connections",
+      "test service",
+      "url appending"
     ]
   },
   "api-specs/split/How to Send Messages with Tracking APIs (Global Track and Trace)": {
@@ -593,23 +621,20 @@
       "file://api-specs/split/How to Send Messages with Tracking APIs (Global Track and Trace)_Part6.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
-      "carrier",
-      "ecc",
-      "erp",
+      "consumer api for order tracking",
+      "data contributor",
       "event reporting",
       "fc",
-      "freight booking",
-      "freight order",
       "global track and trace",
       "gtt",
-      "idoc",
-      "integration",
+      "order event",
+      "order tracking",
       "proof of delivery",
-      "sbn",
-      "tracking",
-      "vat"
+      "provider api for order events",
+      "shipper lbn id",
+      "technical id",
+      "tracking payload",
+      "tracking request"
     ]
   },
   "api-specs/split/How to connect to Network Partner in Business Netw... - SAP Community": {
@@ -619,15 +644,16 @@
       "file://api-specs/split/How to connect to Network Partner in Business Netw... - SAP Community_Part2.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
-      "booking confirmation",
-      "carrier",
+      "b2b carrier",
+      "configure partner connection",
+      "connection request",
+      "credential management",
+      "discover business partners",
       "fc",
-      "freight collaboration",
+      "fourkites",
       "gtt",
-      "integration",
-      "network partner"
+      "network partner",
+      "visibility provider"
     ]
   },
   "api-specs/split/Integration Platform Migration Guide": {
@@ -636,12 +662,16 @@
       "file://api-specs/split/Integration Platform Migration Guide_Part1.pdf"
     ],
     "tags": [
-      "bnl",
       "btp",
+      "carrier migration",
       "cloud connector",
+      "data center",
       "edi",
+      "endpoint url",
+      "freemium",
       "freight collaboration",
       "global track and trace",
+      "inbound credential",
       "integration platform",
       "migration",
       "multi-cloud",
@@ -656,18 +686,18 @@
       "file://api-specs/split/Integration with SAP Business Network for Logistics without SFTP server- SAP Community_Part1.pdf"
     ],
     "tags": [
-      "alternative",
-      "bnl",
-      "carrier",
-      "cloud integration",
       "dock appointment",
       "edi",
+      "edi testing",
+      "edi via email",
+      "edifact",
+      "email communication",
       "fc",
-      "freight collaboration",
       "freight order",
       "freight tendering",
-      "integration",
-      "sftp"
+      "iftmin",
+      "sftp alternative",
+      "test environment"
     ]
   },
   "api-specs/split/SAP Business Network For Logistics - Carrier Side API and EDI": {
@@ -676,17 +706,18 @@
       "file://api-specs/split/SAP Business Network For Logistics - Carrier Side API and EDI_Part1.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
-      "carrier",
+      "api vs edi",
+      "decision guide",
       "dock appointment",
       "edi",
       "freight booking",
-      "freight collaboration",
+      "freight forwarder",
       "freight order",
+      "freight subcontracting",
       "freight tendering",
-      "integration",
-      "tracking"
+      "integration options",
+      "order tracking",
+      "road carrier"
     ]
   },
   "api-specs/split/SAP Business Network For Logistics - Road EDI Integration- SAP Community": {
@@ -695,18 +726,26 @@
       "file://api-specs/split/SAP Business Network For Logistics - Road EDI Integration- SAP Community_Part1.pdf"
     ],
     "tags": [
+      "204",
+      "210",
+      "990",
       "ansi x12",
-      "bnl",
-      "carrier",
       "dock appointment",
       "edi",
+      "edi troubleshooting",
       "edifact",
       "fc",
+      "file naming",
       "freight collaboration",
       "freight tendering",
       "gtt",
-      "integration",
-      "road"
+      "iftmbc",
+      "iftmin",
+      "inbound polling",
+      "invoic",
+      "known host key",
+      "road edi",
+      "sftp setup"
     ]
   },
   "api-specs/split/SAP Business Network Freight Collaboration_BNL_01": {
@@ -734,33 +773,31 @@
       "file://api-specs/split/SAP Business Network Freight Collaboration_BNL_01_Part9.pdf"
     ],
     "tags": [
-      "api",
-      "archiving",
-      "bnl",
       "btp",
-      "carrier",
+      "carrier onboarding",
       "cloud connector",
+      "configure partner connection",
       "credit memo",
       "dock appointment",
+      "dock appointment apps",
       "edi",
-      "erp",
       "fc",
+      "fc product overview",
       "freight booking",
       "freight collaboration",
       "freight order",
+      "freight order apps",
+      "freight settlement apps",
+      "freight subcontracting apps",
       "freight tendering",
+      "freight tendering apps",
       "global track and trace",
       "iata",
-      "integration",
-      "onboarding",
-      "order confirmation",
       "proof of delivery",
-      "purchase order",
       "s4hana",
-      "shipper",
+      "shipper apps",
       "soamanager",
-      "tolerance",
-      "vat"
+      "system connections"
     ]
   },
   "api-specs/split/SAP Business Network Freight Collaboration_BNL_02": {
@@ -785,30 +822,29 @@
       "file://api-specs/split/SAP Business Network Freight Collaboration_BNL_02_Part9.pdf"
     ],
     "tags": [
-      "api",
-      "bnl",
       "btp",
-      "carrier",
+      "carrier apps",
       "credit memo",
       "dock appointment",
-      "ecc",
       "edi",
-      "erp",
       "fc",
       "freight booking",
       "freight collaboration",
       "freight order",
+      "freight orders for confirmation",
       "freight tendering",
+      "freight tendering apps",
+      "freight tracking apps",
       "global track and trace",
-      "iata",
-      "integration",
-      "invoice",
+      "invoice dispute",
+      "logistics invoice",
+      "manage alternate ids",
+      "manage integration logs",
+      "manage invitations",
       "proof of delivery",
-      "purchase order",
       "sbn",
-      "shipper",
-      "tracking",
-      "trading partner"
+      "system connections",
+      "user management"
     ]
   },
   "api-specs/split/SAP Business Network Global Track and Trace_Product": {
@@ -832,38 +868,32 @@
       "file://api-specs/split/SAP Business Network Global Track and Trace_Product_Part9.pdf"
     ],
     "tags": [
-      "archiving",
+      "actual event",
       "ariba",
-      "asn",
-      "bnl",
       "btp",
-      "carrier",
-      "credit memo",
+      "check processes and events",
+      "data contributor",
       "dock appointment",
       "edi",
-      "erp",
       "fc",
       "freight booking",
       "freight collaboration",
       "freight order",
       "freight tendering",
       "global track and trace",
-      "goods receipt",
       "gtt",
       "iata",
-      "idoc",
-      "integration",
+      "manage models",
+      "planned event",
       "po",
+      "project44 add-on",
       "proof of delivery",
-      "purchase order",
       "sbn",
-      "shipment",
-      "shipper",
-      "soamanager",
-      "tracking",
+      "solution owner apps",
+      "track freight movement",
       "trading partner",
-      "vat",
-      "visibility"
+      "view logs",
+      "visibility provider"
     ]
   },
   "api-specs/split/SAP Business Network for Logistics- Best Practice": {
@@ -873,12 +903,12 @@
       "file://api-specs/split/SAP Business Network for Logistics- Best Practice_Part2.pdf"
     ],
     "tags": [
-      "api",
       "ariba",
+      "back-end system",
       "best practice",
       "bnl",
       "btp",
-      "carrier",
+      "data volume",
       "dock appointment",
       "ecc",
       "edi",
@@ -888,13 +918,17 @@
       "freight collaboration",
       "freight order",
       "global track and trace",
+      "go-live",
       "gtt",
       "idoc",
-      "integration",
+      "implementation guidance",
+      "monitoring",
+      "pre-implementation",
+      "project44",
+      "s4hana",
       "sbn",
-      "shipper",
       "soamanager",
-      "tracking",
+      "tm compatibility",
       "trading partner"
     ]
   },
@@ -904,17 +938,18 @@
       "file://api-specs/split/SAP Business Network for Logistics_ Get your first... - SAP Community_Part1.pdf"
     ],
     "tags": [
-      "api",
+      "3 steps",
       "bnl",
       "btp",
-      "carrier",
+      "carrier api setup",
       "edi",
       "fc",
-      "first steps",
+      "first freight order",
       "freight collaboration",
-      "getting started",
-      "integration",
-      "onboarding"
+      "manage integration logs",
+      "quick start",
+      "s4hana tm",
+      "system connections"
     ]
   },
   "api-specs/split/SAP Business Network for Logistics_Carrier Integration Kickoff Deck (carrier-facing)": {
@@ -926,21 +961,26 @@
       "file://api-specs/split/SAP Business Network for Logistics_Carrier Integration Kickoff Deck (carrier-facing)_Part4.pdf"
     ],
     "tags": [
+      "api vs edi",
       "bnl",
-      "carrier",
       "dock appointment",
       "edi",
       "erp",
       "freight collaboration",
+      "freight forwarder",
       "freight order",
       "freight tendering",
       "global track and trace",
-      "integration",
+      "integration options",
       "kickoff",
-      "onboarding",
+      "network partner",
+      "onboarding steps",
+      "portal",
       "project plan",
       "purchase order",
+      "roles and responsibilities",
       "test scenario",
+      "test tenant",
       "trading partner",
       "transaction rules"
     ]
@@ -952,16 +992,18 @@
       "file://api-specs/split/SAP_LBN_EDI_HowToGuide_GTT_Part2.pdf"
     ],
     "tags": [
-      "bnl",
-      "carrier",
+      "data contributor edi",
       "edi",
+      "edi implementation",
       "edifact",
+      "event code mapping",
       "freight order",
       "global track and trace",
       "gtt",
-      "how to",
-      "integration",
-      "tracking"
+      "iftsta",
+      "inbound edi",
+      "sftp configuration",
+      "tracking via edi"
     ]
   },
   "api-specs/split/SAP_LBN_p44_FSD": {
@@ -971,17 +1013,19 @@
       "file://api-specs/split/SAP_LBN_p44_FSD_Part2.pdf"
     ],
     "tags": [
-      "bnl",
-      "carrier",
+      "automated tracking",
+      "fc add-on",
+      "feature scope",
       "freight collaboration",
       "freight order",
-      "functional specification",
       "global track and trace",
       "gtt",
-      "integration",
+      "gtt add-on",
       "p44",
       "project44",
-      "tracking"
+      "transport mode support",
+      "visibility add-on",
+      "visibility data"
     ]
   },
   "api-specs/split/SAP_LBN_p44_config_guide": {
@@ -993,24 +1037,21 @@
       "file://api-specs/split/SAP_LBN_p44_config_guide_Part4.pdf"
     ],
     "tags": [
-      "bnl",
-      "carrier",
-      "configuration",
-      "ecc",
+      "carrier assignment",
       "fc",
       "freight booking",
       "freight collaboration",
       "freight order",
       "global track and trace",
       "gtt",
-      "integration",
       "p44",
+      "p44 configuration",
+      "p44 connection setup",
+      "p44 troubleshooting",
       "project44",
       "proof of delivery",
-      "purchase order",
-      "sbn",
-      "tracking",
-      "visibility add-on"
+      "track id",
+      "visibility event"
     ]
   },
   "api-specs/split/Tips & Tricks with SAP Business Network for Logist... - SAP Community": {
@@ -1056,17 +1097,18 @@
       "file://api-specs/split/Understanding Network Partner Integration in SAP B... - SAP Community_Part2.pdf"
     ],
     "tags": [
-      "api",
       "bnl",
-      "booking confirmation",
-      "carrier",
+      "configure partner connection",
+      "credential setup",
       "edi",
-      "freight booking",
+      "fourkites",
       "freight collaboration",
       "freight order",
       "global track and trace",
-      "integration",
-      "network partner"
+      "network partner",
+      "network partner vs carrier",
+      "shipper configuration",
+      "visibility provider"
     ]
   },
   "SBN/split/Configuration Guide for Business Network Collaboration": {
@@ -19822,27 +19864,15 @@
       "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260311_163556-Meeting Recording-en-US_Part2"
     ],
     "tags": [
-      "api",
-      "authentication",
-      "bnl",
-      "carrier",
-      "carrier integration",
-      "configure partner connection",
-      "cpc",
-      "freight booking",
-      "freight collaboration",
-      "freight order",
+      "api architecture",
+      "api overview",
+      "carrier types",
+      "consumer api",
+      "freight forwarder",
       "freight subcontracting",
-      "freight tendering",
-      "integration overview",
-      "logistics invoice",
-      "oauth",
-      "onboarding",
-      "order tracking",
-      "system connections",
-      "technical id",
-      "test tenant",
-      "tracking request"
+      "manage integration logs",
+      "onboarding vs integration",
+      "system connections"
     ]
   },
   "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260318_163159-Meeting Recording-en-US": {
@@ -19852,27 +19882,18 @@
       "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260318_163159-Meeting Recording-en-US_Part2"
     ],
     "tags": [
-      "api",
       "authentication",
-      "bnl",
-      "carrier",
-      "carrier integration",
-      "configure partner connection",
-      "cpc",
-      "freight booking",
-      "freight collaboration",
-      "freight order",
-      "freight subcontracting",
-      "freight tendering",
-      "integration overview",
-      "logistics invoice",
-      "oauth",
-      "onboarding",
-      "order tracking",
+      "consumer api",
+      "flow direction",
+      "lbn id",
+      "manage alternate ids",
+      "manage integration logs",
+      "network-to-network authentication",
+      "outbound connection",
+      "provider api",
+      "shipper-specific authentication",
       "system connections",
-      "technical id",
-      "test tenant",
-      "tracking request"
+      "test service"
     ]
   },
   "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260325_083259-Meeting Recording-en-US": {
@@ -19882,27 +19903,15 @@
       "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260325_083259-Meeting Recording-en-US_Part2"
     ],
     "tags": [
-      "api",
-      "authentication",
-      "bnl",
-      "carrier",
-      "carrier integration",
-      "configure partner connection",
-      "cpc",
-      "freight booking",
-      "freight collaboration",
-      "freight order",
-      "freight subcontracting",
-      "freight tendering",
-      "integration overview",
+      "charge mapping",
+      "consumer api for order tracking",
+      "freight charges",
+      "freight settlement",
+      "invoicing api",
       "logistics invoice",
-      "oauth",
-      "onboarding",
       "order tracking",
-      "system connections",
-      "technical id",
-      "test tenant",
-      "tracking request"
+      "provider api for order events",
+      "tracking technical id"
     ]
   },
   "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260401_173240-Meeting Recording-en-US": {
@@ -19912,27 +19921,17 @@
       "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260401_173240-Meeting Recording-en-US_Part2"
     ],
     "tags": [
-      "api",
-      "authentication",
-      "bnl",
-      "carrier",
-      "carrier integration",
-      "configure partner connection",
-      "cpc",
-      "freight booking",
-      "freight collaboration",
-      "freight order",
-      "freight subcontracting",
-      "freight tendering",
-      "integration overview",
-      "logistics invoice",
-      "oauth",
-      "onboarding",
-      "order tracking",
-      "system connections",
-      "technical id",
-      "test tenant",
-      "tracking request"
+      "base url",
+      "cancellation url",
+      "carrier endpoint",
+      "freight order id",
+      "freight subcontracting url",
+      "notification url",
+      "originator id",
+      "shipper lbn id in url",
+      "update url",
+      "url appending",
+      "webhook"
     ]
   },
   "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260408_073317-Meeting Recording-en-US": {
@@ -19942,27 +19941,16 @@
       "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260408_073317-Meeting Recording-en-US_Part2"
     ],
     "tags": [
-      "api",
-      "authentication",
-      "bnl",
-      "carrier",
-      "carrier integration",
-      "configure partner connection",
-      "cpc",
+      "admin user group",
+      "api response code",
+      "async api",
+      "document flow",
+      "email notification",
+      "error monitoring",
       "freight booking",
-      "freight collaboration",
-      "freight order",
-      "freight subcontracting",
-      "freight tendering",
-      "integration overview",
-      "logistics invoice",
-      "oauth",
-      "onboarding",
-      "order tracking",
-      "system connections",
-      "technical id",
-      "test tenant",
-      "tracking request"
+      "invoice document flow",
+      "ocean booking",
+      "user management"
     ]
   },
   "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260422_173254-Meeting Recording-en-US": {
@@ -19971,27 +19959,13 @@
       "file://api-specs/transcripts/BN4L - API training session held by Jeff Gebo-20260422_173254-Meeting Recording-en-US"
     ],
     "tags": [
-      "api",
-      "authentication",
-      "bnl",
-      "carrier",
-      "carrier integration",
-      "configure partner connection",
-      "cpc",
-      "freight booking",
-      "freight collaboration",
-      "freight order",
-      "freight subcontracting",
-      "freight tendering",
-      "integration overview",
-      "logistics invoice",
-      "oauth",
-      "onboarding",
-      "order tracking",
-      "system connections",
-      "technical id",
-      "test tenant",
-      "tracking request"
+      "consumer api for external planning",
+      "external planning",
+      "freight forwarder planning",
+      "freight order creation",
+      "freight unit",
+      "no ui",
+      "provider api for planned freight documents"
     ]
   },
   "api-specs/split/04_BN4L_Carrier_Integration": {
@@ -20015,10 +19989,9 @@
       "210",
       "990",
       "ansi x12",
-      "api",
+      "api vs edi",
       "authentication",
-      "bnl",
-      "carrier",
+      "base url",
       "carrier integration",
       "configure partner connection",
       "cpc",
@@ -20026,6 +19999,8 @@
       "dock appointment",
       "edi",
       "edifact",
+      "email notification",
+      "external planning",
       "fc",
       "freight booking",
       "freight collaboration",
@@ -20041,13 +20016,15 @@
       "integration overview",
       "invoic",
       "logistics invoice",
+      "manage integration logs",
       "oauth",
       "onboarding",
       "order tracking",
+      "po",
       "system connections",
       "technical id",
       "test tenant",
-      "tracking request"
+      "url appending"
     ]
   }
 }
