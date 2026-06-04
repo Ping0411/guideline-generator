@@ -164,6 +164,7 @@ const FILES_TO_SPLIT = [
   join(process.env.HOME, "Downloads/BNL/SAP_LBN_p44_FSD.pdf"),
   join(process.env.HOME, "Downloads/BNL/Tips & Tricks with SAP Business Network for Logist... - SAP Community.pdf"),
   join(process.env.HOME, "Downloads/BNL/Understanding Network Partner Integration in SAP B... - SAP Community.pdf"),
+  join(process.env.HOME, "Downloads/BNL/04_BN4L_Carrier_Integration.pdf"),
 ];
 
 mkdirSync(OUTPUT_DIR, { recursive: true });

@@ -851,6 +851,37 @@ const FILENAME_TAGS = [
     ],
   },
 
+  // ── BN4L Carrier Integration training deck ────────────────────────────────
+  {
+    pattern: /04_BN4L_Carrier_Integration/i,
+    tags: [
+      "bnl", "carrier", "carrier integration", "freight collaboration",
+      "api", "edi", "freight order", "freight tendering", "freight booking",
+      "freight subcontracting", "order tracking", "tracking request",
+      "system connections", "configure partner connection", "cpc",
+      "technical id", "oauth", "authentication",
+      "ansi x12", "204", "210", "990",
+      "edifact", "iftmin", "iftmbc", "iftsta", "invoic",
+      "onboarding", "test tenant", "integration overview",
+      "logistics invoice", "dock appointment",
+    ],
+    excludeTags: ["sbn", "supplier", "purchase order", "po", "order confirmation", "oc", "asn", "advance ship notice"],
+  },
+
+  // ── BN4L API training session transcripts (Jeff Gebo) ────────────────────
+  {
+    pattern: /BN4L.*API.training.session.*Jeff.Gebo/i,
+    tags: [
+      "bnl", "carrier", "carrier integration", "freight collaboration",
+      "api", "freight order", "freight subcontracting", "freight tendering", "freight booking",
+      "order tracking", "tracking request", "technical id",
+      "system connections", "configure partner connection", "cpc",
+      "oauth", "authentication", "test tenant",
+      "logistics invoice", "onboarding", "integration overview",
+    ],
+    excludeTags: ["sbn", "supplier", "purchase order", "po", "order confirmation", "oc", "asn", "edifact", "ansi x12"],
+  },
+
   // ── Supplier Integration Overview (EN + JPN) ──────────────────────────────
   {
     pattern: /IK20.*Supplier.*Integration.*Overview.*JPN/i,
@@ -1513,8 +1544,12 @@ function extractTags(text, title, docKey) {
 }
 
 function getDocumentKey(url) {
-  const match = url.match(/file:\/\/(.+?)(_Part\d+)?\.pdf$/);
-  if (match) return match[1];
+  // PDF: strip _PartN.pdf suffix
+  const pdfMatch = url.match(/file:\/\/(.+?)(_Part\d+)?\.pdf$/);
+  if (pdfMatch) return pdfMatch[1];
+  // VTT transcript: strip _PartN suffix (no extension)
+  const vttMatch = url.match(/^(file:\/\/api-specs\/transcripts\/.+?)(_Part\d+)?$/);
+  if (vttMatch) return vttMatch[1];
   return url;
 }
 
@@ -1536,7 +1571,7 @@ for (const [url, page] of Object.entries(cache)) {
 const output = {};
 for (const [key, val] of Object.entries(docTags)) {
   output[key] = {
-    title: val.title.replace(/_Part\d+$/, "").replace(/ -- \d+ of \d+ --.*$/, "").trim(),
+    title: val.title.replace(/_Part\d+$/, "").replace(/ \[Part \d+\]$/, "").replace(/ -- \d+ of \d+ --.*$/, "").trim(),
     urls: val.urls,
     tags: [...val.tags].sort(),
   };
