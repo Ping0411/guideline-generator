@@ -20026,5 +20026,256 @@
       "test tenant",
       "url appending"
     ]
+  },
+  "api-specs/split/GTT_Administration Guide for Solution Owners": {
+    "title": "GTT_Administration Guide for Solution Owners -- 1 of 3",
+    "urls": [
+      "file://api-specs/split/GTT_Administration Guide for Solution Owners_Part1.pdf",
+      "file://api-specs/split/GTT_Administration Guide for Solution Owners_Part2.pdf",
+      "file://api-specs/split/GTT_Administration Guide for Solution Owners_Part3.pdf"
+    ],
+    "tags": [
+      "ariba",
+      "btp",
+      "btp subaccount setup",
+      "configure partner connection",
+      "connect with data contributors",
+      "ecc",
+      "erp",
+      "fc",
+      "freight collaboration",
+      "global track and trace",
+      "gtt",
+      "identity authentication tenant",
+      "idoc",
+      "manage models app",
+      "po",
+      "purchase order",
+      "role collections",
+      "sbn",
+      "solution owner",
+      "solution owner onboarding",
+      "subscribe to apps",
+      "system connections app",
+      "technical user",
+      "test account",
+      "track outbound deliveries",
+      "track po fulfillment"
+    ]
+  },
+  "api-specs/split/GTT_How to Send Notifications": {
+    "title": "GTT_How to Send Notifications",
+    "urls": [
+      "file://api-specs/split/GTT_How to Send Notifications_Part1.pdf"
+    ],
+    "tags": [
+      "add recipients",
+      "check email status",
+      "create mail object",
+      "email notification",
+      "email template",
+      "embed public links",
+      "event-to-action script",
+      "global track and trace",
+      "gtt",
+      "notification placeholders",
+      "notification rule",
+      "planned event overdue notification",
+      "sbn"
+    ]
+  },
+  "api-specs/split/SAP_LBN_GTT_FAQs": {
+    "title": "SAP_LBN_GTT_FAQs -- 1 of 2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_GTT_FAQs_Part1.pdf",
+      "file://api-specs/split/SAP_LBN_GTT_FAQs_Part2.pdf"
+    ],
+    "tags": [
+      "asn",
+      "btp",
+      "check processes and events",
+      "configure partner connections",
+      "erp",
+      "global track and trace",
+      "gtt",
+      "idoc",
+      "invite business partners",
+      "manage event logs",
+      "manage message logs",
+      "manage models app",
+      "po",
+      "proof of delivery",
+      "purchase order",
+      "sbn",
+      "solution owner faq",
+      "system connections app",
+      "track po fulfillment app",
+      "view logs app"
+    ]
+  },
+  "api-specs/split/Activate Your Account": {
+    "title": "Activate Your Account -- 1 of 2",
+    "urls": [
+      "file://api-specs/split/Activate Your Account_Part1.pdf",
+      "file://api-specs/split/Activate Your Account_Part2.pdf"
+    ],
+    "tags": [
+      "account activation",
+      "ariba",
+      "business profile",
+      "dock appointment",
+      "edi",
+      "freight collaboration",
+      "freight order",
+      "freight tendering",
+      "global track and trace",
+      "invitation",
+      "logistics provider",
+      "onboarding",
+      "po",
+      "production environment",
+      "sbn",
+      "test environment",
+      "user management"
+    ]
+  },
+  "api-specs/split/Administration Guide for Logistics Providers": {
+    "title": "Administration Guide for Logistics Providers -- 1 of 2",
+    "urls": [
+      "file://api-specs/split/Administration Guide for Logistics Providers_Part1.pdf",
+      "file://api-specs/split/Administration Guide for Logistics Providers_Part2.pdf"
+    ],
+    "tags": [
+      "alternate id",
+      "ariba",
+      "btp",
+      "certificate",
+      "cloud connector",
+      "dock appointment",
+      "edi",
+      "error handling",
+      "freight booking",
+      "freight collaboration",
+      "freight order",
+      "freight tendering",
+      "global track and trace",
+      "inbound connection",
+      "ip whitelist",
+      "manage integration logs",
+      "manage invitations",
+      "multi-cloud",
+      "oauth",
+      "outbound connection",
+      "sbn",
+      "system connections",
+      "user administration"
+    ]
+  },
+  "api-specs/split/Administration Guide for Shippers": {
+    "title": "Administration Guide for Shippers -- 1 of 6",
+    "urls": [
+      "file://api-specs/split/Administration Guide for Shippers_Part1.pdf",
+      "file://api-specs/split/Administration Guide for Shippers_Part2.pdf",
+      "file://api-specs/split/Administration Guide for Shippers_Part3.pdf",
+      "file://api-specs/split/Administration Guide for Shippers_Part4.pdf",
+      "file://api-specs/split/Administration Guide for Shippers_Part5.pdf",
+      "file://api-specs/split/Administration Guide for Shippers_Part6.pdf"
+    ],
+    "tags": [
+      "ariba",
+      "btp",
+      "carrier management",
+      "cloud connector",
+      "configure partner connection",
+      "dock appointment",
+      "document links",
+      "edi",
+      "fc",
+      "freight booking",
+      "freight collaboration",
+      "freight order",
+      "freight tendering",
+      "global track and trace",
+      "idoc",
+      "inbound authentication",
+      "navigation links",
+      "outbound authentication",
+      "po",
+      "proof of delivery",
+      "sbn",
+      "soamanager",
+      "system connections",
+      "tolerance"
+    ]
+  },
+  "api-specs/split/Getting Started Guide for Shippers": {
+    "title": "Getting Started Guide for Shippers",
+    "urls": [
+      "file://api-specs/split/Getting Started Guide for Shippers_Part1.pdf"
+    ],
+    "tags": [
+      "btp",
+      "carrier invitation",
+      "connect carrier",
+      "dock appointment",
+      "fc",
+      "first freight order",
+      "freight collaboration",
+      "freight tendering",
+      "getting started",
+      "invite carriers to connect",
+      "sbn",
+      "shipper first steps",
+      "shipper getting started",
+      "shipper onboarding",
+      "system connections",
+      "tolerance",
+      "welcome email"
+    ]
+  },
+  "api-specs/split/Invoice Upload Guide_SAP Business Network Freight Collaboration": {
+    "title": "Invoice Upload Guide_SAP Business Network Freight Collaboration",
+    "urls": [
+      "file://api-specs/split/Invoice Upload Guide_SAP Business Network Freight Collaboration_Part1.pdf"
+    ],
+    "tags": [
+      "accepted file formats",
+      "carrier invoice",
+      "charge codes",
+      "download invoice template",
+      "editable invoice fields",
+      "freight collaboration",
+      "freight settlement",
+      "invoice template",
+      "invoice upload",
+      "invoice upload guide",
+      "invoice upload options",
+      "manual invoice",
+      "xlsx",
+      "xlsx upload"
+    ]
+  },
+  "api-specs/split/SAP Business Network Freight Collaboration - Feature Scope Description": {
+    "title": "SAP Business Network Freight Collaboration - Feature Scope Description",
+    "urls": [
+      "file://api-specs/split/SAP Business Network Freight Collaboration - Feature Scope Description_Part1.pdf"
+    ],
+    "tags": [
+      "available features",
+      "credit memo",
+      "dock appointment",
+      "documentation overview",
+      "ecc",
+      "erp",
+      "fc",
+      "feature scope",
+      "freight collaboration",
+      "freight collaboration feature list",
+      "freight order",
+      "iata",
+      "license scope",
+      "proof of delivery",
+      "tolerance"
+    ]
   }
 }

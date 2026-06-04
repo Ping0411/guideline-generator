@@ -1161,6 +1161,138 @@ const FILENAME_TAGS = [
     ],
   },
 
+  // ── BNL docs added 2026-06-04 (previously missing from cache) ───────────────
+
+  // GTT_Administration Guide for Solution Owners
+  // 66-page guide: solution owner onboarding on SAP BTP, subaccount setup,
+  // subscribe to apps, identity authentication, role collections, connect with
+  // data contributors, configure partner connections, manage models app,
+  // track outbound deliveries, track PO fulfillment, technical user in system connections
+  {
+    pattern: /GTT_Administration Guide for Solution Owners/i,
+    tags: [
+      "solution owner", "solution owner onboarding", "btp subaccount setup",
+      "subscribe to apps", "identity authentication tenant", "role collections",
+      "connect with data contributors", "configure partner connection",
+      "manage models app", "track outbound deliveries", "track po fulfillment",
+      "technical user", "system connections app",
+    ],
+    excludeTags: ["carrier", "shipper", "freight order", "freight booking", "edi"],
+  },
+
+  // GTT_How to Send Notifications
+  // 26-page guide: create email template, event-to-action script,
+  // placeholders (system/application/user-defined), create mail object,
+  // implement script, send email, define rule on configuration UI,
+  // add recipients, check email status, Qualtrics feedback survey
+  {
+    pattern: /GTT_How to Send Notifications/i,
+    tags: [
+      "email notification", "event-to-action script", "email template",
+      "notification placeholders", "create mail object", "notification rule",
+      "add recipients", "check email status", "planned event overdue notification",
+      "embed public links",
+    ],
+    excludeTags: ["carrier", "shipper", "freight order", "freight booking", "edi", "invoice"],
+  },
+
+  // SAP_LBN_GTT_FAQs
+  // 44-page FAQ: solution owners FAQ, manage models app, check processes and events app,
+  // view logs app, manage message logs, manage event logs, invite business partners,
+  // system connections app, configure partner connections app, track PO fulfillment app
+  {
+    pattern: /SAP_LBN_GTT_FAQs/i,
+    tags: [
+      "faq", "solution owner faq", "manage models app", "check processes and events",
+      "view logs app", "manage message logs", "manage event logs",
+      "invite business partners", "system connections app",
+      "configure partner connections", "track po fulfillment app",
+    ],
+    excludeTags: ["carrier", "shipper", "freight order", "freight booking", "edi", "invoice upload"],
+  },
+
+  // Activate Your Account (GTT/BNL logistics provider onboarding)
+  // Carrier/logistics provider account activation flow on SAP Business Network for Logistics;
+  // invite from business partner, welcome email, account setup steps
+  {
+    pattern: /^file:\/\/api-specs\/split\/Activate Your Account/i,
+    tags: [
+      "account activation", "logistics provider onboarding", "welcome email",
+      "invite from business partner", "account setup",
+    ],
+    excludeTags: ["freight order", "freight booking", "edi", "invoice", "shipper admin"],
+  },
+
+  // Administration Guide for Logistics Providers (GTT)
+  // Logistics provider admin guide: connectivity platform, DigiCert TLS certificate,
+  // browser support, business configuration, integration platform migration,
+  // user administration, authentication, personal data record
+  {
+    pattern: /^file:\/\/api-specs\/split\/Administration Guide for Logistics Providers/i,
+    tags: [
+      "logistics provider administration", "connectivity platform",
+      "digicert tls certificate", "business configuration", "regions and hosts",
+      "integration platform migration", "user administration", "authentication",
+      "personal data record",
+    ],
+    excludeTags: ["freight order", "freight booking", "shipper", "solution owner", "edi", "invoice upload"],
+  },
+
+  // Administration Guide for Shippers
+  // 132-page shipper admin guide: SAP BTP global account, subaccount, subscribe to apps,
+  // identity authentication, role collections, carrier management, invite carriers,
+  // system connections, configure partner connections, freight order configuration,
+  // user management, DigiCert certificate, integration platform migration
+  {
+    pattern: /^file:\/\/api-specs\/split\/Administration Guide for Shippers/i,
+    tags: [
+      "shipper administration", "btp global account", "subscribe to apps",
+      "identity authentication", "role collections", "invite carriers",
+      "carrier management", "system connections", "configure partner connections",
+      "freight order configuration", "digicert certificate",
+      "integration platform migration",
+    ],
+    excludeTags: ["logistics provider", "solution owner", "edi", "invoice upload", "freight booking"],
+  },
+
+  // Getting Started Guide for Shippers
+  // 16-page quick-start for shippers: welcome email, getting started steps,
+  // inviting carriers to connect, next steps FAQ
+  {
+    pattern: /Getting Started Guide for Shippers/i,
+    tags: [
+      "shipper getting started", "invite carriers to connect", "welcome email",
+      "shipper first steps",
+    ],
+    excludeTags: ["logistics provider", "solution owner", "edi", "invoice", "freight booking"],
+  },
+
+  // Invoice Upload Guide (SAP Business Network Freight Collaboration)
+  // 12-page guide: accepted file upload formats, invoice upload options,
+  // editable invoice fields, download invoice template, upload invoice (xlsx)
+  {
+    pattern: /Invoice Upload Guide_SAP Business Network Freight Collaboration/i,
+    tags: [
+      "invoice upload", "invoice upload guide", "xlsx upload",
+      "accepted file formats", "editable invoice fields", "download invoice template",
+      "invoice upload options",
+    ],
+    excludeTags: ["carrier api", "edi", "freight order", "freight booking", "shipper admin"],
+  },
+
+  // SAP Business Network Freight Collaboration - Feature Scope Description
+  // 10-page overview of available features and documentation for BNL FC:
+  // lists all available guides (Getting Started, Admin for Shippers, Admin for Logistics Providers,
+  // Invoice Upload, APIs guide), feature availability by license
+  {
+    pattern: /Feature Scope Description/i,
+    tags: [
+      "feature scope", "available features", "documentation overview",
+      "freight collaboration feature list", "license scope",
+    ],
+    excludeTags: ["edi", "freight booking", "solution owner", "gtt"],
+  },
+
   // ── Pricing / account docs ─────────────────────────────────────────────────
   {
     pattern: /Enterprise.account.fee.model/i,
