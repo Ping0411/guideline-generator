@@ -20,19 +20,25 @@ async function importDir(dir, prefix) {
       continue;
     }
     if (entry.endsWith(".json")) {
+      const key = "file://" + prefix + entry;
+      if (cache[key]?.cachedAt && stat.mtimeMs <= new Date(cache[key].cachedAt).getTime()) {
+        console.log("Skip (unchanged): " + entry); continue;
+      }
       const raw = JSON.parse(readFileSync(filePath, "utf8"));
       const title = raw.info?.title || entry.replace(".json", "");
       const content = JSON.stringify(raw, null, 2).slice(0, 45000);
-      const key = "file://" + prefix + entry;
       cache[key] = { url: key, title, content, success: true, cachedAt: new Date().toISOString() };
       console.log("Imported JSON: " + title + " (" + content.length + " chars)");
     } else if (entry.endsWith(".pdf")) {
+      const key = "file://" + prefix + entry;
+      if (cache[key]?.cachedAt && stat.mtimeMs <= new Date(cache[key].cachedAt).getTime()) {
+        console.log("Skip (unchanged): " + entry); continue;
+      }
       const buffer = readFileSync(filePath);
       const parser = new PDFParse({ data: buffer });
       const data = await parser.getText();
       const title = entry.replace(".pdf", "");
       const content = data.text.replace(/\s+/g, " ").trim().slice(0, 45000);
-      const key = "file://" + prefix + entry;
       cache[key] = { url: key, title, content, success: true, cachedAt: new Date().toISOString() };
       console.log("Imported PDF: " + title + " (" + content.length + " chars)");
     }

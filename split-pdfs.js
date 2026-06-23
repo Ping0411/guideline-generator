@@ -165,6 +165,17 @@ const FILES_TO_SPLIT = [
   join(process.env.HOME, "Downloads/BNL/Tips & Tricks with SAP Business Network for Logist... - SAP Community.pdf"),
   join(process.env.HOME, "Downloads/BNL/Understanding Network Partner Integration in SAP B... - SAP Community.pdf"),
   join(process.env.HOME, "Downloads/BNL/04_BN4L_Carrier_Integration.pdf"),
+  // SCC docs
+  join(process.env.HOME, "Downloads/SBN/OC Supply chain monitor - Suppliers 2026 V1.pdf"),
+  join(process.env.HOME, "Downloads/SBN/Order Confirmation Process for Suppliers 2026 V1.pdf"),
+  join(process.env.HOME, "Downloads/SBN/Order confirmation with Approval Flow in Scope - Logic 2026 V1.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SCC Buyer Supplier SAP Resources .pdf"),
+  join(process.env.HOME, "Downloads/SBN/SCC EMEA Supplier integration - FAQ (1).pdf"),
+  join(process.env.HOME, "Downloads/SBN/SCC Indirect Cross Training Purchase Order Collaboration.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SCC Indirect Cross Training Purchase Order Strucutre.pdf"),
+  join(process.env.HOME, "Downloads/SBN/SCC Indirect Cross Training Sessio 1 final.pdf"),
+  join(process.env.HOME, "Downloads/SBN/Training Session 2 SCC Buyer Supplier SAP Resources .pdf"),
+  join(process.env.HOME, "Downloads/SBN/What is Buyer and Supplier KO call 2026.pdf"),
 ];
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
