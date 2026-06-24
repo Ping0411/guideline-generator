@@ -7,19 +7,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const CACHE_FILE = join(__dirname, "cache.json");
 
 const SAP_SOURCES = [
-  "https://help.sap.com/docs/business-network-for-logistics",
-  "https://help.sap.com/docs/business-network-global-track-and-trace",
-  "https://help.sap.com/docs/business-network-logistics-provider",
-  "https://help.sap.com/docs/business-network-for-trading-partners/business-network-invoicing/sap-business-network-guide-to-invoicing",
-  "https://help.sap.com/docs/business-network-for-procurement/business-network-buyer-administration/default-transaction-rules",
-  "https://help.sap.com/docs/business-network-for-trading-partners/cxml-solutions/cxml-solutions-guide",
-  "https://help.sap.com/docs/business-network-for-trading-partners/guided-integration-for-trading-partners-59ee04ae427245dfbb7d2766c14270b4/guided-integration-for-trading-partners",
-  "https://help.sap.com/docs/sisgw/sap-ariba-cloud-integration-gateway-overview-guide/using-test-central-for-buyer-regression-testing",
-  "https://help.sap.com/docs/sisgw/sap-ariba-cloud-integration-gateway-how-to-guide-for-suppliers/sap-ariba-cloud-integration-gateway-and-ariba-network-are-renamed-in-this-document",
-  "https://help.sap.com/docs/business-network-for-trading-partners",
-  "https://help.sap.com/docs/sisgw",
-  "https://help.sap.com/docs/btp",
-  "https://www.sap.com/products/business-network/suppliers/pricing.html"
+  // All content is now covered by cached PDF files and API JSON specs.
+  // Add URLs here only if there is no corresponding PDF in the cache.
 ];
 
 async function fetchPage(browser, url) {

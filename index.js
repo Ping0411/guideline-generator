@@ -43,7 +43,7 @@ function logMiss(query) {
 
 const SCOPE_PREFIXES = {
   SBN: ["file://SBN/"],
-  BNL: ["file://api-specs/", "https://help.sap.com/docs/business-network-for-logistics", "https://help.sap.com/docs/business-network-global-track-and-trace", "https://help.sap.com/docs/business-network-logistics-provider"],
+  BNL: ["file://api-specs/"],
 };
 
 function matchesScope(url, scope) {

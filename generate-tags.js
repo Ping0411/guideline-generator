@@ -67,7 +67,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -1161,6 +1161,141 @@ const FILENAME_TAGS = [
     ],
   },
 
+  // ── SCC docs added 2026-06-23 ────────────────────────────────────────────────
+
+  // What is Buyer and Supplier KO call 2026
+  // 1-page internal guide: defines the purpose of Buyer SCC SI KO call and
+  // Supplier KO call; roles of buyer team vs supplier; SCC SI methodology intro;
+  // distinction between KO call and technical call
+  {
+    pattern: /What is Buyer and Supplier KO call/i,
+    tags: [
+      "scc", "ko call", "kickoff call", "seller integration", "supplier onboarding",
+      "buyer responsibilities", "scc methodology", "si intro",
+    ],
+    excludeTags: ["cxml", "edi", "erp", "order confirmation", "invoice", "asn"],
+  },
+
+  // SCC Buyer Supplier SAP Resources
+  // Roles & responsibilities guide: Deployment Descriptions, SCC SI team structure,
+  // buyer-side activities, supplier-side activities, project holistic activities
+  {
+    pattern: /^SCC Buyer Supplier SAP Resources/i,
+    tags: [
+      "scc", "seller integration", "roles and responsibilities", "deployment description",
+      "scc methodology", "buyer activities", "supplier activities", "project activities",
+      "si team", "supplier enablement",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "invoice", "asn", "transaction rules"],
+  },
+
+  // Training Session 2 SCC Buyer Supplier SAP Resources
+  // Cross-training session 2: participating roles, technical call definition,
+  // supplier integration process per supplier, buyer leverage, go-live coordination
+  {
+    pattern: /Training Session 2 SCC Buyer Supplier/i,
+    tags: [
+      "scc", "seller integration", "roles and responsibilities", "scc methodology",
+      "technical call", "supplier integration process", "go-live",
+      "buyer activities", "supplier activities", "si team", "cross training",
+    ],
+    excludeTags: ["cxml", "transaction rules", "order confirmation", "invoice", "asn"],
+  },
+
+  // SCC Indirect Cross Training Session 1 (Sessio 1 final)
+  // Cross-training session 1: SCC indirect vs direct PO collaboration differences,
+  // buyer complexity dimensions (locations, processes, ERPs, e-invoicing regions),
+  // change management, portal/integrated/mixed suppliers, go-live strategies
+  {
+    pattern: /SCC Indirect Cross Training Sessio 1/i,
+    tags: [
+      "scc", "indirect procurement", "direct vs indirect", "buyer complexity",
+      "e-invoicing", "change management", "go-live strategy", "mixed suppliers",
+      "cross training", "seller integration", "scc methodology",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules"],
+  },
+
+  // SCC EMEA Supplier integration - FAQ
+  // Internal FAQ: SBN back-end system access, ERP version requirements, middleware,
+  // functional design, UAT, adoption, change management
+  {
+    pattern: /SCC EMEA Supplier integration.*FAQ/i,
+    tags: [
+      "scc", "faq", "supplier integration", "erp", "middleware",
+      "functional design", "uat", "adoption", "change management",
+      "seller integration", "buyer responsibilities",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules"],
+  },
+
+  // SCC Indirect Cross Training Purchase Order Collaboration
+  // Cross-training on PO collaboration: OC process, ASN/ship notice, goods receipt,
+  // change order, cXML structure, punchout, tolerance rules, transaction rules
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Collaboration/i,
+    tags: [
+      "scc", "purchase order", "po", "order confirmation", "oc",
+      "advance ship notice", "asn", "ship notice", "goods receipt", "gr",
+      "change order", "punchout", "cxml", "tolerance", "transaction rules",
+      "supply chain collaboration", "cross training",
+    ],
+  },
+
+  // SCC Indirect Cross Training Purchase Order Strucutre (typo intentional — matches filename)
+  // Cross-training on PO structure: cXML PO fields, header/line level, tolerance,
+  // goods receipt, OC and ship notice fields
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Stru[uc]ture/i,
+    tags: [
+      "scc", "purchase order", "po", "cxml", "order confirmation", "oc",
+      "advance ship notice", "asn", "ship notice", "goods receipt", "gr",
+      "tolerance", "transaction rules", "cross training",
+    ],
+  },
+
+  // OC Supply chain monitor - Suppliers 2026 V1
+  // Order confirmation deviation monitoring with Supply Chain Monitor:
+  // deviation types, approval process, transaction rules, tolerance,
+  // cXML OC fields, reconfirmation scenarios
+  {
+    pattern: /OC Supply chain monitor.*Suppliers/i,
+    tags: [
+      "scc", "order confirmation", "oc", "supply chain monitor",
+      "deviation monitoring", "approval process", "tolerance",
+      "transaction rules", "cxml", "reconfirmation", "purchase order", "po",
+    ],
+    excludeTags: ["asn", "ship notice", "invoice", "punchout"],
+  },
+
+  // Order Confirmation Process for Suppliers 2026 V1
+  // Comprehensive OC guide: confirmation required, OC message structure,
+  // confirmation/reconfirmation cases, schedule-line level, header/item status,
+  // delivery date, OC scenarios for integrated vendors
+  {
+    pattern: /Order Confirmation Process for Suppliers/i,
+    tags: [
+      "scc", "order confirmation", "oc", "purchase order", "po",
+      "reconfirmation", "schedule line", "header status", "item status",
+      "delivery date", "cxml", "seller integration", "tolerance",
+    ],
+    excludeTags: ["asn", "ship notice", "invoice", "punchout", "goods receipt"],
+  },
+
+  // Order confirmation with Approval Flow in Scope - Logic 2026 V1
+  // Logic guide for OC with approval flow: transaction rules controlling
+  // approval behavior, retain confirmation status, deviation approval,
+  // compliance tolerance, change order interaction
+  {
+    pattern: /Order confirmation with Approval Flow/i,
+    tags: [
+      "scc", "order confirmation", "oc", "approval flow", "transaction rules",
+      "retain confirmation status", "deviation approval", "tolerance",
+      "change order", "purchase order", "po",
+    ],
+    excludeTags: ["asn", "ship notice", "invoice", "punchout", "goods receipt"],
+  },
+
   // ── BNL docs added 2026-06-04 (previously missing from cache) ───────────────
 
   // GTT_Administration Guide for Solution Owners
@@ -1926,34 +2061,64 @@ function getDocumentKey(url) {
   return url;
 }
 
+const force = process.argv.includes("--force");
 const cache = JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
-const docTags = {};
+const existing = existsSync(TAGS_FILE) ? JSON.parse(readFileSync(TAGS_FILE, "utf-8")) : {};
 
+// Group cache entries by document key, tracking the latest cachedAt per doc
+const docMeta = {};
 for (const [url, page] of Object.entries(cache)) {
   if (!page.success) continue;
   const docKey = getDocumentKey(url);
-  if (!docTags[docKey]) {
-    docTags[docKey] = { urls: [], tags: new Set(), title: page.title };
+  if (!docMeta[docKey]) docMeta[docKey] = { urls: [], latestCachedAt: null, title: page.title };
+  docMeta[docKey].urls.push(url);
+  if (page.cachedAt && (!docMeta[docKey].latestCachedAt || page.cachedAt > docMeta[docKey].latestCachedAt)) {
+    docMeta[docKey].latestCachedAt = page.cachedAt;
   }
-  docTags[docKey].urls.push(url);
-  const tags = extractTags(page.content, page.title, docKey);
-  for (const t of tags) docTags[docKey].tags.add(t);
 }
 
-// Convert Sets to sorted arrays
-const output = {};
-for (const [key, val] of Object.entries(docTags)) {
-  output[key] = {
-    title: val.title.replace(/_Part\d+$/, "").replace(/ \[Part \d+\]$/, "").replace(/ -- \d+ of \d+ --.*$/, "").trim(),
-    urls: val.urls,
-    tags: [...val.tags].sort(),
+const output = { ...existing };
+let updated = 0;
+let skipped = 0;
+
+for (const [docKey, meta] of Object.entries(docMeta)) {
+  const existingEntry = existing[docKey];
+  const taggedAt = existingEntry?.taggedAt;
+
+  // Skip if already tagged and cache hasn't changed since
+  if (!force && taggedAt && meta.latestCachedAt && meta.latestCachedAt <= taggedAt) {
+    skipped++;
+    continue;
+  }
+
+  // Regenerate tags for this document
+  const tagSet = new Set();
+  for (const url of meta.urls) {
+    const page = cache[url];
+    if (!page?.success) continue;
+    const tags = extractTags(page.content, page.title, docKey);
+    for (const t of tags) tagSet.add(t);
+  }
+
+  output[docKey] = {
+    title: meta.title.replace(/_Part\d+$/, "").replace(/ \[Part \d+\]$/, "").replace(/ -- \d+ of \d+ --.*$/, "").trim(),
+    urls: meta.urls,
+    tags: [...tagSet].sort(),
+    taggedAt: new Date().toISOString(),
   };
+
+  console.log(`\n📄 ${docKey.split("/").pop()}`);
+  console.log(`   Tags: ${output[docKey].tags.join(", ")}`);
+  updated++;
+}
+
+// Remove entries from output that no longer exist in cache
+for (const key of Object.keys(output)) {
+  if (!docMeta[key]) {
+    delete output[key];
+    console.log(`Removed stale entry: ${key}`);
+  }
 }
 
 writeFileSync(TAGS_FILE, JSON.stringify(output, null, 2), "utf-8");
-console.log(`Generated tags for ${Object.keys(output).length} documents → tags.json`);
-
-for (const [key, val] of Object.entries(output)) {
-  console.log(`\n📄 ${key.split("/").pop()}`);
-  console.log(`   Tags: ${val.tags.join(", ")}`);
-}
+console.log(`\nDone: ${updated} updated, ${skipped} skipped (unchanged) → tags.json`);
