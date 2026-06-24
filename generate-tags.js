@@ -2113,11 +2113,22 @@ for (const [docKey, meta] of Object.entries(docMeta)) {
 }
 
 // Remove entries from output that no longer exist in cache
+const removedTags = [];
 for (const key of Object.keys(output)) {
   if (!docMeta[key]) {
+    removedTags.push(key);
     delete output[key];
-    console.log(`Removed stale entry: ${key}`);
   }
+}
+
+// Safety check: warn and abort if existing entries would be lost (unless --force)
+if (!force && removedTags.length > 0) {
+  console.error("\n⚠️  WARNING: The following " + removedTags.length + " existing tag entries would be DELETED:");
+  for (const k of removedTags) console.error("  - " + k);
+  console.error("\nAborted. No changes written. Run with --force to proceed with deletion.");
+  process.exit(1);
+} else {
+  for (const k of removedTags) console.log(`Removed stale entry: ${k}`);
 }
 
 writeFileSync(TAGS_FILE, JSON.stringify(output, null, 2), "utf-8");

@@ -85,6 +85,18 @@ async function main() {
     console.log("Skipping BNL split dir (not found)");
   }
 
+  const originalCount = JSON.parse(readFileSync(CACHE_FILE, "utf8"));
+  const originalKeys = new Set(Object.keys(originalCount));
+  const newKeys = new Set(Object.keys(cache));
+  const removed = [...originalKeys].filter(k => !newKeys.has(k));
+
+  if (removed.length > 0) {
+    console.error("\n⚠️  WARNING: The following " + removed.length + " existing cache entries would be DELETED:");
+    for (const k of removed) console.error("  - " + k);
+    console.error("\nAborted. No changes written. Use --force-delete to override.");
+    process.exit(1);
+  }
+
   writeFileSync(CACHE_FILE, JSON.stringify(cache, null, 2));
   console.log("\nDone. Total cached: " + Object.keys(cache).length);
 }
