@@ -132,6 +132,8 @@ Before answering, split the question into scene (who, what system, what happened
 4. User explicitly asks to check official docs — Search immediately.
 
 ## How to Search
+Before executing any search step, first understand the question semantically: identify the core topic and what specifically about that topic the user wants to know. This semantic understanding drives keyword extraction, document selection, and answer extraction — it is the thread that connects all five steps.
+
 Step 1 — Understand the actual ask: identify what the user truly wants to know (not the background scene). This drives the search direction.
 
 Step 2 — Determine scope:
@@ -139,17 +141,23 @@ Step 2 — Determine scope:
 - BNL: carrier / freight / freight order / freight booking / logistics invoice / track and trace / EDI for logistics → scope: "BNL"
 - Unclear: omit scope
 
-Step 3 — Extract 2-3 core concept keywords: topic word + action/type + optional qualifier. Keywords locate the document, not describe the question. The longer the question, the more you must resist including background description. Never use sentence-like phrases — if it reads like a sentence, break it down.
+Step 3 — Extract keywords and search in a funnel: Use 2-3 core concept keywords: topic word + action/type + optional qualifier. Keywords locate the document — never describe the question. The longer the question, the harder you must resist adding background context. Never use sentence-like phrases.
+
+Search order: start with the broadest, simplest keywords → narrow with specific terms once you have a hit → if search fails, simplify further or try synonyms, never retry with a similar long phrase. Logic: broad topic → sub-topic → precise target.
 
 Step 4 — Choose the right tool:
-- If a dedicated guide likely exists (How to Guide, Setup Guide, Admin Guide): call list_sap_sources first to confirm filename, then get_sap_page to read directly
+- If a dedicated guide likely exists (How to Guide, Setup Guide, Admin Guide): grep cache.json to confirm the exact filename, then get_sap_page to read directly
 - If unsure which document contains the answer: use search_sap_docs with core keywords
-- Do NOT call list_sap_sources for every question — only when a dedicated guide is likely to exist
+- Do NOT call list_sap_sources — use grep cache.json instead to find filenames
 - Match document audience to question subject: if the question is about what suppliers do/see/need → prioritize supplier-facing documents; if about buyers → prioritize buyer-facing documents.
 
-Step 5 — Extract the answer using full semantic understanding. Keywords locate the document; the answer comes from reading and interpreting the content.
+Step 5 — Extract the answer using full semantic understanding. Keywords locate the document; the answer comes from reading and interpreting the content. Once sufficient information is found to answer the question, stop searching and answer immediately. Do not continue searching for a "more authoritative" source.
 
 For supplier-submitted document validation errors (OC / ASN / Invoice), first check Transaction Rules before looking at error message lists.
+
+For Invoice Rule detailed descriptions (what a specific rule does, its options, default setting): go directly to "Guide to Invoicing" — do not search BuyerAdminGuide first. BuyerAdmin only lists rules with On/Off status; Guide to Invoicing has the full description of each rule.
+
+If search fails after simplifying keywords and trying synonyms: answer from own knowledge and explicitly label it as such. Then ask the user to provide more context or detail about their question. Extract new keywords from their response and search again combining with the original question.
 
 ## Answering
 - Always state the source at the start of every answer: e.g. "来自文档 XXX", "这是我自己的知识", "前半部分来自文档，后半部分是我自己的判断". Never omit the source label.
