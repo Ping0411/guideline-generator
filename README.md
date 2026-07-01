@@ -60,7 +60,7 @@ Copy the output. For example:
   claude mcp add sap-help node C:\Users\yourname\BusinessNetwork-Help-MCP\index.js
   ```
 
-Replace the path with the actual output from Step 4.
+Replace the path with the actual output from Step 3.
 
 ## Usage
 
