@@ -11,19 +11,26 @@ const CACHE_FILE = join(__dirname, "cache.json");
 const TAGS_FILE = join(__dirname, "tags.json");
 const MISSES_LOG = join(__dirname, "search_misses.log");
 
+let _cache = null;
+let _tags = null;
+
 function loadCache() {
+  if (_cache) return _cache;
   if (!existsSync(CACHE_FILE)) return {};
   try {
-    return JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
+    _cache = JSON.parse(readFileSync(CACHE_FILE, "utf-8"));
+    return _cache;
   } catch (e) {
     return {};
   }
 }
 
 function loadTags() {
+  if (_tags) return _tags;
   if (!existsSync(TAGS_FILE)) return {};
   try {
-    return JSON.parse(readFileSync(TAGS_FILE, "utf-8"));
+    _tags = JSON.parse(readFileSync(TAGS_FILE, "utf-8"));
+    return _tags;
   } catch (e) {
     return {};
   }
