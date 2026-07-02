@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SAP Help Assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -68,9 +69,53 @@
       border-radius: 8px;
       font-size: 14px;
       line-height: 1.6;
-      white-space: pre-wrap;
       word-break: break-word;
     }
+    .message.assistant { white-space: normal; }
+    .message.user { white-space: pre-wrap; }
+
+    /* Markdown rendered content */
+    .message.assistant h1, .message.assistant h2, .message.assistant h3 {
+      margin: 10px 0 6px;
+      font-weight: 600;
+    }
+    .message.assistant h2 { font-size: 15px; }
+    .message.assistant h3 { font-size: 14px; }
+    .message.assistant p { margin: 6px 0; }
+    .message.assistant ul, .message.assistant ol {
+      margin: 6px 0 6px 20px;
+    }
+    .message.assistant li { margin: 3px 0; }
+    .message.assistant strong { font-weight: 600; }
+    .message.assistant hr { border: none; border-top: 1px solid #e0e0e0; margin: 10px 0; }
+    .message.assistant table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .message.assistant th, .message.assistant td {
+      border: 1px solid #ddd;
+      padding: 6px 10px;
+      text-align: left;
+    }
+    .message.assistant th { background: #f0f4f8; font-weight: 600; }
+    .message.assistant tr:nth-child(even) { background: #fafafa; }
+    .message.assistant code {
+      background: #f4f4f4;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .message.assistant pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+    .message.assistant pre code { background: none; padding: 0; }
     .message.user {
       background: #0a6ed1;
       color: white;
@@ -98,8 +143,8 @@
     /* Thinking indicator */
     .thinking {
       display: flex;
-      gap: 5px;
-      align-items: center;
+      flex-direction: column;
+      gap: 8px;
       padding: 12px 16px;
       background: white;
       border: 1px solid #e8e8e8;
@@ -107,19 +152,61 @@
       border-bottom-left-radius: 2px;
       align-self: flex-start;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      min-width: 200px;
     }
-    .thinking span {
+    .thinking-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .thinking-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .thinking-dots span {
       width: 8px; height: 8px;
       background: #0a6ed1;
       border-radius: 50%;
       animation: bounce 1.2s infinite;
       opacity: 0.6;
     }
-    .thinking span:nth-child(2) { animation-delay: 0.2s; }
-    .thinking span:nth-child(3) { animation-delay: 0.4s; }
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce {
       0%, 80%, 100% { transform: translateY(0); }
       40% { transform: translateY(-6px); }
+    }
+    .thinking-timer {
+      font-size: 12px;
+      color: #888;
+      min-width: 30px;
+    }
+    .thinking-bar-track {
+      width: 100%;
+      height: 3px;
+      background: #e8e8e8;
+      border-radius: 2px;
+      position: relative;
+      margin-top: 6px;
+    }
+    .thinking-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #0a6ed1;
+      border-radius: 2px;
+      transition: width 40s linear;
+      position: relative;
+    }
+    .thinking-horse {
+      position: absolute;
+      right: -18px;
+      top: -14px;
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      transform: scaleX(-1);
+      pointer-events: none;
     }
 
     /* ── Input area ── */
@@ -156,9 +243,11 @@
       cursor: pointer;
       white-space: nowrap;
       height: 42px;
+      min-width: 70px;
     }
     #send-btn:hover { background: #085ab5; }
-    #send-btn:disabled { background: #9ab8d8; cursor: not-allowed; }
+    #send-btn.stop { background: #d32f2f; }
+    #send-btn.stop:hover { background: #b71c1c; }
 
     #clear-btn {
       background: none;
@@ -171,6 +260,7 @@
       height: 42px;
     }
     #clear-btn:hover { border-color: #999; color: #333; }
+    #clear-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -215,13 +305,30 @@
   apiKeyInput.addEventListener('change', () => localStorage.setItem('sap_api_key', apiKeyInput.value));
   baseUrlInput.addEventListener('change', () => localStorage.setItem('sap_base_url', baseUrlInput.value));
 
-  // Conversation history sent to backend
   let history = [];
+  let currentController = null; // AbortController for active request
+
+  function setWaiting(waiting) {
+    if (waiting) {
+      sendBtn.textContent = 'Stop';
+      sendBtn.classList.add('stop');
+      clearBtn.disabled = true;
+    } else {
+      sendBtn.textContent = 'Send';
+      sendBtn.classList.remove('stop');
+      clearBtn.disabled = false;
+      currentController = null;
+    }
+  }
 
   function addMessage(role, text) {
     const div = document.createElement('div');
     div.className = 'message ' + (role === 'user' ? 'user' : 'assistant');
-    div.textContent = text;
+    if (role === 'assistant') {
+      div.innerHTML = marked.parse(text);
+    } else {
+      div.textContent = text;
+    }
     chatContainer.appendChild(div);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     return div;
@@ -230,9 +337,39 @@
   function addThinking() {
     const div = document.createElement('div');
     div.className = 'thinking';
-    div.innerHTML = '<span></span><span></span><span></span>';
+    div.innerHTML = `
+      <div class="thinking-top">
+        <div class="thinking-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <span class="thinking-timer">0s</span>
+      </div>
+      <div class="thinking-bar-track">
+        <div class="thinking-bar-fill"><img class="thinking-horse" src="/static/horse.gif" alt="🐴"></div>
+      </div>`;
     chatContainer.appendChild(div);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Start timer and progress bar
+    const startTime = Date.now();
+    const timerEl = div.querySelector('.thinking-timer');
+    const barFill = div.querySelector('.thinking-bar-fill');
+    const DURATION = 40; // seconds to reach 100%
+
+    // Kick off bar after a tick so CSS transition triggers
+    setTimeout(() => { barFill.style.width = '100%'; }, 50);
+
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      timerEl.textContent = elapsed + 's';
+    }, 1000);
+
+    div._stopTimer = () => {
+      clearInterval(interval);
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      return elapsed;
+    };
+
     return div;
   }
 
@@ -244,7 +381,15 @@
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
+  let thinkingEl = null; // track thinking element for timer
+
   async function sendMessage() {
+    // If waiting, act as Stop
+    if (sendBtn.classList.contains('stop')) {
+      if (currentController) currentController.abort();
+      return;
+    }
+
     const text = userInput.value.trim();
     if (!text) return;
 
@@ -259,12 +404,18 @@
 
     userInput.value = '';
     userInput.style.height = 'auto';
-    sendBtn.disabled = true;
+    setWaiting(true);
 
     addMessage('user', text);
     history.push({ role: 'user', content: text });
 
     const thinking = addThinking();
+    thinkingEl = thinking;
+    let assistantDiv = null;
+    let fullReply = '';
+    let thinkingRemoved = false;
+
+    currentController = new AbortController();
 
     try {
       const res = await fetch('/chat', {
@@ -274,26 +425,98 @@
           api_key: apiKey,
           base_url: baseUrlInput.value.trim() || null,
           messages: history
-        })
+        }),
+        signal: currentController.signal
       });
 
-      thinking.remove();
-      const data = await res.json();
-
       if (!res.ok) {
+        const data = await res.json();
+        thinking.remove();
         showError(data.error || 'Request failed');
-        history.pop(); // remove the user message we just added
-      } else {
-        addMessage('assistant', data.reply);
-        history.push({ role: 'assistant', content: data.reply });
+        history.pop();
+        setWaiting(false);
+        userInput.focus();
+        return;
       }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue;
+          const raw = line.slice(5).trim();
+          if (!raw) continue;
+
+          let event;
+          try { event = JSON.parse(raw); } catch { continue; }
+
+          if (event.error) {
+            if (!thinkingRemoved) { thinking.remove(); thinkingRemoved = true; }
+            showError(event.error);
+            history.pop();
+            setWaiting(false);
+            userInput.focus();
+            return;
+          }
+
+          if (event.tool_running) {
+            // Tool is executing — keep thinking indicator
+            continue;
+          }
+
+          if (event.chunk) {
+            if (!thinkingRemoved) { thinking.remove(); thinkingRemoved = true; }
+            if (!assistantDiv) {
+              assistantDiv = document.createElement('div');
+              assistantDiv.className = 'message assistant';
+              chatContainer.appendChild(assistantDiv);
+            }
+            fullReply += event.chunk;
+            assistantDiv.innerHTML = marked.parse(fullReply);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+
+          if (event.done) {
+            const elapsed = thinking._stopTimer ? thinking._stopTimer() : '';
+            history.push({ role: 'assistant', content: event.full_reply || fullReply });
+            if (assistantDiv && elapsed) {
+              const timeTag = document.createElement('div');
+              timeTag.style.cssText = 'font-size:11px;color:#aaa;margin-top:6px;text-align:right;';
+              timeTag.textContent = `⏱ ${elapsed}s`;
+              assistantDiv.appendChild(timeTag);
+            }
+          }
+        }
+      }
+
     } catch (err) {
-      thinking.remove();
-      showError('Network error: ' + err.message);
-      history.pop();
+      if (err.name === 'AbortError') {
+        // User clicked Stop
+        if (thinking._stopTimer) thinking._stopTimer();
+        if (!thinkingRemoved) thinking.remove();
+        history.pop();
+        const div = document.createElement('div');
+        div.className = 'message system-msg';
+        div.textContent = 'Stopped.';
+        chatContainer.appendChild(div);
+      } else {
+        if (thinking._stopTimer) thinking._stopTimer();
+        if (!thinkingRemoved) thinking.remove();
+        showError('Network error: ' + err.message);
+        history.pop();
+      }
     }
 
-    sendBtn.disabled = false;
+    setWaiting(false);
     userInput.focus();
   }
 
@@ -306,13 +529,13 @@
     }
   });
 
-  // Auto-resize textarea
   userInput.addEventListener('input', () => {
     userInput.style.height = 'auto';
     userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
   });
 
   clearBtn.addEventListener('click', () => {
+    if (!confirm('Clear conversation history?')) return;
     history = [];
     chatContainer.innerHTML = '<div class="message system-msg">Conversation cleared. Ask a new question.</div>';
   });

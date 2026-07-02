@@ -3,7 +3,7 @@ import json
 import threading
 import requests
 from pathlib import Path
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response, stream_with_context
 
 app = Flask(__name__)
 
@@ -120,7 +120,14 @@ def extract_system_prompt():
         return ""
 
 
-SYSTEM_PROMPT = extract_system_prompt()
+SYSTEM_PROMPT = extract_system_prompt() + """
+
+## Web Interface Mode
+You are responding via a web chat interface used by general business users (not technical developers).
+- Do NOT output your reasoning process, intermediate steps, or search navigation notes (e.g. "让我搜索", "找到了文档", "这一页是关于..."). Go directly to the answer.
+- Do NOT include source attribution lines such as "来自文档 XXX", "这是我自己的知识", "前半部分来自文档" etc. Users do not need to see this.
+- Provide the final answer directly, clearly, and concisely.
+"""
 
 TOOLS = [
     {
@@ -189,48 +196,114 @@ def chat():
         "content-type": "application/json"
     }
 
-    try:
-        current_messages = list(messages)
-        while True:
-            payload = {
-                "model": "anthropic--claude-sonnet-latest",
-                "max_tokens": 4096,
-                "system": SYSTEM_PROMPT,
-                "tools": TOOLS,
-                "messages": current_messages
-            }
-            resp = requests.post(api_url, headers=headers, json=payload, timeout=120)
-            if not resp.ok:
-                return jsonify({"error": f"API error {resp.status_code}: {resp.text[:200]}"}), 502
+    def generate():
+        try:
+            current_messages = list(messages)
+            full_reply = ""
 
-            body = resp.json()
-            content = body.get("content", [])
-            stop_reason = body.get("stop_reason", "")
+            while True:
+                payload = {
+                    "model": "anthropic--claude-sonnet-latest",
+                    "max_tokens": 4096,
+                    "system": SYSTEM_PROMPT,
+                    "tools": TOOLS,
+                    "messages": current_messages,
+                    "stream": True
+                }
+                resp = requests.post(api_url, headers=headers, json=payload, timeout=120, stream=True)
+                if not resp.ok:
+                    yield f"data: {json.dumps({'error': f'API error {resp.status_code}'})}\n\n"
+                    return
 
-            # Check for tool_use blocks
-            tool_uses = [b for b in content if b.get("type") == "tool_use"]
-            if not tool_uses or stop_reason == "end_turn":
-                text = " ".join(b["text"] for b in content if b.get("type") == "text")
-                return jsonify({"reply": text})
+                # Parse SSE stream
+                content_blocks = {}
+                stop_reason = None
+                assistant_content = []
 
-            # Run tools and continue loop
-            current_messages.append({"role": "assistant", "content": content})
-            tool_results = []
-            for tu in tool_uses:
-                result_text = run_tool(tu["name"], tu.get("input", {}))
-                tool_results.append({
-                    "type": "tool_result",
-                    "tool_use_id": tu["id"],
-                    "content": result_text
-                })
-            current_messages.append({"role": "user", "content": tool_results})
+                for raw_line in resp.iter_lines():
+                    if not raw_line:
+                        continue
+                    line = raw_line.decode("utf-8") if isinstance(raw_line, bytes) else raw_line
+                    if not line.startswith("data:"):
+                        continue
+                    event_data = line[5:].strip()
+                    if event_data == "[DONE]":
+                        break
+                    try:
+                        event = json.loads(event_data)
+                    except Exception:
+                        continue
 
-    except requests.exceptions.ConnectionError:
-        return jsonify({"error": "Cannot connect to AI service. Check your Base URL."}), 502
-    except requests.exceptions.Timeout:
-        return jsonify({"error": "Request timed out."}), 504
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+                    etype = event.get("type", "")
+
+                    if etype == "content_block_start":
+                        idx = event["index"]
+                        block = event["content_block"]
+                        content_blocks[idx] = block
+                        if block["type"] == "text":
+                            assistant_content.append({"type": "text", "text": ""})
+                        elif block["type"] == "tool_use":
+                            assistant_content.append({
+                                "type": "tool_use",
+                                "id": block["id"],
+                                "name": block["name"],
+                                "input": ""
+                            })
+
+                    elif etype == "content_block_delta":
+                        idx = event["index"]
+                        delta = event.get("delta", {})
+                        if delta.get("type") == "text_delta":
+                            chunk = delta.get("text", "")
+                            full_reply += chunk
+                            assistant_content[idx]["text"] += chunk
+                            yield f"data: {json.dumps({'chunk': chunk})}\n\n"
+                        elif delta.get("type") == "input_json_delta":
+                            assistant_content[idx]["input"] += delta.get("partial_json", "")
+
+                    elif etype == "message_delta":
+                        stop_reason = event.get("delta", {}).get("stop_reason")
+
+                # Check for tool calls
+                tool_uses = [b for b in assistant_content if b.get("type") == "tool_use"]
+                if not tool_uses or stop_reason == "end_turn":
+                    # Done
+                    yield f"data: {json.dumps({'done': True, 'full_reply': full_reply})}\n\n"
+                    return
+
+                # Parse tool inputs and run them
+                for tu in assistant_content:
+                    if tu.get("type") == "tool_use":
+                        try:
+                            tu["input"] = json.loads(tu["input"]) if isinstance(tu["input"], str) else tu["input"]
+                        except Exception:
+                            tu["input"] = {}
+
+                current_messages.append({"role": "assistant", "content": assistant_content})
+
+                # Signal tool execution to frontend
+                yield f"data: {json.dumps({'tool_running': True})}\n\n"
+
+                tool_results = []
+                for tu in tool_uses:
+                    result_text = run_tool(tu["name"], tu.get("input", {}))
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": tu["id"],
+                        "content": result_text
+                    })
+                current_messages.append({"role": "user", "content": tool_results})
+
+        except requests.exceptions.ConnectionError:
+            yield f"data: {json.dumps({'error': 'Cannot connect to AI service. Check your Base URL.'})}\n\n"
+        except requests.exceptions.Timeout:
+            yield f"data: {json.dumps({'error': 'Request timed out.'})}\n\n"
+        except GeneratorExit:
+            pass
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":
