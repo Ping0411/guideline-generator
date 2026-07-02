@@ -4,8 +4,22 @@ A chat interface for querying SAP Business Network (SBN) and BNL Freight Collabo
 
 ## Prerequisites
 
-- Python 3.9 or later
-- Your Hyperspace AI **API Key** and **Base URL**
+- **Python 3.9 or later**
+
+  Check your version by running the following command in your terminal:
+
+  Mac / Linux:
+  ```
+  python3 --version
+  ```
+  Windows:
+  ```
+  python --version
+  ```
+
+  If Python is not installed or the version is below 3.9, download it from [python.org](https://www.python.org/downloads/).
+
+- **Hyperspace AI API Key and Base URL** — available from [Hyperspace AI](https://ai-docs.portal.hyperspace.tools.sap/)
 
 ## Setup
 
