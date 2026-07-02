@@ -18,12 +18,25 @@ cd BusinessNetwork-Help-MCP
 
 **2. Install dependencies**
 
+Mac / Linux:
 ```
-cd web-app && pip install -r requirements.txt
+cd web-app && pip3 install -r requirements.txt
+```
+
+Windows (Command Prompt or PowerShell):
+```
+cd web-app
+pip install -r requirements.txt
 ```
 
 **3. Start the server**
 
+Mac / Linux:
+```
+python3 app.py
+```
+
+Windows:
 ```
 python app.py
 ```
