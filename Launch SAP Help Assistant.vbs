@@ -5,6 +5,9 @@ Set objFSO = CreateObject("Scripting.FileSystemObject")
 scriptDir = objFSO.GetParentFolderName(WScript.ScriptFullName)
 tempLog = objShell.ExpandEnvironmentStrings("%TEMP%") & "\sap_help_assistant.log"
 
+' Show startup notification
+objShell.Popup "SAP Help Assistant is starting, please wait...", 4, "SAP Help Assistant", 64
+
 ' Kill any existing instance on port 5001
 objShell.Run "cmd /c FOR /F ""tokens=5"" %%a IN ('netstat -aon ^| findstr :5001 ^| findstr LISTENING') DO taskkill /F /PID %%a", 0, True
 
@@ -16,7 +19,7 @@ Dim i, ready, objHTTP
 ready = False
 For i = 1 To 30
     WScript.Sleep 1000
-    Set objHTTP = CreateObject("MSXML2.ServerXMLHTTP")
+    Set objHTTP = CreateObject("WinHttp.WinHttpRequest.5.1")
     On Error Resume Next
     objHTTP.Open "GET", "http://localhost:5001", False
     objHTTP.Send
@@ -24,7 +27,7 @@ For i = 1 To 30
         ready = True
         Exit For
     End If
-    On Error GoTo 0
+    On Error Resume Next
 Next
 
 If ready Then
