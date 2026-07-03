@@ -30,6 +30,8 @@ git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
 ```
 
+This creates a `BusinessNetwork-Help-MCP` folder in your home directory — on Mac it appears in Finder under your user folder (`/Users/your-name/`), on Windows it's at `C:\Users\your-name\`.
+
 **2. Install dependencies**
 
 Mac / Linux:
