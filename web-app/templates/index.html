@@ -52,6 +52,12 @@
     #api-key-input { width: 280px; }
     #base-url-input { width: 220px; }
     #config-status { font-size: 12px; color: #888; }
+    .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; cursor: pointer; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: #ccc; border-radius: 20px; transition: 0.2s; }
+    .toggle-slider:before { content: ""; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+    .toggle-switch input:checked + .toggle-slider { background: #0a6ed1; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
 
     /* ── Chat area ── */
     #chat-container {
@@ -293,6 +299,13 @@
   <label>Base URL</label>
   <input type="text" id="base-url-input" placeholder="http://localhost:6655 (optional)" />
   <span id="config-status"></span>
+  <span style="margin-left:12px; display:inline-flex; align-items:center; gap:6px; font-size:13px; color:#555;">
+    <label class="toggle-switch" title="Semantic mode uses AI-powered multilingual matching. Classic mode uses keyword search.">
+      <input type="checkbox" id="search-mode-toggle" />
+      <span class="toggle-slider"></span>
+    </label>
+    <span id="search-mode-label">Classic search</span>
+  </span>
 </div>
 
 <div id="chat-container">
@@ -321,6 +334,17 @@
   baseUrlInput.value = localStorage.getItem('sap_base_url') || '';
   apiKeyInput.addEventListener('change', () => localStorage.setItem('sap_api_key', apiKeyInput.value));
   baseUrlInput.addEventListener('change', () => localStorage.setItem('sap_base_url', baseUrlInput.value));
+
+  // Search mode toggle
+  const searchModeToggle = document.getElementById('search-mode-toggle');
+  const searchModeLabel = document.getElementById('search-mode-label');
+  searchModeToggle.checked = localStorage.getItem('sap_search_mode') === 'semantic';
+  searchModeLabel.textContent = searchModeToggle.checked ? 'Semantic search' : 'Classic search';
+  searchModeToggle.addEventListener('change', () => {
+    const mode = searchModeToggle.checked ? 'semantic' : 'classic';
+    localStorage.setItem('sap_search_mode', mode);
+    searchModeLabel.textContent = searchModeToggle.checked ? 'Semantic search' : 'Classic search';
+  });
 
   let history = [];
   let currentController = null; // AbortController for active request
@@ -442,7 +466,8 @@
         body: JSON.stringify({
           api_key: apiKey,
           base_url: baseUrlInput.value.trim() || null,
-          messages: history
+          messages: history,
+          search_mode: searchModeToggle.checked ? 'semantic' : 'classic'
         }),
         signal: currentController.signal
       });
@@ -490,7 +515,7 @@
             if (!toolSpinnerEl && assistantDiv) {
               toolSpinnerEl = document.createElement('div');
               toolSpinnerEl.className = 'tool-spinner';
-              toolSpinnerEl.innerHTML = '<div class="tool-spinner-icon"></div> 查询文档中...';
+              toolSpinnerEl.innerHTML = '<div class="tool-spinner-icon"></div> Searching documents...';
               assistantDiv.appendChild(toolSpinnerEl);
               chatContainer.scrollTop = chatContainer.scrollHeight;
             }

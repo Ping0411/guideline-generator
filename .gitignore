@@ -1,2 +1,5 @@
 node_modules/
 web-app/__pycache__/
+__pycache__/
+chroma_db/
+.DS_Store

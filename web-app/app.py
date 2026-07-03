@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import threading
 import requests
@@ -14,6 +15,32 @@ TAGS_FILE = BASE_DIR / "tags.json"
 _cache = None
 _tags = None
 _lock = threading.Lock()
+
+# Load semantic search components once at startup
+sys.path.insert(0, str(BASE_DIR))
+_semantic_model = None
+_semantic_collection = None
+_semantic_lock = threading.Lock()
+
+def _load_semantic():
+    global _semantic_model, _semantic_collection
+    with _semantic_lock:
+        if _semantic_model is None:
+            try:
+                import chromadb
+                from sentence_transformers import SentenceTransformer
+                _semantic_model = SentenceTransformer(
+                    "paraphrase-multilingual-MiniLM-L12-v2",
+                    local_files_only=True
+                )
+                client = chromadb.PersistentClient(path=str(BASE_DIR / "chroma_db"))
+                _semantic_collection = client.get_collection("sap_docs")
+                print("Semantic search: model and index loaded.")
+            except Exception as e:
+                print(f"Semantic search unavailable: {e}")
+
+# Pre-load in background so first query is fast
+threading.Thread(target=_load_semantic, daemon=True).start()
 
 SYSTEM_PROMPT_FILE = BASE_DIR / "index.js"
 
@@ -95,6 +122,45 @@ def search_cache(query, scope=None):
     return results[:5]
 
 
+def search_semantic(query, scope=None):
+    """Search using in-memory semantic model for fast response."""
+    import re
+    _load_semantic()
+    if _semantic_model is None or _semantic_collection is None:
+        return []
+    try:
+        embedding = _semantic_model.encode(query).tolist()
+        where = None
+        if scope == "SBN":
+            where = {"url": {"$contains": "file://SBN/"}}
+        elif scope == "BNL":
+            where = {"url": {"$contains": "file://api-specs/"}}
+        query_kwargs = {
+            "query_embeddings": [embedding],
+            "n_results": 15,
+            "include": ["metadatas", "documents", "distances"],
+        }
+        if where:
+            query_kwargs["where"] = where
+        results = _semantic_collection.query(**query_kwargs)
+        seen_urls = {}
+        for i, meta in enumerate(results["metadatas"][0]):
+            url = re.sub(r'\s+\d{2}\.\d{2}\.\d{2}(?=\.pdf)', '', meta["url"])
+            score = 1 - results["distances"][0][i]
+            doc_text = results["documents"][0][i]
+            if url not in seen_urls or score > seen_urls[url]["score"]:
+                seen_urls[url] = {
+                    "url": url,
+                    "title": meta.get("title", ""),
+                    "excerpt": doc_text[:400].replace("\n", " ").strip(),
+                    "score": round(score, 4),
+                }
+        return sorted(seen_urls.values(), key=lambda x: x["score"], reverse=True)[:5]
+    except Exception as e:
+        print(f"Semantic search error: {e}")
+        return []
+
+
 def get_page(url):
     cache = load_cache()
     page = cache.get(url)
@@ -156,15 +222,25 @@ TOOLS = [
 ]
 
 
-def run_tool(name, inputs):
+def run_tool(name, inputs, search_mode="classic"):
     if name == "search_sap_docs":
-        results = search_cache(inputs["query"], inputs.get("scope"))
-        if not results:
-            return f"No results found for: {inputs['query']}"
-        lines = []
-        for r in results:
-            lines.append(f"[{r['title']}]\nURL: {r['url']}\nExcerpt: {r['excerpt']}")
-        return "\n---\n".join(lines)
+        scope = inputs.get("scope")
+        if search_mode == "semantic":
+            results = search_semantic(inputs["query"], scope)
+            if not results:
+                return f"No results found for: {inputs['query']}"
+            lines = []
+            for r in results:
+                lines.append(f"[{r['title']}]\nURL: {r['url']}\nExcerpt: {r['excerpt']}")
+            return "\n---\n".join(lines)
+        else:
+            results = search_cache(inputs["query"], scope)
+            if not results:
+                return f"No results found for: {inputs['query']}"
+            lines = []
+            for r in results:
+                lines.append(f"[{r['title']}]\nURL: {r['url']}\nExcerpt: {r['excerpt']}")
+            return "\n---\n".join(lines)
     elif name == "get_sap_page":
         return get_page(inputs["url"])
     return "Unknown tool"
@@ -181,6 +257,7 @@ def chat():
     api_key = data.get("api_key", "").strip()
     base_url = data.get("base_url", "").strip().rstrip("/")
     messages = data.get("messages", [])
+    search_mode = data.get("search_mode", "classic")  # "classic" or "semantic"
 
     if not api_key:
         return jsonify({"error": "API key is required"}), 400
@@ -286,7 +363,7 @@ def chat():
 
                 tool_results = []
                 for tu in tool_uses:
-                    result_text = run_tool(tu["name"], tu.get("input", {}))
+                    result_text = run_tool(tu["name"], tu.get("input", {}), search_mode)
                     tool_results.append({
                         "type": "tool_result",
                         "tool_use_id": tu["id"],
