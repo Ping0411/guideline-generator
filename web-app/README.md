@@ -60,11 +60,13 @@ python build_index.py
 
 This downloads a ~250 MB language model (one-time) and builds a local vector index from the documentation. Takes 3–10 minutes depending on your machine. You only need to run this once — unless you pull new document updates from the repository.
 
-**4. Start the server**
+**4. Launch the app**
 
-**Mac users:** Double-click `Launch SAP Help Assistant.app` in the project folder. No terminal needed.
+**Mac users:** Double-click `Launch SAP Help Assistant.app` in the project folder — the browser opens automatically. No terminal needed.
 
-Or start manually from the terminal:
+**Windows users:** Double-click `Launch SAP Help Assistant.vbs` in the project folder — the browser opens automatically. No terminal needed.
+
+If you prefer to start manually from the terminal:
 
 Mac / Linux:
 ```
@@ -76,11 +78,7 @@ Windows:
 python web-app\app.py
 ```
 
-**5. Open in browser**
-
-```
-http://localhost:5001
-```
+Then open `http://localhost:5001` in your browser.
 
 ## Usage
 

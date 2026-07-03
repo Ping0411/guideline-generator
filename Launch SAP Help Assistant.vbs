@@ -1,0 +1,35 @@
+Set objShell = CreateObject("WScript.Shell")
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+' Get the folder where this .vbs file lives
+scriptDir = objFSO.GetParentFolderName(WScript.ScriptFullName)
+
+' Kill any existing instance on port 5001
+objShell.Run "cmd /c FOR /F ""tokens=5"" %a IN ('netstat -aon ^| findstr :5001') DO taskkill /F /PID %a", 0, True
+
+' Start Flask server silently
+objShell.Run "cmd /c python """ & scriptDir & "\web-app\app.py"" > ""%TEMP%\sap_help_assistant.log"" 2>&1", 0, False
+
+' Wait for server to be ready (check every second, up to 30s)
+Dim i, ready
+ready = False
+For i = 1 To 30
+    WScript.Sleep 1000
+    Dim objHTTP
+    Set objHTTP = CreateObject("MSXML2.ServerXMLHTTP")
+    On Error Resume Next
+    objHTTP.Open "GET", "http://localhost:5001", False
+    objHTTP.Send
+    If Err.Number = 0 And objHTTP.Status = 200 Then
+        ready = True
+        Exit For
+    End If
+    On Error GoTo 0
+Next
+
+If ready Then
+    objShell.Run "http://localhost:5001"
+Else
+    MsgBox "SAP Help Assistant failed to start." & vbCrLf & vbCrLf & _
+           "Check log: %TEMP%\sap_help_assistant.log", vbCritical, "Launch Failed"
+End If
