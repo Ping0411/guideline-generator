@@ -43,19 +43,40 @@ cd web-app
 pip install -r requirements.txt
 ```
 
-**3. Start the server**
+**3. Build the search index** (first time only, or after updating documents)
+
+Go back to the project root, then run:
 
 Mac / Linux:
 ```
-python3 app.py
+cd .. && python3 build_index.py
 ```
 
 Windows:
 ```
-python app.py
+cd ..
+python build_index.py
 ```
 
-**4. Open in browser**
+This downloads a ~250 MB language model (one-time) and builds a local vector index from the documentation. Takes 3–10 minutes depending on your machine. You only need to run this once — unless you pull new document updates from the repository.
+
+**4. Start the server**
+
+**Mac users:** Double-click `Launch SAP Help Assistant.app` in the project folder. No terminal needed.
+
+Or start manually from the terminal:
+
+Mac / Linux:
+```
+python3 web-app/app.py
+```
+
+Windows:
+```
+python web-app\app.py
+```
+
+**5. Open in browser**
 
 ```
 http://localhost:5001
@@ -66,10 +87,14 @@ http://localhost:5001
 1. Enter your **API Key** and **Base URL** in the fields at the top
 2. Your credentials are saved automatically in your browser (you only need to enter them once)
 3. Type your question and press **Enter** or click **Send**
-4. Use **Clear** to start a new conversation
+4. Use the **Classic / Semantic** toggle to switch search modes:
+   - **Classic**: keyword matching — fast, works well for exact terms
+   - **Semantic**: AI-powered meaning matching — better for natural language questions and non-English queries (Chinese, Japanese)
+5. Use **Clear** to start a new conversation
 
 ## Notes
 
 - The app runs locally on your machine — your API key is never shared with anyone
 - Documentation content is served from `cache.json` in the project root
-- Supports questions in both English and Chinese
+- The vector index (`chroma_db/`) is generated locally and not included in the repository
+- Supports questions in English, Chinese, and Japanese
