@@ -4381,149 +4381,283 @@ const FILENAME_TAGS = [
     ],
   },
 
-  // ── SCC docs added 2026-06-23 ────────────────────────────────────────────────
+  // ── SCC docs (rewritten 2026-07-06, per-part tags) ───────────────────────────
+
+  // OC Supply chain monitor - Suppliers 2026 V1
+  // Part1: OC deviation monitoring overview, control keys, tolerance, approval flow types (single/multilevel), approval status list
+  {
+    pattern: /OC Supply chain monitor.*Suppliers.*_Part1/i,
+    tags: [
+      "oc deviation monitoring supply chain monitor",
+      "oc approval flow single level multilevel",
+      "tolerance control keys deviation types",
+      "delivery date quantity price deviation oc",
+      "approval status awaiting approved rejected",
+    ],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+  // Part2: cXML ConfirmationRequest structure, type=allDetail/detail, transaction rules implications, retain confirmation status
+  {
+    pattern: /OC Supply chain monitor.*Suppliers.*_Part2/i,
+    tags: [
+      "confirmationrequest type alldetail detail scc",
+      "retain confirmation status change order rule",
+      "oc approval status change order implications",
+      "approvalrequest routing cxml url notification",
+      "oc reconfirmation awaiting supplier reconfirmation",
+    ],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+  // Part3: disclaimer only — no substantive content
+  {
+    pattern: /OC Supply chain monitor.*Suppliers.*_Part3/i,
+    tags: ["scc disclaimer confidential"],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+
+  // Order Confirmation Process for Suppliers 2026 V1
+  // Part1: OCInstruction allowed/notAllowed/requiredBeforeASN, transaction rules requiring OC, schedule line level confirmation
+  {
+    pattern: /Order Confirmation Process for Suppliers.*_Part1/i,
+    tags: [
+      "ocinstruction allowed notallowed requiredbeforeasn",
+      "require oc before ship notice invoice rule",
+      "schedule line level confirmation required",
+      "oc required before asn transaction rule",
+      "confirmation cases reconfirmation overview",
+    ],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+  // Part2: ConfirmationHeader operation=new/update, confirmID, reconfirmation logic, retain confirmation status rules
+  {
+    pattern: /Order Confirmation Process for Suppliers.*_Part2/i,
+    tags: [
+      "confirmationheader operation new update",
+      "confirmid attribute oc update reconfirmation",
+      "retain confirmation status unchanged line items",
+      "reconfirmation change order logic scc",
+      "oc general rules single purchase order",
+    ],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+  // Part3: OC scenarios table (allDetail/detail), control keys override transaction rules, tolerance validation failed status
+  {
+    pattern: /Order Confirmation Process for Suppliers.*_Part3/i,
+    tags: [
+      "oc scenarios table type alldetail detail",
+      "control keys override transaction rules scc",
+      "oc failed status cig tolerance rejected",
+      "oc scenarios confirmation status table",
+      "control keys ocinstruction tolerances schedule line",
+    ],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+
+  // Order confirmation with Approval Flow in Scope - Logic 2026 V1
+  // Part1: retain status logic, buyer/supplier initiated change scenarios, transaction rule implications
+  {
+    pattern: /Order confirmation with Approval Flow/i,
+    tags: [
+      "oc approval flow retain status logic",
+      "buyer initiated change supplier initiated change oc",
+      "oc deviation transaction rule approval implications",
+      "confirmation status not retained price quantity change",
+      "approval flow in scope scc logic",
+    ],
+    excludeTags: ["asn", "invoice", "punchout", "erp"],
+  },
+
+  // SCC Buyer Supplier SAP Resources (Part1-2)
+  // Part1: Deployment Descriptions, buyer solution design document, SIFL/SEFL roles, seller integration participating roles
+  {
+    pattern: /SCC Buyer Supplier SAP Resources.*_Part1/i,
+    tags: [
+      "scc deployment description buyer solution design",
+      "sifl sefl seller integration participating roles",
+      "buyer solution deployment scope sbn",
+      "supplier enablement subscription services scc",
+      "buyer sifl activities supplier project holistic",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "invoice", "asn", "erp"],
+  },
+  // Part2: Supplier-side activities, Managed Gateway account, SAP SCC SI team, supplier integration process per supplier
+  {
+    pattern: /SCC Buyer Supplier SAP Resources.*_Part2/i,
+    tags: [
+      "supplier side activities managed gateway account",
+      "sap scc si team activities supplier project",
+      "scc supplier integration process per supplier",
+      "sap business network technical call scc",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "invoice", "asn", "erp"],
+  },
+
+  // Training Session 2 SCC Buyer Supplier SAP Resources (Part1-3)
+  // Part1: SCC methodology, buyer solution deployment, supplier managed gateway vs buyer managed gateway, SEFL/SIFL responsibilities
+  {
+    pattern: /Training Session 2 SCC Buyer Supplier.*_Part1/i,
+    tags: [
+      "supplier managed gateway buyer managed gateway difference",
+      "scc enablement deployment description sefl sifl",
+      "buyer solution deployment scc session 2",
+      "scc indirect buyer dedicated resources sifl",
+      "sefl sifl collaborative partnership flight plan",
+    ],
+    excludeTags: ["cxml", "order confirmation", "invoice", "asn", "erp"],
+  },
+  // Part2: Seller integration participating roles, SIFL activities, regular seller integration calls
+  {
+    pattern: /Training Session 2 SCC Buyer Supplier.*_Part2/i,
+    tags: [
+      "seller integration participating roles buyer sifl",
+      "buyer sifl activities supplier project coordination",
+      "regular seller integration calls scc",
+      "uat user acceptance testing supplier integration",
+    ],
+    excludeTags: ["cxml", "order confirmation", "invoice", "asn", "erp"],
+  },
+  // Part3: SAP SI activities, technical call, supplier integration process, methodology not followed impact
+  {
+    pattern: /Training Session 2 SCC Buyer Supplier.*_Part3/i,
+    tags: [
+      "sap si technical call supplier integration scc",
+      "scc si methodology not followed impact",
+      "buyer sifl driving supplier ko call scc",
+      "scc buyer sifl drives supplier integration",
+    ],
+    excludeTags: ["cxml", "order confirmation", "invoice", "asn", "erp"],
+  },
+
+  // SCC EMEA Supplier integration - FAQ
+  {
+    pattern: /SCC EMEA Supplier integration.*FAQ/i,
+    tags: [
+      "sbn no erp version requirement supplier",
+      "supplier free choose middleware third party",
+      "buyer leverage supplier commitment timeline scc",
+      "scc seller integration success factors uat",
+      "supplier integration not technical project scc",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules", "erp"],
+  },
+
+  // SCC Indirect Cross Training Session 1 (Sessio 1 final)
+  // Part1: Training intro, SCC vs Indirect differences, direct materials production impact, SCC process types
+  {
+    pattern: /SCC Indirect Cross Training Sessio 1.*_Part1/i,
+    tags: [
+      "scc indirect difference direct materials production",
+      "scc process overview subcontracting planning collaboration",
+      "supply chain collaboration vs indirect procurement",
+      "scc cross training session 1 intro",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules", "erp"],
+  },
+  // Part2: Buyer scope complexity (plants, regions, ERPs, SCC processes), go-live strategies
+  {
+    pattern: /SCC Indirect Cross Training Sessio 1.*_Part2/i,
+    tags: [
+      "buyer scope complexity multiple plants erp regions",
+      "scc go live strategy per plant per process",
+      "change management scc business transformation",
+      "portal integrated mixed suppliers scc scope",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules", "erp"],
+  },
+  // Part3: Deployment Descriptions, SAP roles (NxL/SI/CSM), buyer SIFL/SEFL
+  {
+    pattern: /SCC Indirect Cross Training Sessio 1.*_Part3/i,
+    tags: [
+      "scc enablement deployment description roles nxl si csm",
+      "buyer sifl sefl sap roles embedded services",
+    ],
+    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules", "erp"],
+  },
+
+  // SCC Indirect Cross Training Purchase Order Collaboration (5 parts)
+  // Part1: PO Collaboration overview, SCC process types (consignment/subcontract/forecast/SMI/schedule agreement)
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Collaboration.*_Part1/i,
+    tags: [
+      "scc po collaboration direct materials overview",
+      "consignment subcontract forecast collaboration scc",
+      "supplier managed inventory schedule agreement scc",
+      "material traceability returns collaboration scc",
+    ],
+    excludeTags: ["erp"],
+  },
+  // Part2: Revision ID, control keys material-specific, schedule lines, handling unit flag, batch required flag, quality flag
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Collaboration.*_Part2/i,
+    tags: [
+      "revision id material control keys scc po",
+      "handling unit flag batch required flag scc",
+      "schedule lines purchase order scc delivery",
+      "quality flag certificate of analysis attachment po",
+      "control keys tolerances material specific scc",
+    ],
+    excludeTags: ["erp"],
+  },
+  // Part3: OC for MRP planning, OC approval deviation, hybrid buyer direct PO only
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Collaboration.*_Part3/i,
+    tags: [
+      "oc mrp material requirements planning scc",
+      "oc deviation approval hybrid buyer direct po",
+      "oc approval flow scc buyer scope",
+      "supply chain monitor oc deviation scc cross training",
+    ],
+    excludeTags: ["erp"],
+  },
+  // Part4: ASN batch split ship lines, goods receipt invoice GR reference, certificate of analysis
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Collaboration.*_Part4/i,
+    tags: [
+      "asn batch id split ship notice lines scc",
+      "goods receipt invoice gr reference scc",
+      "certificate of analysis quality attachment asn",
+      "scc po collaboration scenario final comments",
+    ],
+    excludeTags: ["erp"],
+  },
+  // Part5: closing/Q&A slide only
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Collaboration.*_Part5/i,
+    tags: ["scc cross training closing qa"],
+    excludeTags: ["erp"],
+  },
+
+  // SCC Indirect Cross Training Purchase Order Strucutre (typo intentional)
+  // Part1: SCC vs Indirect PO differences, buyer part ID, schedule lines, batch, revision, control keys, SCC PO cXML structure
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Strucutre.*_Part1/i,
+    tags: [
+      "scc indirect po differences schedule lines batch",
+      "buyer part id revision id scc po",
+      "control keys tolerances scc po structure",
+      "blanket po catalogue indirect not scc scope",
+      "scc po cxml structure comparison indirect",
+    ],
+    excludeTags: ["erp"],
+  },
+  // Part2: reference links only
+  {
+    pattern: /SCC Indirect Cross Training Purchase Order Strucutre.*_Part2/i,
+    tags: ["scc standard b2b formats managed gateway reference"],
+    excludeTags: ["erp"],
+  },
 
   // What is Buyer and Supplier KO call 2026
   {
     pattern: /What is Buyer and Supplier KO call/i,
     tags: [
-      "scc si kickoff call purpose",
-      "buyer ko call supplier ko call distinction",
-      "seller integration specialist roles",
-      "scc methodology si intro",
-      "technical call vs kickoff call",
+      "scc si buyer ko call supplier ko call",
+      "ko call pre-condition buyer sifl committed",
+      "scc si intro session methodology kickoff",
+      "buyer ko call slide deck customization per buyer",
+      "supplier ko call official start integration project",
     ],
-    excludeTags: ["cxml", "edi", "erp", "order confirmation", "invoice", "asn"],
-  },
-
-  // SCC Buyer Supplier SAP Resources
-  // Roles & responsibilities guide: Deployment Descriptions, SCC SI team structure,
-  // buyer-side/supplier-side/project holistic activities
-  {
-    pattern: /^SCC Buyer Supplier SAP Resources/i,
-    tags: [
-      "deployment description scc methodology",
-      "scc si team structure sefl sifl",
-      "buyer side activities project holistic",
-      "supplier enablement subscription services",
-      "scc si roles responsibilities guide",
-    ],
-    excludeTags: ["cxml", "edi", "order confirmation", "invoice", "asn", "transaction rules"],
-  },
-
-  // Training Session 2 SCC Buyer Supplier SAP Resources
-  // Cross-training session 2: buyer solution deployment, scc si methodology, technical call definition, supplier integration process per supplier
-  {
-    pattern: /Training Session 2 SCC Buyer Supplier/i,
-    tags: [
-      "buyer solution deployment scc methodology",
-      "scc technical call supplier integration",
-      "sefl sifl sap scc si collaboration",
-      "supplier integration process per supplier",
-      "scc cross training session 2",
-    ],
-    excludeTags: ["cxml", "transaction rules", "order confirmation", "invoice", "asn"],
-  },
-
-  // SCC Indirect Cross Training Session 1 (Sessio 1 final)
-  // Cross-training session 1: SCC indirect vs direct PO collaboration, buyer/supplier complexity, change management, portal/integrated/mixed suppliers
-  {
-    pattern: /SCC Indirect Cross Training Sessio 1/i,
-    tags: [
-      "indirect direct po collaboration differences",
-      "buyer complexity dimensions locations erp",
-      "change management supplier adoption",
-      "portal integrated mixed supplier types",
-      "scc indirect cross training session 1",
-      "business transformation 6 month deployment",
-    ],
-    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules"],
-  },
-
-  // SCC EMEA Supplier integration - FAQ
-  // Internal FAQ: SBN back-end system access, ERP version requirements, middleware, functional design, UAT, adoption
-  {
-    pattern: /SCC EMEA Supplier integration.*FAQ/i,
-    tags: [
-      "sbn erp version requirement none",
-      "middleware third party provider scc",
-      "functional design uat testing supplier",
-      "buyer compliance message supplier adoption",
-      "scc emea faq supplier integration",
-    ],
-    excludeTags: ["cxml", "edi", "order confirmation", "asn", "transaction rules"],
-  },
-
-  // SCC Indirect Cross Training Purchase Order Collaboration (5 parts, non-timestamped)
-  // Cross-training on PO collaboration: OC process, deviation approval, ASN/ship notice, goods receipt, IBD, tolerance rules, transaction rules, change order, cXML fields, schedule lines
-  {
-    pattern: /SCC Indirect Cross Training Purchase Order Collaboration/i,
-    tags: [
-      "scc po collaboration direct material",
-      "order confirmation deviation approval tolerance",
-      "supply chain monitor oc deviation buyer",
-      "advance ship notice ibd inbound delivery",
-      "change order schedule line cxml po",
-      "material requirements planning mrp oc",
-      "transaction rules line item purchase order",
-      "goods receipt po collaboration scc",
-    ],
-  },
-
-  // SCC Indirect Cross Training Purchase Order Strucutre (typo intentional — matches filename)
-  // PO structure: cXML PO fields, header/line differences indirect vs direct, SCC PO considerations, EDIFACT/X12 alternative formats, packaging info in PO, schedule lines
-  {
-    pattern: /SCC Indirect Cross Training Purchase Order Stru[uc]ture/i,
-    tags: [
-      "scc po structure cxml fields header line",
-      "indirect direct po field differences",
-      "scc po consideration buyer part id",
-      "schedule line packaging pallet box po",
-      "edifact x12 alternative format scc",
-      "order confirmation reference schedule lines",
-    ],
-  },
-
-  // OC Supply chain monitor - Suppliers 2026 V1
-  // Order confirmation deviation monitoring with Supply Chain Monitor:
-  // deviation types, approval process, transaction rules, tolerance,
-  // cXML OC fields, reconfirmation scenarios
-  {
-    pattern: /OC Supply chain monitor.*Suppliers/i,
-    tags: [
-      "scc", "order confirmation", "oc", "supply chain monitor",
-      "deviation monitoring", "approval process", "tolerance",
-      "transaction rules", "cxml", "reconfirmation", "purchase order", "po",
-    ],
-    excludeTags: ["asn", "ship notice", "invoice", "punchout"],
-  },
-
-  // Order Confirmation Process for Suppliers 2026 V1
-  // Comprehensive OC guide: confirmation required, OC message structure,
-  // confirmation/reconfirmation cases, schedule-line level, header/item status,
-  // delivery date, OC scenarios for integrated vendors
-  {
-    pattern: /Order Confirmation Process for Suppliers/i,
-    tags: [
-      "scc", "order confirmation", "oc", "purchase order", "po",
-      "reconfirmation", "schedule line", "header status", "item status",
-      "delivery date", "cxml", "seller integration", "tolerance",
-    ],
-    excludeTags: ["asn", "ship notice", "invoice", "punchout", "goods receipt"],
-  },
-
-  // Order confirmation with Approval Flow in Scope - Logic 2026 V1
-  // Logic guide for OC with approval flow: transaction rules controlling
-  // approval behavior, retain confirmation status, deviation approval,
-  // compliance tolerance, change order interaction
-  {
-    pattern: /Order confirmation with Approval Flow/i,
-    tags: [
-      "scc", "order confirmation", "oc", "approval flow", "transaction rules",
-      "retain confirmation status", "deviation approval", "tolerance",
-      "change order", "purchase order", "po",
-    ],
-    excludeTags: ["asn", "ship notice", "invoice", "punchout", "goods receipt"],
+    excludeTags: ["cxml", "edi", "order confirmation", "invoice", "asn", "erp"],
   },
 
   // ── BNL docs added 2026-06-04 (previously missing from cache) ───────────────

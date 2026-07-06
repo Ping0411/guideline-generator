@@ -338,7 +338,7 @@
   // Search mode toggle
   const searchModeToggle = document.getElementById('search-mode-toggle');
   const searchModeLabel = document.getElementById('search-mode-label');
-  searchModeToggle.checked = localStorage.getItem('sap_search_mode') === 'semantic';
+  searchModeToggle.checked = (localStorage.getItem('sap_search_mode') ?? 'semantic') === 'semantic';
   searchModeLabel.textContent = searchModeToggle.checked ? 'Semantic search' : 'Classic search';
   searchModeToggle.addEventListener('change', () => {
     const mode = searchModeToggle.checked ? 'semantic' : 'classic';
@@ -348,6 +348,13 @@
 
   let history = [];
   let currentController = null; // AbortController for active request
+
+  function isNearBottom() {
+    return chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
+  }
+  function scrollToBottom() {
+    if (isNearBottom()) chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
 
   function setWaiting(waiting) {
     if (waiting) {
@@ -371,7 +378,7 @@
       div.textContent = text;
     }
     chatContainer.appendChild(div);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    chatContainer.scrollTop = chatContainer.scrollHeight; // always scroll for new user message
     return div;
   }
 
@@ -389,7 +396,7 @@
         <div class="thinking-bar-fill"><img class="thinking-horse" src="/static/horse.gif" alt="🐴"></div>
       </div>`;
     chatContainer.appendChild(div);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    scrollToBottom();
 
     // Start timer and progress bar
     const startTime = Date.now();
@@ -419,7 +426,7 @@
     div.className = 'message system-msg';
     div.textContent = '⚠ ' + msg;
     chatContainer.appendChild(div);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    scrollToBottom();
   }
 
   let thinkingEl = null; // track thinking element for timer
@@ -517,7 +524,7 @@
               toolSpinnerEl.className = 'tool-spinner';
               toolSpinnerEl.innerHTML = '<div class="tool-spinner-icon"></div> Searching documents...';
               assistantDiv.appendChild(toolSpinnerEl);
-              chatContainer.scrollTop = chatContainer.scrollHeight;
+              scrollToBottom();
             }
             continue;
           }
@@ -532,7 +539,7 @@
             }
             fullReply += event.chunk;
             assistantDiv.innerHTML = marked.parse(fullReply);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            scrollToBottom();
           }
 
           if (event.done) {
