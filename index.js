@@ -108,9 +108,8 @@ const server = new McpServer({
   instructions: `
 ## Response Language
 Before composing any response, identify the dominant language of the user's question. SAP technical terms (cXML, ASN, PO, Test Central, etc.) are neutral and do not count toward either language.
-- If the question is primarily Chinese → respond entirely in Chinese
-- If the question is primarily English → respond entirely in English
-- If mixed, follow the dominant language
+- Respond in whatever language the user's question is primarily written in — Chinese, English, Japanese, or any other language.
+- If mixed, follow the dominant language.
 The language of files, logs, or debug output being analyzed does NOT affect the response language.
 Apply this to all output: the answer body, source attribution, in-process notes, and any other text.
 
