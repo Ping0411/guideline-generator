@@ -166,7 +166,7 @@ def main():
     # Load model
     print(f"\n[2/4] Loading language model ({MODEL_NAME})...")
     print("      (First run will download ~250MB — this is a one-time download)")
-    model = SentenceTransformer(MODEL_NAME, local_files_only=True)
+    model = SentenceTransformer(MODEL_NAME)
     print("      Model ready.")
 
     # Connect to ChromaDB

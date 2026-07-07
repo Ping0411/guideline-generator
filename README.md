@@ -7,6 +7,7 @@ A local MCP server for querying SAP Help Portal documentation. Uses a local cach
 - [Node.js](https://nodejs.org/) v18+
 - [Claude Code CLI](https://pages.github.tools.sap/D061192/aiwarmups/ClaudeCodeInAction/) — follow this guide to install and configure Claude Code
 - Python 3.8+ (required for semantic search) — download from [python.org](https://www.python.org/downloads/)
+- [Git](https://git-scm.com/downloads) — required to clone the repository (Windows users: install Git for Windows if not already installed)
 
 ### Check Node.js version
 
