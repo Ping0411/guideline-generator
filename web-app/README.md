@@ -92,6 +92,23 @@ Then open `http://localhost:5001` in your browser.
    - **Semantic**: AI-powered meaning matching — better for natural language questions and non-English queries (Chinese, Japanese)
 5. Use **Clear** to start a new conversation
 
+## Keeping Up to Date
+
+New documents are added to the repository periodically. To get the latest content, run the following commands from the project root folder (`BusinessNetwork-Help-MCP`):
+
+macOS / Linux:
+```bash
+git pull && python3 build_index.py
+```
+
+Windows:
+```bash
+git pull
+python build_index.py
+```
+
+This updates both the document cache and the search index. Only changed documents are re-indexed, so subsequent runs are faster than the first.
+
 ## Notes
 
 - The app runs locally on your machine — your API key is never shared with anyone
