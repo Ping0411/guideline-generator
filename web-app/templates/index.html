@@ -137,11 +137,11 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .message.system-msg {
-      background: #fff8e1;
-      color: #795548;
+      background: #e8f1fb;
+      color: #0a6ed1;
       align-self: center;
       font-size: 13px;
-      border: 1px solid #ffe082;
+      border: 1px solid #c0d9f5;
       max-width: 600px;
       text-align: center;
     }
@@ -310,7 +310,7 @@
 
 <div id="chat-container">
   <div class="message system-msg">
-    Welcome! Enter your API Key above, then ask any question about SAP Business Network or BNL Freight Collaboration.
+    Welcome! Enter your API Key above, then ask any question about SBN or BNL.
   </div>
 </div>
 
@@ -348,13 +348,17 @@
 
   let history = [];
   let currentController = null; // AbortController for active request
+  let userScrolled = false; // true once user manually scrolls during a response
 
-  function isNearBottom() {
-    return chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 80;
-  }
   function scrollToBottom() {
-    if (isNearBottom()) chatContainer.scrollTop = chatContainer.scrollHeight;
+    if (!userScrolled) chatContainer.scrollTop = chatContainer.scrollHeight;
   }
+
+  // Detect manual scroll: if user scrolls up at all, stop auto-scroll
+  chatContainer.addEventListener('scroll', () => {
+    const distFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
+    if (distFromBottom > 10) userScrolled = true;
+  });
 
   function setWaiting(waiting) {
     if (waiting) {
@@ -453,6 +457,7 @@
     userInput.value = '';
     userInput.style.height = 'auto';
     setWaiting(true);
+    userScrolled = false; // reset for new response
 
     addMessage('user', text);
     history.push({ role: 'user', content: text });
