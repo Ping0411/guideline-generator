@@ -122,30 +122,34 @@ def search_cache(query, scope=None):
     return results[:5]
 
 
+SCOPE_PREFIXES_MAP = {
+    "SBN": "file://SBN/",
+    "BNL": "file://api-specs/",
+}
+
+
 def search_semantic(query, scope=None):
-    """Search using in-memory semantic model for fast response."""
+    """Search using in-memory semantic model with tag-based re-ranking."""
     import re
     _load_semantic()
     if _semantic_model is None or _semantic_collection is None:
         return []
     try:
         embedding = _semantic_model.encode(query).tolist()
-        where = None
-        if scope == "SBN":
-            where = {"url": {"$contains": "file://SBN/"}}
-        elif scope == "BNL":
-            where = {"url": {"$contains": "file://api-specs/"}}
-        query_kwargs = {
-            "query_embeddings": [embedding],
-            "n_results": 15,
-            "include": ["metadatas", "documents", "distances"],
-        }
-        if where:
-            query_kwargs["where"] = where
-        results = _semantic_collection.query(**query_kwargs)
+        scope_prefix = SCOPE_PREFIXES_MAP.get(scope.upper(), None) if scope else None
+        fetch_n = 20 if scope_prefix else 10
+        results = _semantic_collection.query(
+            query_embeddings=[embedding],
+            n_results=fetch_n,
+            include=["metadatas", "documents", "distances"],
+        )
+
+        # Deduplicate by URL, apply scope post-filter, keep best score per URL
         seen_urls = {}
         for i, meta in enumerate(results["metadatas"][0]):
             url = re.sub(r'\s+\d{2}\.\d{2}\.\d{2}(?=\.pdf)', '', meta["url"])
+            if scope_prefix and not url.startswith(scope_prefix):
+                continue
             score = 1 - results["distances"][0][i]
             doc_text = results["documents"][0][i]
             if url not in seen_urls or score > seen_urls[url]["score"]:
@@ -153,9 +157,23 @@ def search_semantic(query, scope=None):
                     "url": url,
                     "title": meta.get("title", ""),
                     "excerpt": doc_text[:400].replace("\n", " ").strip(),
-                    "score": round(score, 4),
+                    "score": score,
                 }
-        return sorted(seen_urls.values(), key=lambda x: x["score"], reverse=True)[:5]
+
+        # Tag-based re-ranking bonus
+        tags = load_tags()
+        keywords = [w for w in query.lower().split() if len(w) > 2]
+        for url, item in seen_urls.items():
+            doc_key = get_document_key(url)
+            doc_tags = tags.get(doc_key, {}).get("tags", [])
+            tag_hits = sum(1 for k in keywords for t in doc_tags if k in t)
+            if tag_hits:
+                item["score"] += tag_hits * 0.05
+
+        ranked = sorted(seen_urls.values(), key=lambda x: x["score"], reverse=True)[:5]
+        for item in ranked:
+            item["score"] = round(item["score"], 4)
+        return ranked
     except Exception as e:
         print(f"Semantic search error: {e}")
         return []

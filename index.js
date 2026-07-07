@@ -4,6 +4,7 @@ import { z } from "zod";
 import { readFileSync, existsSync, appendFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { spawn } from "child_process";
 import { getDocumentKey } from "./utils.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,46 @@ function loadTags() {
   }
 }
 
+
+// ── Semantic search service ──────────────────────────────────────────────────
+const SEMANTIC_PORT = 7655;
+const SEMANTIC_URL = `http://127.0.0.1:${SEMANTIC_PORT}/search`;
+let _semanticReady = false;
+let _semanticProcess = null;
+
+function ensureSemanticService() {
+  if (_semanticReady) return;
+  const script = join(__dirname, "semantic_search.py");
+  if (!existsSync(script)) return;
+  _semanticProcess = spawn("python3", [script, "--serve", "--port", String(SEMANTIC_PORT)], {
+    detached: false,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  _semanticProcess.stdout.on("data", (data) => {
+    if (data.toString().includes("ready")) _semanticReady = true;
+  });
+  _semanticProcess.on("exit", () => { _semanticReady = false; _semanticProcess = null; });
+}
+
+async function searchSemantic(query, scope) {
+  try {
+    const body = JSON.stringify({ query, n: 5, scope: scope || null });
+    const res = await fetch(SEMANTIC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// Start service in background at MCP startup
+ensureSemanticService();
+// ─────────────────────────────────────────────────────────────────────────────
 
 function logMiss(query) {
   const line = `${new Date().toISOString()} | "${query}" | 0 results\n`;
@@ -656,11 +697,21 @@ server.tool(
     if (Object.keys(cache).length === 0) {
       return { content: [{ type: "text", text: "Cache is empty. Please run: node refresh-cache.js" }] };
     }
-    const results = searchCache(query, scope);
-    if (results.length === 0) {
-      logMiss(query);
-      return { content: [{ type: "text", text: "No results found for: " + query + (scope ? ` (scope: ${scope})` : "") }] };
+
+    // Try semantic search first; fall back to keyword search if unavailable
+    let results = null;
+    if (_semanticReady) {
+      results = await searchSemantic(query, scope);
     }
+    if (!results || results.length === 0) {
+      const kwResults = searchCache(query, scope);
+      if (kwResults.length === 0) {
+        logMiss(query);
+        return { content: [{ type: "text", text: "No results found for: " + query + (scope ? ` (scope: ${scope})` : "") }] };
+      }
+      results = kwResults;
+    }
+
     const text = results.map(r =>
       "[" + r.title + "]\nURL: " + r.url + "\nExcerpt: " + r.excerpt
     ).join("\n---\n");
