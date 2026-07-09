@@ -276,7 +276,7 @@ def index():
 def chat():
     data = request.json
     api_key = data.get("api_key", "").strip()
-    base_url = data.get("base_url", "").strip().rstrip("/")
+    base_url = (data.get("base_url") or "").strip().rstrip("/")
     messages = data.get("messages", [])
     search_mode = data.get("search_mode", "classic")  # "classic" or "semantic"
 
