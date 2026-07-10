@@ -41,7 +41,7 @@ const CHAPTER_GUIDE = join(__dirname, "CHAPTER_GUIDELINES.md");
 const PAGES_PER_CHUNK = 10;
 const CHAR_LIMIT      = 45000;
 const API_KEY         = "0399a7b7-c66d-4453-9803-b0e0ebe38b28";
-const BASE_URL        = "http://localhost:6655";
+const BASE_URL        = "http://localhost:6655/anthropic";
 const MODEL           = "claude-sonnet-4-6";
 
 // ─── CLI 参数解析 ────────────────────────────────────────────────────────────

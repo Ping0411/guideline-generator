@@ -1,6 +1,8 @@
 import os
 import sys
 import json
+import base64
+import tempfile
 import threading
 import requests
 from pathlib import Path
@@ -243,6 +245,90 @@ TOOLS = [
 ]
 
 
+def extract_binary_attachment(name, mime, b64data):
+    """Extract text from PDF/Word/Excel/RTF attachments server-side."""
+    try:
+        raw = base64.b64decode(b64data)
+        ext = Path(name).suffix.lower()
+
+        if ext == '.rtf':
+            # Strip RTF markup: decode as latin-1, remove control words and groups
+            import re
+            text = raw.decode('latin-1', errors='replace')
+            text = re.sub(r'\\[a-z]+[-]?\d*[ ]?', ' ', text)
+            text = re.sub(r'[{}\\]', '', text)
+            text = re.sub(r'\s+', ' ', text).strip()
+            return text[:40000] if text else f"[Could not extract text from {name}]"
+
+        if ext == '.pdf':
+            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as f:
+                f.write(raw)
+                tmp_path = f.name
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ['pdftotext', tmp_path, '-'],
+                    capture_output=True, text=True, timeout=30
+                )
+                text = result.stdout.strip()
+            finally:
+                os.unlink(tmp_path)
+            return text[:40000] if text else f"[Could not extract text from {name}]"
+
+        elif ext in ('.doc', '.docx'):
+            from docx import Document
+            import io
+            doc = Document(io.BytesIO(raw))
+            text = '\n'.join(p.text for p in doc.paragraphs if p.text.strip())
+            return text[:40000] if text else f"[Could not extract text from {name}]"
+
+        elif ext in ('.xls', '.xlsx'):
+            import openpyxl
+            import io
+            wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+            lines = []
+            for sheet in wb.worksheets:
+                lines.append(f"[Sheet: {sheet.title}]")
+                for row in sheet.iter_rows(values_only=True):
+                    row_vals = [str(c) if c is not None else '' for c in row]
+                    if any(v.strip() for v in row_vals):
+                        lines.append('\t'.join(row_vals))
+            text = '\n'.join(lines)
+            return text[:40000] if text else f"[Could not extract text from {name}]"
+
+    except Exception as e:
+        return f"[Error extracting {name}: {e}]"
+
+
+def normalize_messages(messages):
+    """Convert frontend message format to Claude API format.
+    Handles binary attachments by extracting text server-side."""
+    normalized = []
+    for msg in messages:
+        content = msg.get('content')
+        if isinstance(content, list):
+            new_content = []
+            for block in content:
+                if block.get('type') == 'image':
+                    new_content.append(block)
+                elif block.get('type') == 'text' and block.get('_binary'):
+                    # Extract text from binary attachment
+                    b = block['_binary']
+                    extracted = extract_binary_attachment(b['name'], b['mime'], b['base64'])
+                    new_content.append({
+                        'type': 'text',
+                        'text': f"[Attached file: {b['name']}]\n```\n{extracted}\n```"
+                    })
+                else:
+                    # Strip internal _binary key if present
+                    clean = {k: v for k, v in block.items() if k != '_binary'}
+                    new_content.append(clean)
+            normalized.append({'role': msg['role'], 'content': new_content})
+        else:
+            normalized.append(msg)
+    return normalized
+
+
 def run_tool(name, inputs, search_mode="classic"):
     if name == "search_sap_docs":
         scope = inputs.get("scope")
@@ -296,7 +382,7 @@ def chat():
 
     def generate():
         try:
-            current_messages = list(messages)
+            current_messages = normalize_messages(list(messages))
             full_reply = ""
 
             while True:

@@ -1,0 +1,166 @@
+{
+  "_comment": "Source URLs for all ingested documents. Used for future version updates — download the latest PDF from these URLs to replace cached versions.",
+  "_portals": {
+    "ARIBA_NETWORK_SUPPLIERS": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS?version=2605",
+    "business-network-for-trading-partners": "https://help.sap.com/docs/business-network-for-trading-partners?version=2605",
+    "business-network-for-procurement": "https://help.sap.com/docs/business-network-for-procurement?version=2605"
+  },
+
+  "SAP Business Network Buyer Administration Guide": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK/5c0bdb0caa3042a288b3a1fb83b2fb1e?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "business-network-for-procurement",
+    "localFile": "~/Downloads/SBN/SAP Business Network Buyer Administration Guide.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 48
+  },
+  "SAP Business Network for Supply Chain Integration and Configuration Guide": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK/5a679004dd4148fb8995a57e3cfcaaf2?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "business-network-for-procurement",
+    "localFile": "~/Downloads/SBN/SAP Business Network for Supply Chain Integration and Configuration Guide.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 31
+  },
+  "SAP Business Network Guide to Invoicing": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/df996b7f6947439ea45b8612e47571f5?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/SAP Business Network Guide to Invoicing.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 38
+  },
+  "Collaborating with Customers": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/109c7a9f53c54578bf305482e13b6cb6?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Collaborating with Customers.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 2
+  },
+  "Configuring Document Routing": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/76c114b292d84c379d1626cff721acec?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Configuring Document Routing.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 8
+  },
+  "Content Management for SAP Ariba Spot Buy": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/54bbd5c95a53450a8f923f1717e006b1?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Content Management for SAP Ariba Spot Buy.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 4
+  },
+  "Creating and Managing Customer Catalogs": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/1e9220c0f83d42d097418c387d3bea9b?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Creating and Managing Customer Catalogs.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 4
+  },
+  "Creating and Managing Invoices_ Credit Memos_ and Debit Memos": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/82a8b145b9084d9a88504b0775268576?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Creating and Managing Invoices_ Credit Memos_ and Debit Memos.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 12
+  },
+  "Customer Catalog Format Reference": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/c8ad7036e6104bfaa33ec523991a6727?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Customer Catalog Format Reference.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 14
+  },
+  "Enabling Suppliers on SAP Business Network": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK/94006af654b1475da6fcf0072628f3af?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "business-network-for-procurement",
+    "localFile": "~/Downloads/SBN/Enabling Suppliers on SAP Business Network.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 13
+  },
+  "Introduction to SAP Business Network": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/687d1f7adb11409695eac66269165762?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Introduction to SAP Business Network.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 2
+  },
+  "Invoice Status Portal for Suppliers": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/39ee7a0f1f8547118dae8a344c54cfcb?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Invoice Status Portal for Suppliers.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 1
+  },
+  "Managing Network Catalog": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK/efb9c5f471ef4c38a55cc5688a0d9509?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners / business-network-for-procurement",
+    "localFile": "~/Downloads/SBN/Managing Network Catalog.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 4
+  },
+  "Managing your SAP Business Network": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/c70a4dca49734ac9b09d11122a3b480f?locale=en-US&state=PRODUCTION&version=2605",
+    "portalTitle": "Managing Your User Account",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Managing your SAP Business Network.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 7
+  },
+  "Messaging on SAP Business Network": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/3bb5a70f1418416db4ebbecf9c55c6ec?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Messaging on SAP Business Network.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 3
+  },
+  "Receiving and Fulfilling Orders": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/45abc7c531754929a19c6a844bd5d6ec?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Receiving and Fulfilling Orders.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 11
+  },
+  "Registration and Signing In": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/ddd75910f67b4212b1c83f9d68cd2f01?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Registration and Signing In.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 2
+  },
+  "Reports and Report Templates": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/d4d8f20708534c808faf6a905c4615e4?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Reports and Report Templates.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 3
+  },
+  "Supplier Guide to SAP Business Network for Supply Chain": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/f0dac91c138b407c8e90c6c6a43eec83?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Supplier Guide to SAP Business Network for Supply Chain.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 26
+  },
+  "Tracking Temporary Labor Time": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/b62ba04e48ff49df99e4e78a720f0c72?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Tracking Temporary Labor Time.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 1
+  },
+  "Using Test Accounts on SAP Business Network": {
+    "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK_SUPPLIERS/876817adf14d498799ddd906fff3e2e7?locale=en-US&state=PRODUCTION&version=2605",
+    "portal": "ARIBA_NETWORK_SUPPLIERS / business-network-for-trading-partners",
+    "localFile": "~/Downloads/SBN/Using Test Accounts on SAP Business Network.pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 2
+  },
+
+  "_note_scc": "SCC training materials are internal SAP documents, not from SAP Help Portal. No public source URL.",
+  "SCC : Indirect Cross Training   Advanced Ship Notice ": {
+    "sourceUrl": null,
+    "portal": "internal SAP training material",
+    "localFile": "~/Downloads/SCC : Indirect Cross Training   Advanced Ship Notice .pdf",
+    "cachePrefix": "SBN/split/",
+    "parts": 4
+  }
+}

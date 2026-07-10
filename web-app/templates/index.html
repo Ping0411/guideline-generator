@@ -238,9 +238,14 @@
       border-top: 1px solid #e0e0e0;
       padding: 14px 20px;
       display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    #input-row {
+      display: flex;
       gap: 10px;
       align-items: flex-end;
-      flex-shrink: 0;
     }
     #user-input {
       flex: 1;
@@ -256,6 +261,7 @@
       font-family: inherit;
     }
     #user-input:focus { border-color: #0a6ed1; }
+    #user-input.drag-over { border-color: #0a6ed1; background: #f0f7ff; }
     #send-btn {
       background: #0a6ed1;
       color: white;
@@ -284,6 +290,52 @@
     }
     #clear-btn:hover { border-color: #999; color: #333; }
     #clear-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #attach-btn {
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 16px;
+      cursor: pointer;
+      color: #666;
+      height: 42px;
+      line-height: 1;
+    }
+    #attach-btn:hover { border-color: #0a6ed1; color: #0a6ed1; }
+
+    /* Attachment preview strip */
+    #attachment-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .attachment-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0f4f8;
+      border: 1px solid #c0d9f5;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #0a6ed1;
+      max-width: 260px;
+    }
+    .attachment-tag .att-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .attachment-tag .att-remove {
+      cursor: pointer;
+      color: #888;
+      font-size: 14px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .attachment-tag .att-remove:hover { color: #d32f2f; }
+    .attachment-tag .att-icon { flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -315,9 +367,15 @@
 </div>
 
 <div id="input-area">
-  <textarea id="user-input" rows="1" placeholder="Ask a question about SAP BN / BNL..."></textarea>
-  <button id="clear-btn" title="Clear conversation">Clear</button>
-  <button id="send-btn">Send</button>
+  <div id="attachment-strip"></div>
+  <div id="input-row">
+    <textarea id="user-input" rows="1" placeholder="Ask a question about SAP BN / BNL..."></textarea>
+    <button id="attach-btn" title="Attach file (image, text, CSV, XML, PDF, Word, Excel)">📎</button>
+    <button id="clear-btn" title="Clear conversation">Clear</button>
+    <button id="send-btn">Send</button>
+  </div>
+  <input type="file" id="file-input" style="display:none"
+    accept="image/*,.txt,.csv,.xml,.json,.cxml,.pdf,.doc,.docx,.xls,.xlsx" multiple />
 </div>
 
 <script>
@@ -328,6 +386,9 @@
   const apiKeyInput = document.getElementById('api-key-input');
   const baseUrlInput = document.getElementById('base-url-input');
   const configStatus = document.getElementById('config-status');
+  const attachBtn = document.getElementById('attach-btn');
+  const fileInput = document.getElementById('file-input');
+  const attachmentStrip = document.getElementById('attachment-strip');
 
   // Persist config in localStorage
   apiKeyInput.value = localStorage.getItem('sap_api_key') || '';
@@ -347,14 +408,163 @@
   });
 
   let history = [];
-  let currentController = null; // AbortController for active request
-  let userScrolled = false; // true once user manually scrolls during a response
+  let currentController = null;
+  let userScrolled = false;
 
+  // ── Attachment state ──────────────────────────────────────────────────────
+  // Each entry: { name, type, data }
+  //   type: "image" | "text"
+  //   data (image): { base64, mediaType }
+  //   data (text):  { content }
+  let pendingAttachments = [];
+
+  const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+  const TEXT_EXTENSIONS = ['.txt', '.csv', '.xml', '.json', '.cxml', '.html', '.htm', '.log', '.md'];
+
+  function fileIcon(name, mime) {
+    if (IMAGE_TYPES.includes(mime)) return '🖼';
+    const ext = '.' + name.split('.').pop().toLowerCase();
+    if (['.pdf'].includes(ext)) return '📄';
+    if (['.doc', '.docx'].includes(ext)) return '📝';
+    if (['.xls', '.xlsx'].includes(ext)) return '📊';
+    if (['.csv'].includes(ext)) return '📋';
+    if (['.xml', '.cxml'].includes(ext)) return '📰';
+    return '📎';
+  }
+
+  function renderAttachmentStrip() {
+    attachmentStrip.innerHTML = '';
+    pendingAttachments.forEach((att, idx) => {
+      const tag = document.createElement('div');
+      tag.className = 'attachment-tag';
+      tag.innerHTML = `
+        <span class="att-icon">${fileIcon(att.name, att.mime)}</span>
+        <span class="att-name" title="${att.name}">${att.name}</span>
+        <span class="att-remove" data-idx="${idx}">✕</span>`;
+      attachmentStrip.appendChild(tag);
+    });
+    attachmentStrip.querySelectorAll('.att-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pendingAttachments.splice(parseInt(btn.dataset.idx), 1);
+        renderAttachmentStrip();
+      });
+    });
+  }
+
+  function readFileAsAttachment(file) {
+    return new Promise((resolve, reject) => {
+      const ext = '.' + file.name.split('.').pop().toLowerCase();
+      const isImage = IMAGE_TYPES.includes(file.type);
+      const isText = TEXT_EXTENSIONS.includes(ext);
+
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const base64 = e.target.result.split(',')[1];
+          resolve({ name: file.name, mime: file.type, type: 'image', data: { base64, mediaType: file.type } });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      } else if (isText) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          resolve({ name: file.name, mime: file.type || 'text/plain', type: 'text', data: { content: e.target.result } });
+        };
+        reader.onerror = reject;
+        reader.readAsText(file, 'utf-8');
+      } else {
+        // Non-text, non-image (PDF, Word, Excel) — send to server for extraction
+        const reader = new FileReader();
+        reader.onload = e => {
+          const base64 = e.target.result.split(',')[1];
+          resolve({ name: file.name, mime: file.type, type: 'binary', data: { base64 } });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  async function addFiles(files) {
+    for (const file of files) {
+      // Deduplicate by name
+      if (pendingAttachments.find(a => a.name === file.name)) continue;
+      // 20MB limit
+      if (file.size > 20 * 1024 * 1024) {
+        showError(`File too large (max 20MB): ${file.name}`);
+        continue;
+      }
+      try {
+        const att = await readFileAsAttachment(file);
+        pendingAttachments.push(att);
+      } catch (e) {
+        showError(`Failed to read file: ${file.name}`);
+      }
+    }
+    renderAttachmentStrip();
+  }
+
+  attachBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    addFiles(Array.from(fileInput.files));
+    fileInput.value = '';
+  });
+
+  // Drag-and-drop onto input area
+  userInput.addEventListener('dragover', e => { e.preventDefault(); userInput.classList.add('drag-over'); });
+  userInput.addEventListener('dragleave', () => userInput.classList.remove('drag-over'));
+  userInput.addEventListener('drop', e => {
+    e.preventDefault();
+    userInput.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) addFiles(Array.from(e.dataTransfer.files));
+  });
+
+  // Paste image from clipboard
+  userInput.addEventListener('paste', e => {
+    const items = Array.from(e.clipboardData.items || []);
+    const imageItems = items.filter(i => i.kind === 'file' && i.type.startsWith('image/'));
+    if (imageItems.length) {
+      e.preventDefault();
+      addFiles(imageItems.map(i => i.getAsFile()));
+    }
+  });
+
+  // Build the content array for the Claude API message
+  function buildMessageContent(text, attachments) {
+    if (!attachments.length) return text;
+
+    const content = [];
+
+    for (const att of attachments) {
+      if (att.type === 'image') {
+        content.push({
+          type: 'image',
+          source: { type: 'base64', media_type: att.data.mediaType, data: att.data.base64 }
+        });
+      } else if (att.type === 'text') {
+        content.push({
+          type: 'text',
+          text: `[Attached file: ${att.name}]\n\`\`\`\n${att.data.content}\n\`\`\``
+        });
+      } else if (att.type === 'binary') {
+        // Server-side extraction needed — include as base64 marker
+        content.push({
+          type: 'text',
+          text: `__binary__`,
+          _binary: { name: att.name, mime: att.mime, base64: att.data.base64 }
+        });
+      }
+    }
+
+    if (text) content.push({ type: 'text', text });
+    return content;
+  }
+
+  // ── UI helpers ────────────────────────────────────────────────────────────
   function scrollToBottom() {
     if (!userScrolled) chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
-  // Detect manual scroll: if user scrolls up at all, stop auto-scroll
   chatContainer.addEventListener('scroll', () => {
     const distFromBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight;
     if (distFromBottom > 10) userScrolled = true;
@@ -373,16 +583,42 @@
     }
   }
 
-  function addMessage(role, text) {
+  function addMessage(role, content) {
     const div = document.createElement('div');
     div.className = 'message ' + (role === 'user' ? 'user' : 'assistant');
     if (role === 'assistant') {
+      const text = typeof content === 'string' ? content : '';
       div.innerHTML = marked.parse(text);
     } else {
-      div.textContent = text;
+      // For user messages with attachments, show text + attachment badges
+      if (Array.isArray(content)) {
+        const imgParts = content.filter(c => c.type === 'image');
+        const fileParts = content.filter(c => c.type === 'text' && c.text.startsWith('[Attached file:'));
+        const binaryParts = content.filter(c => c._binary);
+        // User's typed text is the LAST text block (appended after attachments in buildMessageContent)
+        const textParts = content.filter(c => c.type === 'text' && !c._binary && !c.text.startsWith('[Attached file:'));
+        const userText = textParts.length ? textParts[textParts.length - 1].text : '';
+
+        const allFiles = [
+          ...imgParts.map(() => ({ icon: '🖼', label: 'Image' })),
+          ...fileParts.map(c => ({ icon: '📎', label: c.text.match(/\[Attached file: ([^\]]+)\]/)?.[1] || 'File' })),
+          ...binaryParts.map(c => ({ icon: '📄', label: c._binary?.name || 'File' })),
+        ];
+        let html = '';
+        if (allFiles.length) {
+          html += allFiles.map(f =>
+            `<span style="display:inline-block;background:rgba(255,255,255,0.2);border-radius:4px;padding:2px 8px;margin:0 4px 4px 0;font-size:12px">${f.icon} ${f.label}</span>`
+          ).join('');
+          if (userText) html += '<br>';
+        }
+        if (userText) html += userText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        div.innerHTML = html;
+      } else {
+        div.textContent = content;
+      }
     }
     chatContainer.appendChild(div);
-    chatContainer.scrollTop = chatContainer.scrollHeight; // always scroll for new user message
+    chatContainer.scrollTop = chatContainer.scrollHeight;
     return div;
   }
 
@@ -402,26 +638,19 @@
     chatContainer.appendChild(div);
     scrollToBottom();
 
-    // Start timer and progress bar
     const startTime = Date.now();
     const timerEl = div.querySelector('.thinking-timer');
     const barFill = div.querySelector('.thinking-bar-fill');
-    const DURATION = 40; // seconds to reach 100%
-
-    // Kick off bar after a tick so CSS transition triggers
+    const DURATION = 40;
     setTimeout(() => { barFill.style.width = '100%'; }, 50);
-
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       timerEl.textContent = elapsed + 's';
     }, 1000);
-
     div._stopTimer = () => {
       clearInterval(interval);
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      return elapsed;
+      return ((Date.now() - startTime) / 1000).toFixed(1);
     };
-
     return div;
   }
 
@@ -433,17 +662,16 @@
     scrollToBottom();
   }
 
-  let thinkingEl = null; // track thinking element for timer
+  let thinkingEl = null;
 
   async function sendMessage() {
-    // If waiting, act as Stop
     if (sendBtn.classList.contains('stop')) {
       if (currentController) currentController.abort();
       return;
     }
 
     const text = userInput.value.trim();
-    if (!text) return;
+    if (!text && !pendingAttachments.length) return;
 
     const apiKey = apiKeyInput.value.trim();
     if (!apiKey) {
@@ -454,13 +682,21 @@
     }
     configStatus.textContent = '';
 
+    // Snapshot and clear attachments
+    const attachments = [...pendingAttachments];
+    pendingAttachments = [];
+    renderAttachmentStrip();
+
     userInput.value = '';
     userInput.style.height = 'auto';
     setWaiting(true);
-    userScrolled = false; // reset for new response
+    userScrolled = false;
 
-    addMessage('user', text);
-    history.push({ role: 'user', content: text });
+    // Build message content
+    const messageContent = buildMessageContent(text, attachments);
+
+    addMessage('user', messageContent);
+    history.push({ role: 'user', content: messageContent });
 
     const thinking = addThinking();
     thinkingEl = thinking;
@@ -504,7 +740,7 @@
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep incomplete line
+        buffer = lines.pop();
 
         for (const line of lines) {
           if (!line.startsWith('data:')) continue;
@@ -562,7 +798,6 @@
 
     } catch (err) {
       if (err.name === 'AbortError') {
-        // User clicked Stop
         if (thinking._stopTimer) thinking._stopTimer();
         if (!thinkingRemoved) thinking.remove();
         history.pop();
@@ -599,6 +834,8 @@
   clearBtn.addEventListener('click', () => {
     if (!confirm('Clear conversation history?')) return;
     history = [];
+    pendingAttachments = [];
+    renderAttachmentStrip();
     chatContainer.innerHTML = '<div class="message system-msg">Conversation cleared. Ask a new question.</div>';
   });
 </script>
