@@ -5,7 +5,5 @@ chroma_db/
 .DS_Store
 
 # Runtime data — never commit
-cache.json
-tags.json
 *.bak
 pending-retag.json
