@@ -77,9 +77,7 @@ def matches_scope(url, scope):
 
 
 def get_document_key(url):
-    # Strip trailing _PartN.pdf to get the document key (mirrors utils.js logic)
-    import re
-    return re.sub(r"_Part\d+.*\.pdf$", "", url, flags=re.IGNORECASE)
+    return url
 
 
 def search_cache(query, scope=None):
