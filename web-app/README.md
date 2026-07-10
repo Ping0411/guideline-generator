@@ -60,7 +60,7 @@ cd ..
 python build_index.py
 ```
 
-This downloads a ~250 MB language model (one-time) and builds a local vector index from the documentation. Takes 3–10 minutes depending on your machine. You only need to run this once — unless you pull new document updates from the repository.
+This builds a local vector index from the bundled documentation cache. Runs entirely offline — no internet or model download required. Takes 3–10 minutes depending on your machine. You only need to run this once — unless you pull new document updates from the repository.
 
 **4. Launch the app**
 
@@ -87,10 +87,11 @@ Then open `http://localhost:5001` in your browser.
 1. Enter your **API Key** and **Base URL** in the fields at the top
 2. Your credentials are saved automatically in your browser (you only need to enter them once)
 3. Type your question and press **Enter** or click **Send**
-4. Use the **Classic / Semantic** toggle to switch search modes:
+4. Use the **📎** button (or drag and drop, or paste) to attach files — supported formats: images, text, CSV, XML, cXML, JSON, RTF, PDF, Word, Excel
+5. Use the **Classic / Semantic** toggle to switch search modes:
    - **Classic**: keyword matching — fast, works well for exact terms
    - **Semantic**: AI-powered meaning matching — better for natural language questions and non-English queries (Chinese, Japanese)
-5. Use **Clear** to start a new conversation
+6. Use **Clear** to start a new conversation
 
 ## Keeping Up to Date
 
@@ -112,6 +113,6 @@ This updates both the document cache and the search index. Only changed document
 ## Notes
 
 - The app runs locally on your machine — your API key is never shared with anyone
-- Documentation content is served from `cache.json` in the project root
-- The vector index (`chroma_db/`) is generated locally and not included in the repository
+- Documentation content is bundled in `cache.json` — no additional downloads needed after `git clone`
+- The vector index (`chroma_db/`) is generated locally from `cache.json` by running `build_index.py`
 - Supports questions in English, Chinese, and Japanese
