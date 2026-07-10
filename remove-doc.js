@@ -33,7 +33,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SOURCES_FILE = join(__dirname, "doc-sources.json");
 const CACHE_FILE   = join(__dirname, "cache.json");
 const TAGS_FILE    = join(__dirname, "tags.json");
-const CLAUDE_MD    = join(process.env.HOME, "CLAUDE.md");
+const CLAUDE_MD    = join(__dirname, "chapter-map.md");
 const BUILD_INDEX  = join(__dirname, "build_index.py");
 
 // ─── CLI 参数 ─────────────────────────────────────────────────────────────────

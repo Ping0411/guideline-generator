@@ -20,7 +20,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const CACHE_FILE    = join(__dirname, "cache.json");
 const TAGS_FILE     = join(__dirname, "tags.json");
-const CLAUDE_MD     = join(process.env.HOME, "CLAUDE.md");
+const CLAUDE_MD     = join(__dirname, "chapter-map.md");
 const TAG_GUIDE     = join(__dirname, "TAG_GUIDELINES.md");
 const CHAPTER_GUIDE = join(__dirname, "CHAPTER_GUIDELINES.md");
 
