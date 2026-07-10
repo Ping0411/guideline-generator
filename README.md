@@ -64,7 +64,9 @@ Windows:
 python build_index.py
 ```
 
-This builds a local vector index from the cached documentation. It takes a few minutes on first run and only needs to be re-run when new documents are added.
+This builds a local semantic search index from the bundled documentation cache (`cache.json`). The process runs entirely offline — no internet connection is required. It takes a few minutes on first run and produces a local `chroma_db/` folder. Once built, you will have the same search experience as the maintainer, including multilingual semantic matching across all covered SAP documents.
+
+This step only needs to be re-run after a `git pull` that updates `cache.json`.
 
 > **Note:** Steps 3 and 4 are required for semantic search. If skipped, the server still works using keyword search as a fallback — no errors will occur.
 
