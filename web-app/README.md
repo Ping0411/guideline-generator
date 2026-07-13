@@ -94,6 +94,8 @@ update.bat
 
 The update script runs `git pull` and then checks whether the documentation cache has changed. If it has, it rebuilds the search index (about 1-2 minutes). If only the web interface was updated, it skips the rebuild and finishes immediately.
 
+There is no automatic notification when updates are available. It is recommended to run the update script once a month or once a quarter to stay current.
+
 ---
 
 ## Notes
