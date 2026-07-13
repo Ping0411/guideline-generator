@@ -44,7 +44,7 @@ echo ""
 # ── Node.js dependencies ──────────────────────────────────────────────────────
 
 echo "[2/4] Installing Node.js dependencies..."
-npm install --silent
+npm install --loglevel=error
 echo "  Done."
 echo ""
 
@@ -63,7 +63,7 @@ echo "  This downloads the AI model (~90 MB) and indexes all documents."
 echo "  This step takes the longest — usually 10-15 minutes on first run."
 echo "  Subsequent runs after 'git pull' take about 1-2 minutes."
 echo ""
-TRANSFORMERS_OFFLINE=0 python3 build_index.py
+python3 build_index.py
 echo ""
 echo "  Index built."
 echo ""
@@ -78,8 +78,9 @@ echo "============================================"
 echo "  Setup complete!"
 echo ""
 echo "  To start SAP Help Assistant:"
+echo "  - Open this folder in Finder"
 echo "  - Double-click 'Launch SAP Help Assistant.app'"
-echo "    (or run: ./Launch.command)"
+echo "    (or run: ./Launch.command in this terminal)"
 echo ""
 echo "  After launch, the web interface opens at:"
 echo "  http://localhost:5001"

@@ -24,7 +24,7 @@ if errorlevel 1 (
 )
 
 :: Check Node version >= 18
-for /f "tokens=1 delims=v." %%a in ('node --version') do set NODE_MAJOR=%%a
+for /f "tokens=2 delims=v." %%a in ('node --version') do set NODE_MAJOR=%%a
 if %NODE_MAJOR% LSS 18 (
     echo.
     echo   ERROR: Node.js version is too old. v18 or higher is required.
@@ -41,8 +41,9 @@ if not errorlevel 1 (
 ) else (
     where python >nul 2>&1
     if not errorlevel 1 (
-        :: Make sure it's not the Windows Store stub
-        python --version >nul 2>&1
+        :: Check it's not the Windows Store stub (stub returns empty version output)
+        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
+        echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
         if not errorlevel 1 set PYTHON_CMD=python
     )
 )
@@ -62,7 +63,7 @@ echo.
 :: ── Node.js dependencies ──────────────────────────────────────────────────────
 
 echo [2/4] Installing Node.js dependencies...
-call npm install --silent
+call npm install --loglevel=error
 if errorlevel 1 (
     echo   ERROR: npm install failed.
     pause
@@ -107,6 +108,7 @@ echo ============================================
 echo   Setup complete!
 echo.
 echo   To start SAP Help Assistant:
+echo   - Open this folder in Explorer
 echo   - Double-click 'Launch SAP Help Assistant.vbs'
 echo.
 echo   After launch, the web interface opens at:

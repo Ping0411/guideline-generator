@@ -12,18 +12,20 @@ Install the following once before setup. These are standard developer tools.
 | Node.js | v18 or higher | https://nodejs.org |
 | Python | 3.8 or higher | https://www.python.org/downloads |
 
-To verify your versions, run these in a terminal:
+To verify your versions, open a terminal and run:
 ```
 node --version
 python3 --version   # macOS / Linux
 python --version    # Windows
 ```
 
+If any command says "not found", install that tool first before continuing.
+
 ---
 
 ## Step 1 — One-time setup (~15 minutes)
 
-Clone the repository and run the setup script. This installs all dependencies and builds the local search index. You only need to do this once.
+Open a terminal, then copy and run the following commands.
 
 **macOS / Linux:**
 ```bash
@@ -32,64 +34,84 @@ cd BusinessNetwork-Help-MCP
 bash setup.sh
 ```
 
-**Windows** (run in Command Prompt, not PowerShell):
+**Windows** — open Command Prompt (not PowerShell), then run:
 ```
 git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
 setup.bat
 ```
 
-The setup script will:
-1. Install Node.js dependencies
-2. Install Python dependencies (Flask, ChromaDB, sentence-transformers)
-3. Download the AI model (~90 MB) and build the local search index
+The setup script installs all dependencies and builds the local search index. It takes about 15 minutes on the first run — mostly downloading the AI model (~90 MB). You will see progress messages throughout. When it finishes, you will see "Setup complete!"
 
 ---
 
 ## Step 2 — Launch
 
+After setup completes, open the folder you just cloned (`BusinessNetwork-Help-MCP`). You will find the launch files there.
+
 **macOS:** Double-click **`Launch SAP Help Assistant.app`**
 
 **Windows:** Double-click **`Launch SAP Help Assistant.vbs`**
 
-The app starts a local server and opens the chat interface in your browser automatically.
+The app starts a local server and opens the chat interface in your browser automatically at `http://localhost:5001`.
 
-> **Tip:** Bookmark `http://localhost:5001` after the first launch. Next time you can open the bookmark directly — as long as the app is already running.
+> **Tip:** After the browser opens, bookmark `http://localhost:5001`. On future sessions, just double-click the launch file first, then use the bookmark — you do not need to go back to the folder every time.
 
 ---
 
 ## Keeping Up to Date
 
-When the documentation cache is updated, pull the latest changes and rebuild the index:
+Updates fall into two types. Run the appropriate command from inside the `BusinessNetwork-Help-MCP` folder.
 
-**macOS / Linux:**
+**Type A — Documentation update** (new documents added, search index changed):
+
+macOS / Linux:
 ```bash
-git pull && bash setup.sh
+git pull
+bash setup.sh
 ```
 
-**Windows:**
+Windows:
 ```
 git pull
 setup.bat
 ```
 
+This takes about 1-2 minutes (model is already downloaded, only the index is rebuilt).
+
+**Type B — Interface or feature update** (web page design, bug fixes, no new documents):
+
+macOS / Linux:
+```bash
+git pull
+```
+
+Windows:
+```
+git pull
+```
+
+That's it. No rebuild needed — just relaunch the app.
+
+The release notes will tell you which type each update is.
+
 ---
 
 ## Using with Claude Code (MCP)
 
-If you use Claude Code CLI, you can also register this as an MCP server for direct in-terminal access:
+If you use Claude Code CLI, you can also register this as an MCP server for direct in-terminal access.
+
+First find your folder path: run `pwd` (macOS) or `cd` (Windows) inside the `BusinessNetwork-Help-MCP` folder.
 
 **macOS / Linux:**
 ```bash
-claude mcp add sap-help node /path/to/BusinessNetwork-Help-MCP/index.js
+claude mcp add sap-help node /your/path/to/BusinessNetwork-Help-MCP/index.js
 ```
 
 **Windows:**
 ```
-claude mcp add sap-help node C:\path\to\BusinessNetwork-Help-MCP\index.js
+claude mcp add sap-help node C:\your\path\to\BusinessNetwork-Help-MCP\index.js
 ```
-
-Replace the path with the actual location of your cloned folder (`pwd` on Mac, `cd` on Windows).
 
 ---
 
