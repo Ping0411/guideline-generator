@@ -81,7 +81,10 @@ if %PYTHON_OK%==0 (
 
 if %PYTHON_OK%==0 (
     echo   Python not found. Installing...
-    winget install Python.Python.3 --silent --accept-package-agreements --accept-source-agreements
+    winget install Python.Python.3.13 --silent --accept-package-agreements --accept-source-agreements
+    if errorlevel 1 (
+        winget install Python.Python.3.12 --silent --accept-package-agreements --accept-source-agreements
+    )
     if errorlevel 1 (
         echo   ERROR: Failed to install Python.
         pause
