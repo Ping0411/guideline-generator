@@ -142,14 +142,10 @@ echo ============================================
 echo   Setup complete!
 echo.
 echo   To start SAP Help Assistant:
-echo   - Open this folder in Explorer
+echo   - Open the folder: %CD%
 echo   - Double-click 'Launch SAP Help Assistant.vbs'
 echo.
-echo   After launch, the web interface opens at:
-echo   http://localhost:5001
-echo.
-echo   You can bookmark that URL for quick access.
-echo   Always launch the app first before using the bookmark.
+echo   The browser opens automatically at http://localhost:5001
 echo ============================================
 echo.
 pause
