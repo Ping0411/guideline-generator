@@ -6,20 +6,20 @@ A local AI chat interface for querying SAP Business Network documentation. Runs 
 
 ## Prerequisites
 
-Only one tool needs to be installed manually before you begin: **Git**.
+Two things are required before you begin:
+
+**1. Git** — needed to download the project.
 
 | | Verification command | Install if missing |
 |-|----------------------|--------------------|
 | **Git** (required) | `git --version` | **macOS:** `xcode-select --install` |
 | | | **Windows:** `winget install Git.Git` |
 
-> **macOS:** If you don't have Homebrew, the setup script installs it automatically.
-
-**Node.js and Python are installed automatically** by the setup script — you do not need to install them manually.
+> **macOS:** If you don't have Homebrew, the setup script installs it automatically. Node.js and Python are also installed automatically — you do not need to install them manually.
 
 After installing Git, close and reopen your terminal before continuing.
 
-You also need a **Hyperspace AI API Key and Base URL** — available from [Hyperspace AI](https://ai-docs.portal.hyperspace.tools.sap/). You will enter these in the web interface the first time you use it; they are saved automatically in your browser after that.
+**2. Hyperspace AI API Key and Base URL** — needed to power the chat. Available from [Hyperspace AI](https://ai-docs.portal.hyperspace.tools.sap/). You will enter these in the web interface the first time you use it; they are saved automatically in your browser after that.
 
 ---
 
