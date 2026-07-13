@@ -10,8 +10,10 @@ Only one tool needs to be installed manually before you begin: **Git**.
 
 | | Verification command | Install if missing |
 |-|----------------------|--------------------|
-| **Git** (required) | `git --version` | **macOS:** `brew install git` (or `xcode-select --install` if no Homebrew) |
+| **Git** (required) | `git --version` | **macOS:** `xcode-select --install` |
 | | | **Windows:** `winget install Git.Git` |
+
+> **macOS:** If you don't have Homebrew, the setup script installs it automatically.
 
 **Node.js and Python are installed automatically** by the setup script — you do not need to install them manually.
 
