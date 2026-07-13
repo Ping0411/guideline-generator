@@ -86,7 +86,7 @@ From inside the `BusinessNetwork-Help-MCP` folder, run the update script:
 
 macOS:
 ```bash
-bash update.sh
+cd ~/BusinessNetwork-Help-MCP && bash update.sh
 ```
 
 Windows:
