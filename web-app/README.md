@@ -30,10 +30,6 @@ git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
 ```
 
-The folder is created in your current terminal directory — typically `/Users/yourname/BusinessNetwork-Help-MCP` on macOS or `C:\Users\yourname\BusinessNetwork-Help-MCP` on Windows. Run `pwd` (macOS) or `cd` (Windows) to confirm the exact path.
-
-> The folder can be moved anywhere on your machine at any time without affecting the app.
-
 Then run the setup script:
 - **macOS:** `bash setup.sh`
 - **Windows:** open Command Prompt (not PowerShell), then run `setup.bat`
@@ -44,6 +40,8 @@ The script installs all dependencies and builds the local search index. It takes
 
 ## Step 2 — Launch
 
+The folder is created in your current terminal directory — typically `/Users/yourname/BusinessNetwork-Help-MCP` on macOS or `C:\Users\yourname\BusinessNetwork-Help-MCP` on Windows. Run `pwd` (macOS) or `cd` (Windows) to confirm the exact path. The folder can be moved anywhere on your machine at any time without affecting the app.
+
 Open the `BusinessNetwork-Help-MCP` folder and double-click the launch file:
 
 - **macOS:** `Launch SAP Help Assistant.app`
@@ -52,8 +50,6 @@ Open the `BusinessNetwork-Help-MCP` folder and double-click the launch file:
 The browser opens automatically at `http://localhost:5001`.
 
 > **Tip:** You can create a shortcut on your desktop — right-click the file and choose **Make Alias** (macOS) or **Send to → Desktop (create shortcut)** (Windows). Do not copy the file itself to the desktop, as it needs to stay in the project folder to work correctly.
-
-> **Tip:** Bookmark `http://localhost:5001`. Next time, just double-click the launch file and then open the bookmark — no need to go back to the folder.
 
 ---
 
