@@ -13,42 +13,18 @@ A local AI assistant for querying SAP Business Network documentation. Two versio
 
 ### Prerequisites
 
-All three tools must be installed before you begin.
+Only one tool needs to be installed manually before you begin: **Git**.
 
-**Step 1 — Check what you already have**
+| | Verification command | Install if missing |
+|-|----------------------|--------------------|
+| **Git** (required) | `git --version` | **macOS:** `xcode-select --install` |
+| | | **Windows:** `winget install Git.Git` |
 
-Run these commands in your terminal. If a version number appears, that tool is already installed.
+> **macOS:** If you don't have Homebrew, the setup script installs it automatically.
 
-| Tool | Verification command | Requirement |
-|------|----------------------|-------------|
-| Git | `git --version` | Any version |
-| Node.js | `node --version` | v18 or higher |
-| Python | `python3 --version` (Mac) / `python --version` (Windows) | 3.8 or higher |
+Node.js and Python are installed automatically by the setup script — you do not need to install them manually.
 
-**Step 2 — Install anything missing**
-
-**macOS:**
-
-| Tool | Install command |
-|------|----------------|
-| Git | `xcode-select --install` |
-| Node.js | `brew install node@20` |
-| Python | `brew install python` |
-
-> If you don't have Homebrew, install it first:
-> ```bash
-> /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-> ```
-
-**Windows** — open Command Prompt and run:
-
-| Tool | Install command |
-|------|----------------|
-| Git | `winget install Git.Git` |
-| Node.js | `winget install OpenJS.NodeJS.LTS` |
-| Python | `winget install Python.Python.3` |
-
-After installing any tool, close and reopen your terminal before continuing.
+After installing Git, close and reopen your terminal before continuing.
 
 ---
 
@@ -61,62 +37,29 @@ git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
 ```
 
-**Step 2 — Install Node.js dependencies**
-
-```
-npm install
-```
-
-**Step 3 — Install Python dependencies**
+**Step 2 — Run the setup script**
 
 macOS:
 ```bash
-pip3 install chromadb sentence-transformers
+bash setup-mcp.sh
 ```
 
-Windows:
+Windows — open Command Prompt (not PowerShell), then run:
 ```
-pip install chromadb sentence-transformers
-```
-
-**Step 4 — Build the semantic search index**
-
-macOS:
-```bash
-python3 build_index.py
+setup-mcp.bat
 ```
 
-Windows:
+The script installs all dependencies, builds the local search index (~15 minutes on first run), and displays the command you need to run next.
+
+**Step 3 — Register the MCP server with Claude Code**
+
+At the end of the setup script, you will see a command like this:
+
 ```
-python build_index.py
-```
-
-This downloads the AI model (~90 MB) and builds a local search index from the documentation cache. It runs entirely offline after the first download and takes about 10–15 minutes on first run.
-
-**Step 5 — Find your folder path**
-
-You need the full path to the cloned folder for the next step.
-
-macOS: run `pwd`
-Windows: run `cd`
-
-Copy the output. For example:
-- macOS: `/Users/yourname/BusinessNetwork-Help-MCP`
-- Windows: `C:\Users\yourname\BusinessNetwork-Help-MCP`
-
-**Step 6 — Register the MCP server with Claude Code**
-
-macOS:
-```bash
-claude mcp add sap-help node /Users/yourname/BusinessNetwork-Help-MCP/index.js
+claude mcp add sap-help node "/path/to/BusinessNetwork-Help-MCP/index.js"
 ```
 
-Windows:
-```
-claude mcp add sap-help node C:\Users\yourname\BusinessNetwork-Help-MCP\index.js
-```
-
-Replace the path with the actual output from Step 5.
+Copy and paste that exact command into your terminal and run it.
 
 ---
 
@@ -139,18 +82,19 @@ The following tools are available automatically:
 
 There are no automatic notifications. It is recommended to update once a month or once a quarter.
 
-From inside the `BusinessNetwork-Help-MCP` folder:
+From inside the `BusinessNetwork-Help-MCP` folder, run the update script:
 
 macOS:
 ```bash
-git pull && python3 build_index.py
+bash update.sh
 ```
 
 Windows:
 ```
-git pull
-python build_index.py
+update.bat
 ```
+
+The script pulls the latest changes and rebuilds the search index only if new documents were added. If it was an index or code update only, it finishes in seconds.
 
 ---
 
