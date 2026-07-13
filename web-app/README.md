@@ -40,6 +40,8 @@ Then run the setup script:
 
 The script installs all dependencies and builds the local search index. It takes about 15 minutes on the first run. When finished, you will see **"Setup complete!"**
 
+> **Note:** The first run downloads an AI model (~250 MB) from Hugging Face. If you are on a corporate network, connect via **VPN** before running the script.
+
 ---
 
 ## Step 2 — Launch
