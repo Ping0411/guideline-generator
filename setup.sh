@@ -79,6 +79,7 @@ echo ""
 # ── Node.js dependencies ──────────────────────────────────────────────────────
 
 echo "[2/4] Installing Node.js dependencies..."
+export PUPPETEER_SKIP_DOWNLOAD=true
 npm install --loglevel=error
 echo "  Done."
 echo ""

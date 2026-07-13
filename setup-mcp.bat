@@ -102,6 +102,7 @@ echo.
 :: ── Node.js dependencies ──────────────────────────────────────────────────────
 
 echo [2/5] Installing Node.js dependencies...
+set PUPPETEER_SKIP_DOWNLOAD=true
 call npm install --loglevel=error
 if errorlevel 1 (
     echo   ERROR: npm install failed.
