@@ -65,16 +65,7 @@ Copy and paste that exact command into your terminal and run it.
 
 ### Usage
 
-Start Claude Code:
-```bash
-claude
-```
-
-The following tools are available automatically:
-
-- **`search_sap_docs`** — semantic + keyword search across all cached SAP documents
-- **`get_sap_page`** — read the full content of a specific SAP Help page
-- **`list_sap_sources`** — list all cached pages and their status
+Once registered, open Claude Code with `claude` and ask questions about SBN or BNL directly.
 
 ---
 
