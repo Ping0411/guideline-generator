@@ -36,9 +36,13 @@ cd BusinessNetwork-Help-MCP
 
 Then run the setup script:
 - **macOS:** `bash setup.sh`
-- **Windows:** open Command Prompt (not PowerShell), then run `setup.bat`
+- **Windows:** open Command Prompt (not PowerShell), then run:
+  ```
+  cd BusinessNetwork-Help-MCP
+  setup.bat
+  ```
 
-> **Note:** If prompted to reopen the window, do so and run `setup.bat` again. This may happen up to twice.
+> **Note (Windows):** If Node.js or Python is not yet installed, the script will install it and ask you to close and reopen the window. Each time, reopen Command Prompt and run the two commands above again. This may happen up to twice before setup proceeds.
 
 The script installs all dependencies and builds the local search index. It takes about 15 minutes on the first run. When finished, you will see **"Setup complete!"**
 
