@@ -13,6 +13,8 @@ A local AI assistant for querying SAP Business Network documentation. Two versio
 
 ### Prerequisites
 
+Run all commands below in a terminal — **macOS:** Terminal, **Windows:** Command Prompt (not PowerShell).
+
 Two tools need to be installed manually before you begin: **Git** and **Claude Code**.
 
 | | Verification command | Install if missing |
@@ -25,7 +27,7 @@ Two tools need to be installed manually before you begin: **Git** and **Claude C
 
 Node.js and Python are installed automatically by the setup script — you do not need to install them manually.
 
-After installing Git and Claude Code, close and reopen your terminal before continuing.
+After installing Git and Claude Code, close and **reopen** your terminal before continuing.
 
 ---
 
