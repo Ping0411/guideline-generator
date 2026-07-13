@@ -123,7 +123,7 @@ echo.
 :: ── Build semantic search index ───────────────────────────────────────────────
 
 echo [4/5] Building semantic search index...
-echo   This downloads the AI model ^(~90 MB^) and indexes all documents.
+echo   This downloads the AI model ^(~250 MB^) and indexes all documents.
 echo   Usually takes 10-15 minutes on first run.
 echo.
 %PYTHON_CMD% build_index.py
