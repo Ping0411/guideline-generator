@@ -37,6 +37,10 @@ git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
 ```
 
+The folder is created in your current terminal directory — typically `/Users/yourname/BusinessNetwork-Help-MCP` on macOS or `C:\Users\yourname\BusinessNetwork-Help-MCP` on Windows. Run `pwd` (macOS) or `cd` (Windows) to confirm the exact path.
+
+> The folder can be moved anywhere on your machine at any time. If you move it, re-run `claude mcp add sap-help node "<new path>/index.js"` once to update the registration.
+
 **Step 2 — Run the setup script**
 
 macOS:
