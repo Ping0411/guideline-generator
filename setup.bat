@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 :: SAP Help Assistant - One-time setup script (Windows)
 :: Run this once after cloning the repository.
 :: Takes ~15 minutes on first run (downloads AI model and builds search index).
@@ -10,53 +11,78 @@ echo   SAP Help Assistant - Setup
 echo ============================================
 echo.
 
-:: ── Check Node.js ─────────────────────────────────────────────────────────────
+:: ── Check winget is available ─────────────────────────────────────────────────
 
-echo [1/4] Checking prerequisites...
+echo [1/4] Checking and installing prerequisites...
+echo.
 
-where node >nul 2>&1
+where winget >nul 2>&1
 if errorlevel 1 (
-    echo.
-    echo   ERROR: Node.js not found.
-    echo   Please install Node.js v18+ from https://nodejs.org and re-run this script.
+    echo   winget not found. Please update Windows to version 1709 or later,
+    echo   then re-run this script.
     pause
     exit /b 1
 )
 
-:: Check Node version >= 18
-for /f "tokens=2 delims=v." %%a in ('node --version') do set NODE_MAJOR=%%a
-if %NODE_MAJOR% LSS 18 (
-    echo.
-    echo   ERROR: Node.js version is too old. v18 or higher is required.
-    echo   Please update Node.js from https://nodejs.org and re-run this script.
-    pause
-    exit /b 1
+:: ── Node.js ───────────────────────────────────────────────────────────────────
+
+set NODE_OK=0
+where node >nul 2>&1
+if not errorlevel 1 (
+    for /f "tokens=2 delims=v." %%a in ('node --version') do set NODE_MAJOR=%%a
+    if !NODE_MAJOR! GEQ 18 (
+        for /f "tokens=*" %%v in ('node --version') do echo   Node.js %%v - OK
+        set NODE_OK=1
+    ) else (
+        echo   Node.js is too old ^(v18+ required^). Installing latest...
+    )
+) else (
+    echo   Node.js not found. Installing...
 )
 
-:: Detect python command (python3 or python)
+if %NODE_OK%==0 (
+    winget install OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements
+    echo   Node.js installed. Please close and reopen this window, then re-run setup.bat.
+    pause
+    exit /b 0
+)
+echo.
+
+:: ── Python ────────────────────────────────────────────────────────────────────
+
 set PYTHON_CMD=
+set PYTHON_OK=0
+
 where python3 >nul 2>&1
 if not errorlevel 1 (
-    set PYTHON_CMD=python3
-) else (
-    where python >nul 2>&1
+    for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+    echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
     if not errorlevel 1 (
-        :: Check it's not the Windows Store stub (stub returns empty version output)
-        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
-        echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
-        if not errorlevel 1 set PYTHON_CMD=python
+        set PYTHON_CMD=python3
+        set PYTHON_OK=1
     )
 )
 
-if "%PYTHON_CMD%"=="" (
-    echo.
-    echo   ERROR: Python 3 not found.
-    echo   Please install Python 3.8+ from https://www.python.org and re-run this script.
-    pause
-    exit /b 1
+if %PYTHON_OK%==0 (
+    where python >nul 2>&1
+    if not errorlevel 1 (
+        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
+        echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
+        if not errorlevel 1 (
+            set PYTHON_CMD=python
+            set PYTHON_OK=1
+        )
+    )
 )
 
-for /f "tokens=*" %%v in ('node --version') do echo   Node.js %%v - OK
+if %PYTHON_OK%==0 (
+    echo   Python not found. Installing...
+    winget install Python.Python.3 --silent --accept-package-agreements --accept-source-agreements
+    echo   Python installed. Please close and reopen this window, then re-run setup.bat.
+    pause
+    exit /b 0
+)
+
 for /f "tokens=*" %%v in ('%PYTHON_CMD% --version') do echo   %%v - OK
 echo.
 
@@ -90,7 +116,6 @@ echo.
 echo [4/4] Building semantic search index...
 echo   This downloads the AI model (~90 MB) and indexes all documents.
 echo   This step takes the longest - usually 10-15 minutes on first run.
-echo   Subsequent runs after 'git pull' take about 1-2 minutes.
 echo.
 %PYTHON_CMD% build_index.py
 if errorlevel 1 (

@@ -11,34 +11,69 @@ echo "  SAP Help Assistant — Setup"
 echo "============================================"
 echo ""
 
-# ── Check prerequisites ───────────────────────────────────────────────────────
+# ── Auto-install Node.js and Python if missing ────────────────────────────────
 
-echo "[1/4] Checking prerequisites..."
+echo "[1/4] Checking and installing prerequisites..."
+echo ""
 
-if ! command -v node &>/dev/null; then
-  echo ""
-  echo "  ERROR: Node.js not found."
-  echo "  Please install Node.js v18+ from https://nodejs.org and re-run this script."
-  exit 1
+# ── Homebrew ──────────────────────────────────────────────────────────────────
+
+if ! command -v brew &>/dev/null; then
+  echo "  Homebrew not found. Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  # Add brew to PATH for Apple Silicon Macs
+  if [ -f "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  fi
+  echo "  Homebrew installed."
+else
+  echo "  Homebrew $(brew --version | head -1) — OK"
+fi
+echo ""
+
+# ── Node.js ───────────────────────────────────────────────────────────────────
+
+NODE_OK=false
+if command -v node &>/dev/null; then
+  NODE_VERSION=$(node --version | sed 's/v//' | cut -d. -f1)
+  if [ "$NODE_VERSION" -ge 18 ]; then
+    echo "  Node.js $(node --version) — OK"
+    NODE_OK=true
+  else
+    echo "  Node.js $(node --version) is too old (v18+ required). Upgrading..."
+  fi
+else
+  echo "  Node.js not found. Installing..."
 fi
 
-NODE_VERSION=$(node --version | sed 's/v//' | cut -d. -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-  echo ""
-  echo "  ERROR: Node.js v${NODE_VERSION} is too old. v18 or higher is required."
-  echo "  Please update Node.js from https://nodejs.org and re-run this script."
-  exit 1
+if [ "$NODE_OK" = false ]; then
+  brew install node@20
+  brew link node@20 --force --overwrite 2>/dev/null || true
+  echo "  Node.js $(node --version) — installed."
+fi
+echo ""
+
+# ── Python ────────────────────────────────────────────────────────────────────
+
+PYTHON_OK=false
+if command -v python3 &>/dev/null; then
+  PY_VERSION=$(python3 --version 2>&1 | sed 's/Python //' | cut -d. -f1,2)
+  PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
+  PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
+  if [ "$PY_MAJOR" -ge 3 ] && [ "$PY_MINOR" -ge 8 ]; then
+    echo "  Python $(python3 --version) — OK"
+    PYTHON_OK=true
+  else
+    echo "  Python $(python3 --version) is too old (3.8+ required). Upgrading..."
+  fi
+else
+  echo "  Python not found. Installing..."
 fi
 
-if ! command -v python3 &>/dev/null; then
-  echo ""
-  echo "  ERROR: Python 3 not found."
-  echo "  Please install Python 3.8+ from https://www.python.org and re-run this script."
-  exit 1
+if [ "$PYTHON_OK" = false ]; then
+  brew install python
+  echo "  Python $(python3 --version) — installed."
 fi
-
-echo "  Node.js $(node --version) — OK"
-echo "  Python $(python3 --version) — OK"
 echo ""
 
 # ── Node.js dependencies ──────────────────────────────────────────────────────
@@ -61,7 +96,6 @@ echo ""
 echo "[4/4] Building semantic search index..."
 echo "  This downloads the AI model (~90 MB) and indexes all documents."
 echo "  This step takes the longest — usually 10-15 minutes on first run."
-echo "  Subsequent runs after 'git pull' take about 1-2 minutes."
 echo ""
 python3 build_index.py
 

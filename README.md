@@ -13,47 +13,14 @@ A local AI assistant for querying SAP Business Network documentation. Two versio
 
 ### Prerequisites
 
-**Step 1 — Check what you already have**
+Only **Git** needs to be installed manually before you begin.
 
-Run each verification command in your terminal. If the output shows a version number, that tool is already installed.
+| | Verification command | Install if missing |
+|-|----------------------|--------------------|
+| **Git** (required) | `git --version` | **macOS:** `brew install git` (or `xcode-select --install`) |
+| | | **Windows:** `winget install Git.Git` |
 
-| Tool | Verification command | Requirement |
-|------|----------------------|-------------|
-| Git | `git --version` | Any version |
-| Node.js | `node --version` | v18 or higher |
-| Python | `python3 --version` (Mac) / `python --version` (Windows) | 3.8 or higher |
-
-**Step 2 — Install anything missing**
-
-**macOS** — Homebrew is recommended. It installs all three tools with simple commands and handles updates automatically.
-
-Check if you have Homebrew:
-```bash
-brew --version
-```
-
-If not installed, install Homebrew first:
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-Then install any missing tools:
-
-| Tool | Install command |
-|------|----------------|
-| Git | `brew install git` |
-| Node.js | `brew install node@20` |
-| Python | `brew install python` |
-
-**Windows** — use `winget`, which is built into Windows 10 and 11. Open Command Prompt and run:
-
-| Tool | Install command |
-|------|----------------|
-| Git | `winget install Git.Git` |
-| Node.js | `winget install OpenJS.NodeJS.LTS` |
-| Python | `winget install Python.Python.3` |
-
-After installing, close and reopen your terminal, then re-run the verification commands to confirm.
+Node.js and Python are installed automatically by `npm install` and the index build step — no manual install needed.
 
 ---
 
