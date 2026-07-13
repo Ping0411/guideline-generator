@@ -59,17 +59,42 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string># Find the directory where this .app lives, then delegate to Launch.command
-APP_PATH=$(osascript -e 'tell application "Finder" to get POSIX path of (path to me)')
-APP_DIR=$(dirname "$APP_PATH")
-LAUNCH_SCRIPT="$APP_DIR/Launch.command"
+					<string># Load user shell environment
+export PATH="$HOME/.pyenv/shims:$HOME/.pyenv/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+eval "$(pyenv init - 2&gt;/dev/null)" || true
 
-if [ ! -f "$LAUNCH_SCRIPT" ]; then
-  osascript -e "display alert \"Launch Failed\" message \"Cannot find Launch.command in:\n$APP_DIR\n\nPlease make sure the app is in the same folder as the project.\""
+# Show startup dialog
+osascript -e 'display dialog "SAP Help Assistant is starting, please wait..." with title "SAP Help Assistant" buttons {"OK"} default button "OK" giving up after 3' &amp;
+
+# Find web-app/app.py in common locations (fast)
+APP_PY=""
+for dir in   "$HOME/mcp-servers/sap-help"   "$HOME/BusinessNetwork-Help-MCP"   "$HOME/Desktop/BusinessNetwork-Help-MCP"   "$HOME/Documents/BusinessNetwork-Help-MCP"   "$HOME/Downloads/BusinessNetwork-Help-MCP"; do
+  if [ -f "$dir/web-app/app.py" ]; then
+    APP_PY="$dir/web-app/app.py"
+    break
+  fi
+done
+
+if [ -z "$APP_PY" ]; then
+  osascript -e 'display alert "Launch Failed" message "Cannot find the project folder. Please make sure the app is in the same folder as the project."'
   exit 1
 fi
 
-bash "$LAUNCH_SCRIPT"</string>
+lsof -ti:5001 | xargs kill -9 2&gt;/dev/null
+
+python3 "$APP_PY" &gt; /tmp/sap_help_assistant.log 2&gt;&amp;1 &amp;
+FLASK_PID=$!
+
+for i in {1..30}; do
+  sleep 1
+  if curl -s http://localhost:5001 &gt;/dev/null 2&gt;&amp;1; then
+    open http://localhost:5001
+    exit 0
+  fi
+done
+
+kill $FLASK_PID 2&gt;/dev/null
+osascript -e 'display alert "Launch Failed" message "Service failed to start. Please try again."' </string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
