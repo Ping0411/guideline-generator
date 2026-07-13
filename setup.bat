@@ -56,7 +56,7 @@ set PYTHON_OK=0
 where python3 >nul 2>&1
 if not errorlevel 1 (
     for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
-    echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
+    echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
     if not errorlevel 1 (
         set PYTHON_CMD=python3
         set PYTHON_OK=1
@@ -67,7 +67,7 @@ if %PYTHON_OK%==0 (
     where python >nul 2>&1
     if not errorlevel 1 (
         for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
-        echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
+        echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
         if not errorlevel 1 (
             set PYTHON_CMD=python
             set PYTHON_OK=1
