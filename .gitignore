@@ -7,3 +7,4 @@ chroma_db/
 # Runtime data — never commit
 *.bak
 pending-retag.json
+.cache_hash

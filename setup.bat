@@ -98,6 +98,15 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
+
+:: Save cache hash so update.bat can skip rebuild if cache hasn't changed
+set HASH_FILE=.cache_hash
+for /f "skip=1 tokens=*" %%h in ('certutil -hashfile cache.json MD5 2^>nul') do (
+    if not defined SETUP_HASH set SETUP_HASH=%%h
+)
+set SETUP_HASH=%SETUP_HASH: =%
+echo %SETUP_HASH%> "%HASH_FILE%"
+
 echo.
 echo   Index built.
 echo.

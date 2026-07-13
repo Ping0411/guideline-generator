@@ -1,118 +1,104 @@
 # SAP Help Assistant — Web Interface
 
-A chat interface for querying SAP Business Network (SBN) and BNL Freight Collaboration documentation.
+A local AI chat interface for querying SAP Business Network documentation. Runs entirely on your machine — no data leaves your computer except the API call to your AI service.
 
 ## Prerequisites
 
-- **Python 3.9 or later**
+Install the following once. These are standard tools available on all platforms.
 
-  Check your version by running the following command in your terminal:
+| Tool | Required version | Download |
+|------|-----------------|----------|
+| Git | Any recent version | https://git-scm.com/downloads |
+| Node.js | v18 or higher | https://nodejs.org |
+| Python | 3.8 or higher | https://www.python.org/downloads |
 
-  Mac / Linux:
-  ```
-  python3 --version
-  ```
-  Windows:
-  ```
-  python --version
-  ```
+To verify, open a terminal and run:
+```
+node --version
+python3 --version   # macOS / Linux
+python --version    # Windows
+```
 
-  If Python is not installed or the version is below 3.9, download it from [python.org](https://www.python.org/downloads/).
+If any command says "not found", install that tool first.
 
-- **Hyperspace AI API Key and Base URL** — available from [Hyperspace AI](https://ai-docs.portal.hyperspace.tools.sap/)
+You also need a **Hyperspace AI API Key and Base URL** — available from [Hyperspace AI](https://ai-docs.portal.hyperspace.tools.sap/). You will enter these in the web interface when you first use it.
 
-## Setup
+---
 
-**1. Clone the repository** (if you haven't already)
+## Step 1 — One-time setup (~15 minutes)
 
+Open a terminal, then run the following commands.
+
+**macOS / Linux:**
+```bash
+git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
+cd BusinessNetwork-Help-MCP
+bash setup.sh
+```
+
+**Windows** — open Command Prompt (not PowerShell), then run:
 ```
 git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
+setup.bat
 ```
 
-This creates a `BusinessNetwork-Help-MCP` folder in your home directory — on Mac it appears in Finder under your user folder (`/Users/your-name/`), on Windows it's at `C:\Users\your-name\`.
+The setup script will:
+1. Check that Node.js and Python are installed correctly
+2. Install all Node.js and Python dependencies
+3. Download the AI model (~90 MB) and build the local search index
 
-**2. Install dependencies**
+This takes about 15 minutes on the first run. You will see progress messages throughout. When finished, you will see **"Setup complete!"**
 
-Mac / Linux:
-```
-cd web-app && pip3 install -r requirements.txt
-```
+---
 
-Windows (Command Prompt or PowerShell):
-```
-cd web-app
-pip install -r requirements.txt
-```
+## Step 2 — Launch
 
-**3. Build the search index** (first time only, or after updating documents)
+After setup, open the `BusinessNetwork-Help-MCP` folder. You will find the launch files there.
 
-Go back to the project root, then run:
+**macOS:** Double-click **`Launch SAP Help Assistant.app`**
 
-Mac / Linux:
-```
-cd .. && python3 build_index.py
-```
+**Windows:** Double-click **`Launch SAP Help Assistant.vbs`**
 
-Windows:
-```
-cd ..
-python build_index.py
-```
+The app starts a local server and opens the chat interface in your browser automatically at `http://localhost:5001`.
 
-This builds a local vector index from the bundled documentation cache. Runs entirely offline — no internet or model download required. Takes 3–10 minutes depending on your machine. You only need to run this once — unless you pull new document updates from the repository.
+> **Tip:** Bookmark `http://localhost:5001` after the first launch. On future sessions, double-click the launch file first, then open the bookmark — you do not need to go back to the folder every time.
 
-**4. Launch the app**
+---
 
-**Mac users:** Double-click `Launch SAP Help Assistant.app` in the project folder — the browser opens automatically. No terminal needed.
+## Using the Web Interface
 
-**Windows users:** Double-click `Launch SAP Help Assistant.vbs` in the project folder — the browser opens automatically. No terminal needed.
-
-If you prefer to start manually from the terminal:
-
-Mac / Linux:
-```
-python3 web-app/app.py
-```
-
-Windows:
-```
-python web-app\app.py
-```
-
-Then open `http://localhost:5001` in your browser.
-
-## Usage
-
-1. Enter your **API Key** and **Base URL** in the fields at the top
-2. Your credentials are saved automatically in your browser (you only need to enter them once)
-3. Type your question and press **Enter** or click **Send**
-4. Use the **📎** button (or drag and drop, or paste) to attach files — supported formats: images, text, CSV, XML, cXML, JSON, RTF, PDF, Word, Excel
-5. Use the **Classic / Semantic** toggle to switch search modes:
+1. Enter your **Base URL** and **API Key** in the fields at the top (from Hyperspace AI — you only need to do this once, they are saved in your browser)
+2. Type your question and press **Enter** or click **Send**
+3. Use the **📎** button (or drag-and-drop, or paste) to attach files — supported: images, text, CSV, XML, cXML, JSON, RTF, PDF, Word, Excel
+4. Use the **Classic / Semantic** toggle to switch search modes:
    - **Classic**: keyword matching — fast, works well for exact terms
    - **Semantic**: AI-powered meaning matching — better for natural language questions and non-English queries (Chinese, Japanese)
-6. Use **Clear** to start a new conversation
+5. Use **Clear** to start a new conversation
+
+---
 
 ## Keeping Up to Date
 
-New documents are added to the repository periodically. To get the latest content, run the following commands from the project root folder (`BusinessNetwork-Help-MCP`):
+Run the update script from inside the `BusinessNetwork-Help-MCP` folder.
 
-macOS / Linux:
+**macOS / Linux:**
 ```bash
-git pull && python3 build_index.py
+bash update.sh
 ```
 
-Windows:
-```bash
-git pull
-python build_index.py
+**Windows:**
+```
+update.bat
 ```
 
-This updates both the document cache and the search index. Only changed documents are re-indexed, so subsequent runs are faster than the first.
+The update script runs `git pull` and then checks whether the documentation cache has changed. If it has, it rebuilds the search index (about 1-2 minutes). If only the web interface was updated, it skips the rebuild and finishes immediately.
+
+---
 
 ## Notes
 
-- The app runs locally on your machine — your API key is never shared with anyone
-- Documentation content is bundled in `cache.json` — no additional downloads needed after `git clone`
-- The vector index (`chroma_db/`) is generated locally from `cache.json` by running `build_index.py`
+- The app runs entirely on your machine — your API key is stored only in your browser and is never shared
+- Documentation content is bundled in `cache.json` — no internet access needed for searching
+- The vector search index (`chroma_db/`) is built locally from `cache.json`
 - Supports questions in English, Chinese, and Japanese

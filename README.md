@@ -1,129 +1,170 @@
-# SAP Help Assistant
+# SAP Help MCP Server
 
-A local AI chat interface for querying SAP Help Portal documentation. Uses a pre-built local cache for fast responses and an on-device semantic search model for accurate multilingual matching.
+A local MCP server for querying SAP Help Portal documentation. Uses a local cache built with Puppeteer for fast responses (under 1 second).
 
 ## Prerequisites
 
-Install the following once before setup. These are standard developer tools.
+- [Node.js](https://nodejs.org/) v18+
+- [Claude Code CLI](https://pages.github.tools.sap/D061192/aiwarmups/ClaudeCodeInAction/) — follow this guide to install and configure Claude Code
+- Python 3.8+ (required for semantic search) — download from [python.org](https://www.python.org/downloads/)
+- [Git](https://git-scm.com/downloads) — required to clone the repository (Windows users: install Git for Windows if not already installed)
 
-| Tool | Required version | Download |
-|------|-----------------|----------|
-| Git | Any recent version | https://git-scm.com/downloads |
-| Node.js | v18 or higher | https://nodejs.org |
-| Python | 3.8 or higher | https://www.python.org/downloads |
+### Check Node.js version
 
-To verify your versions, open a terminal and run:
-```
+Run the following command in your terminal:
+
+```bash
 node --version
-python3 --version   # macOS / Linux
-python --version    # Windows
 ```
 
-If any command says "not found", install that tool first before continuing.
+If the output is `v18.x.x` or higher, you're good to go. If Node.js is not installed or the version is too low, download and install the latest LTS version from [nodejs.org](https://nodejs.org).
 
----
+## Installation
 
-## Step 1 — One-time setup (~15 minutes)
+**Step 1: Clone the repository**
 
-Open a terminal, then copy and run the following commands.
+macOS / Linux:
+```bash
+git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git && cd BusinessNetwork-Help-MCP
+```
 
-**macOS / Linux:**
+Windows (Command Prompt or PowerShell):
 ```bash
 git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
-bash setup.sh
 ```
 
-**Windows** — open Command Prompt (not PowerShell), then run:
+**Step 2: Install Node.js dependencies**
+
+```bash
+npm install
 ```
-git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
-cd BusinessNetwork-Help-MCP
-setup.bat
+
+**Step 3: Install Python dependencies for semantic search**
+
+macOS / Linux:
+```bash
+pip3 install chromadb sentence-transformers
 ```
 
-The setup script installs all dependencies and builds the local search index. It takes about 15 minutes on the first run — mostly downloading the AI model (~90 MB). You will see progress messages throughout. When it finishes, you will see "Setup complete!"
+Windows:
+```bash
+pip install chromadb sentence-transformers
+```
 
----
+**Step 4: Build the semantic search index**
 
-## Step 2 — Launch
+macOS / Linux:
+```bash
+python3 build_index.py
+```
 
-After setup completes, open the folder you just cloned (`BusinessNetwork-Help-MCP`). You will find the launch files there.
+Windows:
+```bash
+python build_index.py
+```
 
-**macOS:** Double-click **`Launch SAP Help Assistant.app`**
+This builds a local semantic search index from the bundled documentation cache (`cache.json`). The process runs entirely offline — no internet connection is required. It takes a few minutes on first run and produces a local `chroma_db/` folder. Once built, you will have the same search experience as the maintainer, including multilingual semantic matching across all covered SAP documents.
 
-**Windows:** Double-click **`Launch SAP Help Assistant.vbs`**
+This step only needs to be re-run after a `git pull` that updates `cache.json`.
 
-The app starts a local server and opens the chat interface in your browser automatically at `http://localhost:5001`.
+> **Note:** Steps 3 and 4 are required for semantic search. If skipped, the server still works using keyword search as a fallback — no errors will occur.
 
-> **Tip:** After the browser opens, bookmark `http://localhost:5001`. On future sessions, just double-click the launch file first, then use the bookmark — you do not need to go back to the folder every time.
+**Step 5: Find your absolute path**
 
----
+You need the full path to the cloned folder for the next step.
+
+- macOS / Linux — run:
+  ```bash
+  pwd
+  ```
+- Windows — run:
+  ```bash
+  cd
+  ```
+
+Copy the output. For example:
+- macOS: `/Users/yourname/BusinessNetwork-Help-MCP`
+- Windows: `C:\Users\yourname\BusinessNetwork-Help-MCP`
+
+**Step 6: Register the MCP server with Claude Code**
+
+- macOS / Linux:
+  ```bash
+  claude mcp add sap-help node /Users/yourname/BusinessNetwork-Help-MCP/index.js
+  ```
+- Windows:
+  ```bash
+  claude mcp add sap-help node C:\Users\yourname\BusinessNetwork-Help-MCP\index.js
+  ```
+
+Replace the path with the actual output from Step 5.
+
+## Search Modes
+
+This server supports two search modes that work together automatically:
+
+- **Semantic search** (recommended) — uses a local AI model to match questions by meaning, including multilingual queries. Requires Steps 3 and 4 above.
+- **Keyword search** (fallback) — matches documents by keyword and tag scoring. Always available, no extra setup needed.
+
+When semantic search is available, it is used automatically. If it is unavailable, keyword search takes over seamlessly. Running both gives you the best accuracy.
+
+## Usage
+
+Once registered, start Claude Code in your terminal by running:
+
+```bash
+claude
+```
+
+The following tools will be available automatically:
+
+- **`search_sap_docs`** — Search across all cached SAP pages (semantic + keyword hybrid)
+- **`get_sap_page`** — Retrieve full content of a specific SAP Help page by URL
+- **`list_sap_sources`** — List all cached pages and their status
 
 ## Keeping Up to Date
 
-Updates fall into two types. Run the appropriate command from inside the `BusinessNetwork-Help-MCP` folder.
-
-**Type A — Documentation update** (new documents added, search index changed):
+The cache is maintained centrally and updated as needed. To get the latest content, pull the latest changes and rebuild the index.
 
 macOS / Linux:
 ```bash
-git pull
-bash setup.sh
+git pull && python3 build_index.py
 ```
 
 Windows:
-```
-git pull
-setup.bat
-```
-
-This takes about 1-2 minutes (model is already downloaded, only the index is rebuilt).
-
-**Type B — Interface or feature update** (web page design, bug fixes, no new documents):
-
-macOS / Linux:
 ```bash
 git pull
+python build_index.py
 ```
-
-Windows:
-```
-git pull
-```
-
-That's it. No rebuild needed — just relaunch the app.
-
-The release notes will tell you which type each update is.
-
----
-
-## Using with Claude Code (MCP)
-
-If you use Claude Code CLI, you can also register this as an MCP server for direct in-terminal access.
-
-First find your folder path: run `pwd` (macOS) or `cd` (Windows) inside the `BusinessNetwork-Help-MCP` folder.
-
-**macOS / Linux:**
-```bash
-claude mcp add sap-help node /your/path/to/BusinessNetwork-Help-MCP/index.js
-```
-
-**Windows:**
-```
-claude mcp add sap-help node C:\your\path\to\BusinessNetwork-Help-MCP\index.js
-```
-
----
 
 ## Covered Documentation
 
-- SAP Business Network — Buyer Administration (Transaction Rules, Invoice Rules)
-- SAP Business Network — Supplier Administration
-- SAP Business Network — Guide to Invoicing
-- SAP Business Network — Freight Collaboration (BNL)
-- SAP Business Network — Global Track and Trace (GTT)
-- cXML Solutions Guide and Reference Guide
-- CIG and SBN Overview (SAP ERP / S/4HANA integration)
-- Test Central guides (buyer and supplier)
-- EDI guides — ANSI X12 and EDIFACT
-- And more — see `doc-sources.json` for the full list
+The cache includes the following SAP Help areas:
+
+- SAP Business Network for Logistics
+- SAP Business Network Global Track and Trace
+- SAP Business Network Logistics Provider (Carrier integration)
+- SAP Business Network Invoicing
+- SAP Business Network Buyer Administration (Transaction Rules)
+- cXML Solutions Guide
+- Guided Integration for Trading Partners
+- SAP Ariba Cloud Integration Gateway (CIG)
+- SAP Business Network for Trading Partners
+
+### Bundled API Specs (LBN Freight Collaboration & GTT)
+
+- Provider API for Order Events (FC)
+- Provider API for Order Events (GTT)
+- Consumer API for Order Tracking (FC)
+- Consumer API for Order Tracking (GTT)
+- Consumer API for Freight Subcontracting
+- Provider API for Freight Subcontracting
+- Consumer API for Freight Tendering
+- Provider API for Freight Tendering
+- Provider API for Freight Booking Confirmation
+- Consumer API for Freight Booking Request
+- Provider API for Invoicing
+- Provider API for Invoice Cancellation
+- Consumer API for Transportation Document
+- Provider API for Transportation Document

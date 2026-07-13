@@ -64,6 +64,11 @@ echo "  This step takes the longest — usually 10-15 minutes on first run."
 echo "  Subsequent runs after 'git pull' take about 1-2 minutes."
 echo ""
 python3 build_index.py
+
+# Save cache hash so update.sh can skip rebuild if cache hasn't changed
+CURRENT_HASH=$(md5 -q cache.json 2>/dev/null || md5sum cache.json 2>/dev/null | cut -d' ' -f1)
+echo "$CURRENT_HASH" > .cache_hash
+
 echo ""
 echo "  Index built."
 echo ""
