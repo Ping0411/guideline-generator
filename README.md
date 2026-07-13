@@ -13,18 +13,19 @@ A local AI assistant for querying SAP Business Network documentation. Two versio
 
 ### Prerequisites
 
-Only one tool needs to be installed manually before you begin: **Git**.
+Two tools need to be installed manually before you begin: **Git** and **Claude Code**.
 
 | | Verification command | Install if missing |
 |-|----------------------|--------------------|
 | **Git** (required) | `git --version` | **macOS:** `xcode-select --install` |
 | | | **Windows:** `winget install Git.Git` |
+| **Claude Code** (required) | `claude --version` | Follow [this guide](https://pages.github.tools.sap/D061192/aiwarmups/ClaudeCodeInAction/) to install |
 
 > **macOS:** If you don't have Homebrew, the setup script installs it automatically.
 
 Node.js and Python are installed automatically by the setup script — you do not need to install them manually.
 
-After installing Git, close and reopen your terminal before continuing.
+After installing Git and Claude Code, close and reopen your terminal before continuing.
 
 ---
 
