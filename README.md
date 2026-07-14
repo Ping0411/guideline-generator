@@ -91,6 +91,7 @@ cd ~/BusinessNetwork-Help-MCP && bash update.sh
 
 Windows:
 ```
+cd %USERPROFILE%\BusinessNetwork-Help-MCP
 update.bat
 ```
 
