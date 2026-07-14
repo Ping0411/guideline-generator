@@ -258,7 +258,7 @@ def extract_binary_attachment(name, mime, b64data):
             return text[:40000] if text else f"[Could not extract text from {name}]"
 
         if ext == '.pdf':
-            import pypdf
+            import pypdf, io
             reader = pypdf.PdfReader(io.BytesIO(raw))
             text = '\n'.join(page.extract_text() or '' for page in reader.pages).strip()
             return text[:40000] if text else f"[Could not extract text from {name}]"
