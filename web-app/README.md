@@ -85,10 +85,12 @@ The browser opens automatically at `http://localhost:5001`.
 There are no automatic notifications. It is recommended to run the update script once a month or once a quarter.
 
 From inside the `BusinessNetwork-Help-MCP` folder, run:
-- **macOS:** `cd ~/BusinessNetwork-Help-MCP && bash update.sh`
+- **macOS:** `bash update.sh`
 - **Windows:** double-click `update.bat`
 
 The script pulls the latest changes and rebuilds the search index only if new documents were added. If it was a web interface update only, it finishes in seconds.
+
+> **Note:** After updating, re-launch the app by double-clicking the launcher — this ensures the latest version is loaded.
 
 ---
 
