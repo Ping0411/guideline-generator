@@ -13,9 +13,14 @@ echo ""
 
 # ── Pull latest changes ───────────────────────────────────────────────────────
 
-echo "[1/3] Pulling latest changes from GitHub..."
+echo "[1/4] Pulling latest changes from GitHub..."
 git pull
 echo ""
+
+# ── Remove macOS quarantine flags ─────────────────────────────────────────────
+
+xattr -cr "Update SAP Help Assistant.app" 2>/dev/null || true
+xattr -cr "Launch SAP Help Assistant.app" 2>/dev/null || true
 
 # ── Install / update dependencies ────────────────────────────────────────────
 
