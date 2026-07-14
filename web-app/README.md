@@ -84,7 +84,7 @@ The browser opens automatically at `http://localhost:5001`.
 
 There are no automatic notifications. It is recommended to run the update script once a month or once a quarter.
 
-- **macOS:** double-click `Update SAP Help Assistant.app`
+- **macOS:** double-click `Update SAP Help Assistant.command`
 - **Windows:** double-click `update.bat`
 
 The script pulls the latest changes and rebuilds the search index only if new documents were added. If it was a web interface update only, it finishes in seconds. When done, re-launch the app to load the latest version.

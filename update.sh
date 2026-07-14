@@ -19,7 +19,7 @@ echo ""
 
 # ── Remove macOS quarantine flags ─────────────────────────────────────────────
 
-xattr -cr "Update SAP Help Assistant.app" 2>/dev/null || true
+xattr -cr "Update SAP Help Assistant.command" 2>/dev/null || true
 xattr -cr "Launch SAP Help Assistant.app" 2>/dev/null || true
 
 # ── Install / update dependencies ────────────────────────────────────────────
