@@ -280,7 +280,7 @@ def extract_binary_attachment(name, mime, b64data):
             text = '\n'.join(p.text for p in doc.paragraphs if p.text.strip())
             return text[:40000] if text else f"[Could not extract text from {name}]"
 
-        elif ext in ('.xls', '.xlsx'):
+        elif ext == '.xlsx':
             import openpyxl
             import io
             wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
@@ -289,6 +289,21 @@ def extract_binary_attachment(name, mime, b64data):
                 lines.append(f"[Sheet: {sheet.title}]")
                 for row in sheet.iter_rows(values_only=True):
                     row_vals = [str(c) if c is not None else '' for c in row]
+                    if any(v.strip() for v in row_vals):
+                        lines.append('\t'.join(row_vals))
+            text = '\n'.join(lines)
+            return text[:40000] if text else f"[Could not extract text from {name}]"
+
+        elif ext == '.xls':
+            # openpyxl does not support legacy .xls format — use xlrd instead
+            import xlrd
+            import io
+            wb = xlrd.open_workbook(file_contents=raw)
+            lines = []
+            for sheet in wb.sheets():
+                lines.append(f"[Sheet: {sheet.name}]")
+                for row_idx in range(sheet.nrows):
+                    row_vals = [str(sheet.cell_value(row_idx, col)) for col in range(sheet.ncols)]
                     if any(v.strip() for v in row_vals):
                         lines.append('\t'.join(row_vals))
             text = '\n'.join(lines)
