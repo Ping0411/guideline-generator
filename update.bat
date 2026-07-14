@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 :: SAP Help Assistant - Update script (Windows)
 :: Run this after the maintainer announces an update.
 :: Automatically detects whether the search index needs to be rebuilt.
@@ -24,19 +25,31 @@ echo.
 :: ── Detect python command ─────────────────────────────────────────────────────
 
 set PYTHON_CMD=
+set PYTHON_OK=0
+
 where python3 >nul 2>&1
 if not errorlevel 1 (
-    set PYTHON_CMD=python3
-) else (
-    where python >nul 2>&1
+    for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+    echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
     if not errorlevel 1 (
-        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
-        echo %PY_VER% | findstr /i "Python 3" >nul 2>&1
-        if not errorlevel 1 set PYTHON_CMD=python
+        set PYTHON_CMD=python3
+        set PYTHON_OK=1
     )
 )
 
-if "%PYTHON_CMD%"=="" (
+if %PYTHON_OK%==0 (
+    where python >nul 2>&1
+    if not errorlevel 1 (
+        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
+        echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
+        if not errorlevel 1 (
+            set PYTHON_CMD=python
+            set PYTHON_OK=1
+        )
+    )
+)
+
+if %PYTHON_OK%==0 (
     echo   ERROR: Python 3 not found. Please run setup.bat first.
     pause
     exit /b 1
