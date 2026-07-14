@@ -27,13 +27,26 @@ echo.
 set PYTHON_CMD=
 set PYTHON_OK=0
 
-where python3 >nul 2>&1
+:: Try py launcher first (most reliable on Windows, not affected by Store aliases)
+where py >nul 2>&1
 if not errorlevel 1 (
-    for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+    for /f "tokens=*" %%v in ('py --version 2^>^&1') do set PY_VER=%%v
     echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
     if not errorlevel 1 (
-        set PYTHON_CMD=python3
+        set PYTHON_CMD=py
         set PYTHON_OK=1
+    )
+)
+
+if %PYTHON_OK%==0 (
+    where python3 >nul 2>&1
+    if not errorlevel 1 (
+        for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+        echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
+        if not errorlevel 1 (
+            set PYTHON_CMD=python3
+            set PYTHON_OK=1
+        )
     )
 )
 
