@@ -11,8 +11,24 @@ objShell.Popup "SAP Help Assistant is starting, please wait...", 4, "SAP Help As
 ' Kill any existing instance on port 5001
 objShell.Run "cmd /c FOR /F ""tokens=5"" %%a IN ('netstat -aon ^| findstr :5001 ^| findstr LISTENING') DO taskkill /F /PID %%a", 0, True
 
+' Detect Python command (py launcher is most reliable on Windows)
+Dim pyCmd
+pyCmd = ""
+If objShell.Run("cmd /c py --version >nul 2>&1", 0, True) = 0 Then
+    pyCmd = "py"
+ElseIf objShell.Run("cmd /c python --version >nul 2>&1", 0, True) = 0 Then
+    pyCmd = "python"
+ElseIf objShell.Run("cmd /c python3 --version >nul 2>&1", 0, True) = 0 Then
+    pyCmd = "python3"
+End If
+
+If pyCmd = "" Then
+    MsgBox "Python not found. Please run setup.bat first.", vbCritical, "Launch Failed"
+    WScript.Quit
+End If
+
 ' Start Flask server silently
-objShell.Run "cmd /c python """ & scriptDir & "\web-app\app.py"" > """ & tempLog & """ 2>&1", 0, False
+objShell.Run "cmd /c " & pyCmd & " """ & scriptDir & "\web-app\app.py"" > """ & tempLog & """ 2>&1", 0, False
 
 ' Wait for server to be ready (check every second, up to 30s)
 Dim i, ready, objHTTP
