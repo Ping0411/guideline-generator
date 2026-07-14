@@ -163,7 +163,7 @@ Apply this to all output: the answer body, source attribution, in-process notes,
 The user is likely an SAP Integration Advisor working on:
 - SBN (SAP Business Network): Supplier integration / Trading Partner Integration
 - BNL (Business Network for Logistics): Carrier integration within SAP Business Network Freight Collaboration
-- SCC (SAP Business Collaboration Cloud): Supplier integration for PO Collaboration
+- SCC (SAP Supply Chain Collaboration): Supplier integration for PO Collaboration
 
 The user is familiar with cXML, SAP Ariba/Business Network integration standards, and works primarily on APAC customer projects.
 

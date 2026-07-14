@@ -519,13 +519,36 @@
     if (e.dataTransfer.files.length) addFiles(Array.from(e.dataTransfer.files));
   });
 
-  // Paste image from clipboard
+  // Paste image from clipboard — convert unsupported formats (e.g. image/bmp from Windows Excel) to PNG
+  function convertToPng(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(blob => {
+          if (!blob) return reject(new Error('Canvas toBlob failed'));
+          resolve(new File([blob], 'pasted-image.png', { type: 'image/png' }));
+        }, 'image/png');
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
   userInput.addEventListener('paste', e => {
     const items = Array.from(e.clipboardData.items || []);
     const imageItems = items.filter(i => i.kind === 'file' && i.type.startsWith('image/'));
     if (imageItems.length) {
       e.preventDefault();
-      addFiles(imageItems.map(i => i.getAsFile()));
+      const files = imageItems.map(i => i.getAsFile());
+      Promise.all(files.map(f => IMAGE_TYPES.includes(f.type) ? Promise.resolve(f) : convertToPng(f)))
+        .then(converted => addFiles(converted))
+        .catch(() => addFiles(files)); // fallback: send as-is if conversion fails
     }
   });
 

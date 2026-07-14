@@ -35,6 +35,9 @@ cd BusinessNetwork-Help-MCP
 ```
 
 Then run the setup script:
+
+> **Note:** The first run downloads an AI model (~470 MB) from Hugging Face during the `[2/4] Loading language model` step. If you are **not** on a corporate network (e.g. working from home), connect via **VPN** before running the script. All other steps do not require VPN.
+
 - **macOS:** `bash setup.sh`
 - **Windows:** open Command Prompt (not PowerShell), then run:
   ```
@@ -45,8 +48,6 @@ Then run the setup script:
 > **Note (Windows):** If Node.js or Python is not yet installed, the script will install it and ask you to close and reopen the window. Each time, reopen Command Prompt and run the two commands above again. This may happen up to twice before setup proceeds.
 
 The script installs all dependencies and builds the local search index. It takes about 15 minutes on the first run. When finished, you will see **"Setup complete!"**
-
-> **Note:** The first run downloads an AI model (~250 MB) from Hugging Face. If you are on a corporate network, connect via **VPN** before running the script.
 
 ---
 
@@ -74,6 +75,8 @@ The browser opens automatically at `http://localhost:5001`.
    - **Classic**: keyword matching — fast, works well for exact terms
    - **Semantic**: AI-powered meaning matching — better for natural language and non-English queries (Chinese, Japanese)
 5. Use **Clear** to start a new conversation
+
+> **Note:** File uploads may be blocked by SAP's DLP (Data Loss Prevention) policy. If you see a "Security / Sensitive Data Alert" popup, dismiss it and paste the file content directly into the chat input instead.
 
 ---
 
