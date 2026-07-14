@@ -17,9 +17,15 @@ echo "[1/3] Pulling latest changes from GitHub..."
 git pull
 echo ""
 
+# ── Install / update dependencies ────────────────────────────────────────────
+
+echo "[2/4] Installing / updating dependencies..."
+pip3 install -r web-app/requirements.txt --quiet || pip install -r web-app/requirements.txt --quiet || true
+echo ""
+
 # ── Check if cache.json changed ───────────────────────────────────────────────
 
-echo "[2/3] Checking if search index needs to be rebuilt..."
+echo "[3/4] Checking if search index needs to be rebuilt..."
 
 HASH_FILE=".cache_hash"
 CURRENT_HASH=$(md5 -q cache.json 2>/dev/null || md5sum cache.json 2>/dev/null | cut -d' ' -f1)
@@ -40,7 +46,7 @@ echo "  Documentation cache has changed — rebuilding search index..."
 echo "  This takes about 1-2 minutes."
 echo ""
 
-echo "[3/3] Building semantic search index..."
+echo "[4/4] Building semantic search index..."
 python3 build_index.py
 
 # Save new hash only after successful build

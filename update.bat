@@ -42,9 +42,18 @@ if "%PYTHON_CMD%"=="" (
     exit /b 1
 )
 
+echo [2/3] Installing / updating dependencies...
+set PIP_FLAGS=--quiet
+if defined PUPPETEER_SKIP_DOWNLOAD set PUPPETEER_SKIP_DOWNLOAD=true
+%PYTHON_CMD% -m pip install -r web-app/requirements.txt %PIP_FLAGS%
+if errorlevel 1 (
+    echo   WARNING: pip install failed. Some features may not work.
+)
+echo.
+
 :: ── Check if cache.json changed ───────────────────────────────────────────────
 
-echo [2/3] Checking if search index needs to be rebuilt...
+echo [3/4] Checking if search index needs to be rebuilt...
 
 set HASH_FILE=.cache_hash
 
@@ -78,7 +87,7 @@ echo   Documentation cache has changed - rebuilding search index...
 echo   This takes about 1-2 minutes.
 echo.
 
-echo [3/3] Building semantic search index...
+echo [4/4] Building semantic search index...
 %PYTHON_CMD% build_index.py
 if errorlevel 1 (
     echo   ERROR: build_index.py failed.
