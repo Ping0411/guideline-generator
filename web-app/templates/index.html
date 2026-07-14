@@ -396,6 +396,14 @@
   apiKeyInput.addEventListener('change', () => localStorage.setItem('sap_api_key', apiKeyInput.value));
   baseUrlInput.addEventListener('change', () => localStorage.setItem('sap_base_url', baseUrlInput.value));
 
+  // Open all links in new tab
+  const renderer = new marked.Renderer();
+  renderer.link = (href, title, text) => {
+    const titleAttr = title ? ` title="${title}"` : '';
+    return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+  };
+  marked.setOptions({ renderer });
+
   // Search mode toggle
   const searchModeToggle = document.getElementById('search-mode-toggle');
   const searchModeLabel = document.getElementById('search-mode-label');
