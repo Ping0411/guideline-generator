@@ -84,9 +84,9 @@ There are no automatic notifications. It is recommended to update once a month o
 
 From inside the `BusinessNetwork-Help-MCP` folder, run the update script:
 
-macOS — open Terminal in the project folder, then run:
+macOS:
 ```bash
-bash update.sh
+cd ~/BusinessNetwork-Help-MCP && bash update.sh
 ```
 
 Windows:
