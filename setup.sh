@@ -86,16 +86,16 @@ echo ""
 
 # ── Python dependencies ───────────────────────────────────────────────────────
 
-echo "[3/4] Installing Python dependencies (flask, chromadb, sentence-transformers)..."
+echo "[3/4] Installing Python dependencies (flask, chromadb, sentence-transformers, and file parsers)..."
 echo "  This may take a few minutes..."
-python3 -m pip install --quiet flask requests chromadb sentence-transformers
+python3 -m pip install --quiet -r web-app/requirements.txt
 echo "  Done."
 echo ""
 
 # ── Build semantic search index ───────────────────────────────────────────────
 
 echo "[4/4] Building semantic search index..."
-echo "  This downloads the AI model (~250 MB) and indexes all documents."
+echo "  This downloads the AI model (~470 MB) and indexes all documents."
 echo "  This step takes the longest — usually 10-15 minutes on first run."
 echo ""
 python3 build_index.py
@@ -120,6 +120,7 @@ echo ""
 echo "  To start SAP Help Assistant:"
 echo "  - Open the folder: $(pwd)"
 echo "  - Double-click 'Launch SAP Help Assistant.app'"
+echo "    (If macOS blocks it, right-click and choose Open)"
 echo ""
 echo "  The browser opens automatically at http://localhost:5001"
 echo "============================================"

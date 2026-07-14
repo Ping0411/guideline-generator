@@ -57,13 +57,26 @@ if %NODE_OK%==0 (
 set PYTHON_CMD=
 set PYTHON_OK=0
 
-where python3 >nul 2>&1
+:: Try py launcher first (most reliable on Windows, not affected by Store aliases)
+where py >nul 2>&1
 if not errorlevel 1 (
-    for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+    for /f "tokens=*" %%v in ('py --version 2^>^&1') do set PY_VER=%%v
     echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
     if not errorlevel 1 (
-        set PYTHON_CMD=python3
+        set PYTHON_CMD=py
         set PYTHON_OK=1
+    )
+)
+
+if %PYTHON_OK%==0 (
+    where python3 >nul 2>&1
+    if not errorlevel 1 (
+        for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+        echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
+        if not errorlevel 1 (
+            set PYTHON_CMD=python3
+            set PYTHON_OK=1
+        )
     )
 )
 
@@ -127,7 +140,7 @@ echo.
 :: ── Build semantic search index ───────────────────────────────────────────────
 
 echo [4/5] Building semantic search index...
-echo   This downloads the AI model ^(~250 MB^) and indexes all documents.
+echo   This downloads the AI model ^(~470 MB^) and indexes all documents.
 echo   Usually takes 10-15 minutes on first run.
 echo.
 %PYTHON_CMD% build_index.py

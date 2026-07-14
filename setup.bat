@@ -125,9 +125,9 @@ echo.
 
 :: ── Python dependencies ───────────────────────────────────────────────────────
 
-echo [3/4] Installing Python dependencies (flask, chromadb, sentence-transformers)...
+echo [3/4] Installing Python dependencies (flask, chromadb, sentence-transformers, and file parsers)...
 echo   This may take a few minutes...
-%PYTHON_CMD% -m pip install --quiet flask requests chromadb sentence-transformers
+%PYTHON_CMD% -m pip install --quiet -r web-app/requirements.txt
 if errorlevel 1 (
     echo   ERROR: pip install failed.
     pause
@@ -139,7 +139,7 @@ echo.
 :: ── Build semantic search index ───────────────────────────────────────────────
 
 echo [4/4] Building semantic search index...
-echo   This downloads the AI model (~250 MB) and indexes all documents.
+echo   This downloads the AI model (~470 MB) and indexes all documents.
 echo   This step takes the longest - usually 10-15 minutes on first run.
 echo.
 %PYTHON_CMD% build_index.py

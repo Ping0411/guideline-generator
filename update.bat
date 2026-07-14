@@ -13,7 +13,7 @@ echo.
 
 :: ── Pull latest changes ───────────────────────────────────────────────────────
 
-echo [1/3] Pulling latest changes from GitHub...
+echo [1/4] Pulling latest changes from GitHub...
 git pull
 if errorlevel 1 (
     echo   ERROR: git pull failed. Check your network connection.
@@ -68,7 +68,7 @@ if %PYTHON_OK%==0 (
     exit /b 1
 )
 
-echo [2/3] Installing / updating dependencies...
+echo [2/4] Installing / updating dependencies...
 set PIP_FLAGS=--quiet
 if defined PUPPETEER_SKIP_DOWNLOAD set PUPPETEER_SKIP_DOWNLOAD=true
 %PYTHON_CMD% -m pip install -r web-app/requirements.txt %PIP_FLAGS%

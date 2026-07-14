@@ -58,7 +58,7 @@ setup-mcp.bat
 
 The script installs all dependencies, builds the local search index (~15 minutes on first run), and displays the command you need to run next.
 
-> **Note:** The first run downloads an AI model (~250 MB) from Hugging Face. If you are on a corporate network, connect via **VPN** before running the script.
+> **Note:** The first run downloads an AI model (~470 MB) from Hugging Face. If you are **not** on a corporate network (e.g. working from home), connect via **VPN** before running the script.
 
 **Step 3 — Register the MCP server with Claude Code**
 
@@ -84,9 +84,9 @@ There are no automatic notifications. It is recommended to update once a month o
 
 From inside the `BusinessNetwork-Help-MCP` folder, run the update script:
 
-macOS:
+macOS — open Terminal in the project folder, then run:
 ```bash
-cd ~/BusinessNetwork-Help-MCP && bash update.sh
+bash update.sh
 ```
 
 Windows:
