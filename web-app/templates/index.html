@@ -396,13 +396,18 @@
   apiKeyInput.addEventListener('change', () => localStorage.setItem('sap_api_key', apiKeyInput.value));
   baseUrlInput.addEventListener('change', () => localStorage.setItem('sap_base_url', baseUrlInput.value));
 
-  // Open all links in new tab
+  // Open all links in new tab (works with both marked v4 and v5+)
   const renderer = new marked.Renderer();
-  renderer.link = (href, title, text) => {
+  renderer.link = function(token) {
+    // marked v5+: token is an object {href, title, text}
+    // marked v4: token is href (string), second arg is title, third is text
+    const href   = typeof token === 'object' ? token.href  : token;
+    const title  = typeof token === 'object' ? token.title : arguments[1];
+    const text   = typeof token === 'object' ? token.text  : arguments[2];
     const titleAttr = title ? ` title="${title}"` : '';
     return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
   };
-  marked.setOptions({ renderer });
+  marked.use({ renderer });
 
   // Search mode toggle
   const searchModeToggle = document.getElementById('search-mode-toggle');
