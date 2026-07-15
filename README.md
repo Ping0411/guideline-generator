@@ -53,6 +53,7 @@ bash setup-mcp.sh
 
 Windows — open Command Prompt (not PowerShell), then run:
 ```
+cd BusinessNetwork-Help-MCP
 setup-mcp.bat
 ```
 

@@ -34,6 +34,8 @@ git clone https://github.tools.sap/I560320/BusinessNetwork-Help-MCP.git
 cd BusinessNetwork-Help-MCP
 ```
 
+> **Note:** If you have already installed the [Claude Code MCP version](https://github.tools.sap/I560320/BusinessNetwork-Help-MCP/blob/main/README.md), the folder already exists. In that case, do not run `git clone` — just run `cd BusinessNetwork-Help-MCP` and proceed with the setup script.
+
 Then run the setup script:
 
 > **Note:** The first run downloads an AI model (~470 MB) from Hugging Face during the `[2/4] Loading language model` step. If you are **not** on a corporate network (e.g. working from home), connect via **VPN** before running the script. All other steps do not require VPN.
