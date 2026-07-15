@@ -102,13 +102,23 @@ The script pulls the latest changes and rebuilds the search index only if new do
 
 ## Covered Documentation
 
-- SAP Business Network — Buyer Administration (Transaction Rules, Invoice Rules)
-- SAP Business Network — Supplier Administration
-- SAP Business Network — Guide to Invoicing
-- SAP Business Network — Freight Collaboration (BNL)
-- SAP Business Network — Global Track and Trace (GTT)
+**SAP Business Network (SBN)**
+- Buyer & Supplier Administration (Transaction Rules, Invoice Rules, company profile, user management)
+- Guide to Invoicing (country-specific tax invoicing, e-invoicing, digital signatures)
 - cXML Solutions Guide and Reference Guide
-- CIG and SBN Overview (SAP ERP / S/4HANA integration)
+- CIG and SBN Overview (SAP ERP / S/4HANA integration via CIG / Managed Gateway)
+- Supplier enablement, onboarding, and catalog setup (CIF, cXML, BMEcat)
+- Supply Chain Collaboration (PO Collaboration, ASN with handling units)
 - Test Central guides (buyer and supplier)
-- EDI guides — ANSI X12 and EDIFACT
-- And more — see `doc-sources.json` for the full list
+- EDI guides — ANSI X12 (42 transaction sets) and EDIFACT
+- Integration overview guides (English and Japanese)
+
+**SAP Business Network for Logistics (BNL)**
+- Freight Collaboration — shipper and carrier administration
+- Global Track and Trace (GTT) — product guide, model administration, API documentation
+- Carrier-side integration (REST APIs, EDI, cXML)
+- Dock Appointment Scheduling
+- Code lists, FAQs, community guides, and training session transcripts (Jeff Gebo API series)
+- project44 add-on configuration
+
+See `doc-sources.json` for the complete file list.
