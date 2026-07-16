@@ -39208,5 +39208,25 @@
       "planning collaboration search filters"
     ],
     "taggedAt": "2026-07-10T04:13:54.737Z"
+  },
+  "file://SBN/split/SAP Global Trust CA List_2801396.pdf": {
+    "title": "SAP Global Trust CA List (SAP Note 2801396)",
+    "urls": [
+      "file://SBN/split/SAP Global Trust CA List_2801396.pdf"
+    ],
+    "tags": [
+      "SAP approved root CA certificates",
+      "SAP Global Trust List 2801396",
+      "DigiCert GlobalSign root CA",
+      "trusted root certificate authority list",
+      "ISRG Lets Encrypt root CA",
+      "Amazon root CA approved",
+      "Google GTS root CA trust",
+      "Comodo USERTrust root certificate",
+      "QuoVadis root CA SAP",
+      "certificate fingerprint SHA-1 serial",
+      "root CA expiry dates list"
+    ],
+    "taggedAt": "2026-07-16T02:26:27.648Z"
   }
 }

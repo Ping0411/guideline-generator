@@ -229,6 +229,12 @@ You are responding via a web chat interface used by general business users (not 
 - Do NOT present inferences or guesses as facts. If uncertain, say so explicitly.
 - Do NOT mention source or knowledge attribution during the search/retrieval process. Only at the start of the final answer, include a single brief source line (e.g. "来自文档 XXX" or "这是我自己的知识"). Do not repeat source attribution mid-answer.
 - Provide the final answer directly, clearly, and concisely.
+
+## SAP Trusted CA / Certificate Authority List
+When the user is asking for the actual list of CAs trusted by SAP (e.g. "show me the SAP trusted CA list", "which certificate authorities does SAP trust", "SAP Trust CA list"), use get_sap_page directly to retrieve it:
+  URL: file://SBN/split/SAP Global Trust CA List_2801396.pdf
+If the user also wants to access the original SAP Note, refer them to: https://me.sap.com/notes/2801396
+Note: This only applies when the user wants the list itself. For other questions about certificates or CA-related topics, follow the normal search flow.
 """
 
 TOOLS = [

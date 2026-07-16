@@ -679,3 +679,6 @@ You have permission to use: pdfgrep, find, ls, unzip for file operations.
   - Part24: Report Types + Report Template Creation (quality inspection/notification report criteria, serial number report fields, schedule line columns, creating/generating/downloading report templates, double-byte character encoding)
   - Part25: Field Reference for Suppliers (fields for consignment/contract manufacturing/forecast collaboration, goods-receipt-based invoice verification columns, order collaboration return items table, return shipments fields, confirmation control keys)
   - Part26: Field Reference (return ship notice routing, order/ship notice control keys, serial number upload worksheet, consumed components columns, supplier-managed inventory planning collaboration filters, transport confirmation fields including hazard/packaging/dimensions)
+
+- **SAP Global Trust CA List (SAP Note 2801396)** `file://SBN/split/SAP Global Trust CA List_2801396.pdf`
+  - Single document: SAP Global Trust CA List (SAP Note 2801396, approved root CAs by SAP SGSC, DigiCert / GlobalSign / Amazon / Google GTS / ISRG / Comodo / QuoVadis / SSL.com entries with SHA-1 fingerprints and expiry dates)
