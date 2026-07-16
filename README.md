@@ -71,11 +71,12 @@ claude mcp add sap-help node "<YOUR_PATH>/index.js"
 
 **How to find your path:**
 
+First run `cd BusinessNetwork-Help-MCP` to enter the folder, then run the command below to print the full path:
+
 | OS | Command | Example result |
 |----|---------|----------------|
-| macOS | `pwd` (run inside the cloned folder) | `/Users/yourname/BusinessNetwork-Help-MCP` |
-| Windows CMD | `cd` (run inside the cloned folder) | `C:\Users\yourname\BusinessNetwork-Help-MCP` |
-| Windows PowerShell | `pwd` (run inside the cloned folder) | `C:\Users\yourname\BusinessNetwork-Help-MCP` |
+| macOS | `pwd` | `/Users/yourname/BusinessNetwork-Help-MCP` |
+| Windows CMD | `cd` | `C:\Users\yourname\BusinessNetwork-Help-MCP` |
 
 For example, on macOS the final command would look like:
 ```
