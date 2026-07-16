@@ -63,13 +63,13 @@ The script installs all dependencies, builds the local search index (~15 minutes
 
 **Step 3 — Register the MCP server with Claude Code**
 
-Run the following command, replacing `<YOUR_PATH>` with the actual path to the cloned folder on your machine:
+At the end of the setup script, you will see the complete command with your actual path already filled in — copy and paste it into your terminal and run it. It looks like this:
 
 ```
 claude mcp add sap-help node "<YOUR_PATH>/index.js"
 ```
 
-**How to find your path:**
+**If you missed the command from the script output**, you can find your path manually and build the command yourself:
 
 First run `cd BusinessNetwork-Help-MCP` to enter the folder, then run the command below to print the full path:
 
@@ -78,10 +78,7 @@ First run `cd BusinessNetwork-Help-MCP` to enter the folder, then run the comman
 | macOS | `pwd` | `/Users/yourname/BusinessNetwork-Help-MCP` |
 | Windows CMD | `cd` | `C:\Users\yourname\BusinessNetwork-Help-MCP` |
 
-For example, on macOS the final command would look like:
-```
-claude mcp add sap-help node "/Users/yourname/BusinessNetwork-Help-MCP/index.js"
-```
+Then replace `<YOUR_PATH>` in the command above with the result and run it.
 
 ---
 
