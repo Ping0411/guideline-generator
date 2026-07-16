@@ -57,7 +57,7 @@ cd BusinessNetwork-Help-MCP
 setup-mcp.bat
 ```
 
-The script installs all dependencies, builds the local search index (~15 minutes on first run), and displays the command you need to run next.
+The script installs all dependencies, builds the local search index, and displays the command you need to run next. **The first run takes 15–30 minutes** — please be patient and keep the terminal window open until you see the completion message.
 
 > **Note:** The first run downloads an AI model (~470 MB) from Hugging Face. If you are **not** on a corporate network (e.g. working from home), connect via **VPN** before running the script.
 

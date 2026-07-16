@@ -25,7 +25,7 @@ After installing Git, close and **reopen** your terminal before continuing.
 
 ---
 
-## Step 1 — One-time setup (~15 minutes)
+## Step 1 — One-time setup (15–30 minutes)
 
 Open a terminal and run:
 
@@ -49,7 +49,7 @@ Then run the setup script:
 
 > **Note (Windows):** If Node.js or Python is not yet installed, the script will install it and ask you to close and reopen the window. Each time, reopen Command Prompt and run the two commands above again. This may happen up to twice before setup proceeds.
 
-The script installs all dependencies and builds the local search index. It takes about 15 minutes on the first run. When finished, you will see **"Setup complete!"**
+The script installs all dependencies and builds the local search index. **The first run takes 15–30 minutes** — please be patient and keep the terminal window open until you see **"Setup complete!"**
 
 ---
 
