@@ -63,7 +63,7 @@ The script installs all dependencies, builds the local search index (~15 minutes
 
 **Step 3 — Register the MCP server with Claude Code**
 
-At the end of the setup script, you will see the complete command with your actual path already filled in — copy and paste it into your terminal and run it. It looks like this:
+At the end of the setup script, **you will see the complete command with your actual path already filled in** — copy and paste it into your terminal and run it. It looks like this:
 
 ```
 claude mcp add sap-help node "<YOUR_PATH>/index.js"
