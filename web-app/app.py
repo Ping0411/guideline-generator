@@ -586,29 +586,32 @@ def chat():
                     # Extract edi_excel JSON block if present
                     excel_url = None
                     display_reply = full_reply
-                    match = re.search(
-                        r'```(?:json)?\s*(\{"edi_excel"\s*:.*?\})\s*```',
-                        full_reply,
-                        re.DOTALL
-                    )
-                    if not match:
-                        # Also handle block without code fence
-                        match = re.search(
-                            r'(\{"edi_excel"\s*:.*?\})\s*$',
-                            full_reply,
-                            re.DOTALL
-                        )
-                    if match:
+
+                    # Find the start of the edi_excel block (inside or outside a code fence)
+                    json_start = None
+                    fence_start = None
+                    m = re.search(r'```(?:json)?\s*(\{"edi_excel"\s*:)', full_reply)
+                    if m:
+                        json_start = m.start(1)
+                        fence_start = m.start(0)
+                    else:
+                        m = re.search(r'(\{"edi_excel"\s*:)', full_reply)
+                        if m:
+                            json_start = m.start(1)
+                            fence_start = m.start(0)
+
+                    if json_start is not None:
                         try:
-                            data = json.loads(match.group(1))
+                            decoder = json.JSONDecoder()
+                            data, _ = decoder.raw_decode(full_reply, json_start)
                             rows = data.get("edi_excel", [])
                             if rows:
                                 filename = build_excel(rows)
                                 excel_url = f"/download_excel/{filename}"
                         except Exception:
                             pass
-                        # Remove the JSON block from the displayed reply
-                        display_reply = full_reply[:match.start()].rstrip()
+                        # Remove the JSON block (and any surrounding code fence) from display
+                        display_reply = full_reply[:fence_start].rstrip()
 
                     done_event = {"done": True, "full_reply": display_reply}
                     if excel_url:
