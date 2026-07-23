@@ -49,6 +49,8 @@ Then run the setup script:
 
 > **Note (Windows):** If Node.js or Python is not yet installed, the script will install it and ask you to close and reopen the window. Each time, reopen Command Prompt and run the two commands above again. This may happen up to twice before setup proceeds.
 
+> **Troubleshooting (Windows) — ERROR: pip install failed at [3/4]:** Windows ships with a dummy `python.exe` placeholder that redirects to the Microsoft Store but does not actually run Python. To fix this: open **Settings → Apps → Advanced app settings → App execution aliases**, find **python.exe** and **python3.exe** (both listed as "App Installer"), and turn them **Off**. Then close and reopen Command Prompt and run `setup.bat` again.
+
 The script installs all dependencies and builds the local search index. **The first run takes 15–30 minutes** — please be patient and keep the terminal window open until you see **"Setup complete!"**
 
 ---

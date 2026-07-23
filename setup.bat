@@ -130,6 +130,11 @@ echo   This may take a few minutes...
 %PYTHON_CMD% -m pip install -r web-app/requirements.txt
 if errorlevel 1 (
     echo   ERROR: pip install failed.
+    echo.
+    echo   If you see this error, Windows may be using a dummy Python placeholder.
+    echo   To fix: open Settings ^> Apps ^> Advanced app settings ^> App execution aliases
+    echo   and turn OFF both python.exe and python3.exe ^(listed as "App Installer"^).
+    echo   Then close and reopen Command Prompt and run setup.bat again.
     pause
     exit /b 1
 )
