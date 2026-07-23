@@ -127,7 +127,7 @@ echo.
 
 echo [3/4] Installing Python dependencies (flask, chromadb, sentence-transformers, and file parsers)...
 echo   This may take a few minutes...
-%PYTHON_CMD% -m pip install --quiet -r web-app/requirements.txt
+%PYTHON_CMD% -m pip install -r web-app/requirements.txt
 if errorlevel 1 (
     echo   ERROR: pip install failed.
     pause
