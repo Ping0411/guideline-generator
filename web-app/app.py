@@ -1,17 +1,20 @@
 import os
 import sys
+import re
+import uuid
 import json
 import base64
 import threading
 import requests
 from pathlib import Path
-from flask import Flask, request, jsonify, render_template, Response, stream_with_context
+from flask import Flask, request, jsonify, render_template, Response, stream_with_context, send_file
 
 app = Flask(__name__)
 
 BASE_DIR = Path(__file__).parent.parent  # ~/mcp-servers/sap-help/
 CACHE_FILE = BASE_DIR / "cache.json"
 TAGS_FILE = BASE_DIR / "tags.json"
+EXCEL_TEMP_DIR = Path("/tmp")
 
 _cache = None
 _tags = None
@@ -266,6 +269,23 @@ When the user asks for a Description column alongside the EDI output:
 - Do not copy the cXML comment text directly. Rewrite as an EDI-standard explanation.
 - Each description must explicitly state the segment element identifier (e.g. ISA06, BAK02), its meaning in the EDI standard, and the corresponding value or code used.
 
+**Excel export block (always required after any EDI conversion)**
+After completing Phase 3 verification and confirming the EDI output is correct, perform one final self-check before writing the JSON block:
+- Verify the full EDI document strictly conforms to the SAP Business Network specification retrieved earlier: segment presence, order, element values, code list compliance, and ISA fixed-length padding.
+- Verify every description entry (if requested) is accurate: correct element identifier, correct standard meaning, correct value or code cited.
+- Only after both checks pass, append the following JSON block at the very end of your reply — no text after it:
+
+```json
+{"edi_excel": [{"segment": "ISA*00*          *...", "description": ""}, ...]}
+```
+
+Rules for the JSON block:
+- One object per EDI segment line, in document order
+- "segment": exact segment string with all spaces preserved (e.g. ISA padding spaces must be present)
+- "description": filled only for rows with a description; empty string "" for all others
+- This block must always be output after any cXML→EDI conversion (X12 or EDIFACT), regardless of whether a Description column was requested
+- If either self-check fails, fix the errors first, then output the corrected EDI in the reply and the corrected data in the JSON block
+
 ## SAP Trusted CA / Certificate Authority List
 When the user is asking for the actual list of CAs trusted by SAP (e.g. "show me the SAP trusted CA list", "which certificate authorities does SAP trust", "SAP Trust CA list"), use get_sap_page directly to retrieve it:
   URL: file://SBN/split/SAP Global Trust CA List_2801396.pdf
@@ -414,6 +434,57 @@ def run_tool(name, inputs, search_mode="classic"):
     return "Unknown tool"
 
 
+def build_excel(rows):
+    """Generate an Excel workbook from EDI rows and return the file path."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "EDI"
+
+    # Header row
+    header_font = Font(bold=True)
+    header_fill = PatternFill("solid", fgColor="D9E1F2")
+    for col, label in enumerate(["Segment", "Description"], start=1):
+        cell = ws.cell(row=1, column=col, value=label)
+        cell.font = header_font
+        cell.fill = header_fill
+
+    # Data rows — segment column uses monospace font and text format
+    mono = Font(name="Courier New", size=10)
+    for row_idx, item in enumerate(rows, start=2):
+        seg_cell = ws.cell(row=row_idx, column=1, value=item.get("segment", ""))
+        seg_cell.font = mono
+        seg_cell.number_format = "@"  # force text, preserve leading spaces
+        seg_cell.alignment = Alignment(wrap_text=False)
+
+        desc = item.get("description", "")
+        if desc:
+            ws.cell(row=row_idx, column=2, value=desc)
+
+    # Column widths
+    ws.column_dimensions[get_column_letter(1)].width = 80
+    ws.column_dimensions[get_column_letter(2)].width = 60
+
+    filename = f"edi_{uuid.uuid4().hex[:8]}.xlsx"
+    path = EXCEL_TEMP_DIR / filename
+    wb.save(str(path))
+    return filename
+
+
+@app.route("/download_excel/<filename>")
+def download_excel(filename):
+    # Restrict to simple filenames to prevent path traversal
+    if "/" in filename or ".." in filename:
+        return jsonify({"error": "Invalid filename"}), 400
+    path = EXCEL_TEMP_DIR / filename
+    if not path.exists():
+        return jsonify({"error": "File not found or expired"}), 404
+    return send_file(str(path), as_attachment=True, download_name=filename)
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -512,8 +583,37 @@ def chat():
                 # Check for tool calls
                 tool_uses = [b for b in assistant_content if b.get("type") == "tool_use"]
                 if not tool_uses or stop_reason == "end_turn":
-                    # Done
-                    yield f"data: {json.dumps({'done': True, 'full_reply': full_reply})}\n\n"
+                    # Extract edi_excel JSON block if present
+                    excel_url = None
+                    display_reply = full_reply
+                    match = re.search(
+                        r'```(?:json)?\s*(\{"edi_excel"\s*:.*?\})\s*```',
+                        full_reply,
+                        re.DOTALL
+                    )
+                    if not match:
+                        # Also handle block without code fence
+                        match = re.search(
+                            r'(\{"edi_excel"\s*:.*?\})\s*$',
+                            full_reply,
+                            re.DOTALL
+                        )
+                    if match:
+                        try:
+                            data = json.loads(match.group(1))
+                            rows = data.get("edi_excel", [])
+                            if rows:
+                                filename = build_excel(rows)
+                                excel_url = f"/download_excel/{filename}"
+                        except Exception:
+                            pass
+                        # Remove the JSON block from the displayed reply
+                        display_reply = full_reply[:match.start()].rstrip()
+
+                    done_event = {"done": True, "full_reply": display_reply}
+                    if excel_url:
+                        done_event["excel_url"] = excel_url
+                    yield f"data: {json.dumps(done_event)}\n\n"
                     return
 
                 # Parse tool inputs and run them
