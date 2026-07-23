@@ -274,8 +274,9 @@ Before writing any description, you MUST complete this mandatory pre-check — d
 1. Go through the original cXML line by line and build an explicit list of every element or attribute that has a comment or annotation (e.g. XML comments <!-- --> or inline notes provided by the user). Elements without any comment must NOT receive a description.
 2. For each EDI segment, look up the corresponding cXML element in that list. If the cXML element is not in the list, leave the description blank — no exceptions.
 3. Only for segments whose cXML source IS in the list: rewrite the comment as an EDI-standard explanation. Do not copy the original cXML comment text directly. Each description must explicitly state the segment element identifier (e.g. ISA06, BAK02), its meaning in the EDI standard, and the corresponding value or code used.
+4. **Write descriptions in pure EDI terms only.** Never mention cXML, XML element names, attribute names, or any cXML-specific terminology (e.g. do not write "from cXML", "SupplierPartID", "invoiceLineNumber", "来自 PO", or any reference to the source document). The reader is an EDI integration engineer who has no knowledge of cXML — descriptions must be self-contained and meaningful purely within the EDI/X12/EDIFACT standard.
 
-Filling in a description for any segment whose cXML source had no comment is a violation of these rules.
+Filling in a description for any segment whose cXML source had no comment, or mentioning cXML in any description, is a violation of these rules.
 
 **Excel export block (always required after any EDI conversion)**
 After completing Phase 3 verification and confirming the EDI output is correct, perform one final self-check before writing the JSON block:
