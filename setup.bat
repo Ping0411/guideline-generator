@@ -79,11 +79,22 @@ if %PYTHON_OK%==0 (
 if %PYTHON_OK%==0 (
     where python >nul 2>&1
     if not errorlevel 1 (
-        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
-        echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
+        set PY_PATH=
+        for /f "tokens=*" %%p in ('where python 2^>nul') do (
+            if not defined PY_PATH set PY_PATH=%%p
+        )
+        echo !PY_PATH! | findstr /i "WindowsApps" >nul 2>&1
         if not errorlevel 1 (
-            set PYTHON_CMD=python
-            set PYTHON_OK=1
+            echo   Skipping Windows Store python placeholder ^(!PY_PATH!^)...
+            set PY_PATH=
+        ) else (
+            for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
+            echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
+            if not errorlevel 1 (
+                set PYTHON_CMD=python
+                set PYTHON_OK=1
+            )
+            set PY_PATH=
         )
     )
 )
@@ -130,11 +141,6 @@ echo   This may take a few minutes...
 %PYTHON_CMD% -m pip install -r web-app/requirements.txt
 if errorlevel 1 (
     echo   ERROR: pip install failed.
-    echo.
-    echo   If you see this error, Windows may be using a dummy Python placeholder.
-    echo   To fix: open Settings ^> Apps ^> Advanced app settings ^> App execution aliases
-    echo   and turn OFF both python.exe and python3.exe ^(listed as "App Installer"^).
-    echo   Then close and reopen Command Prompt and run setup.bat again.
     pause
     exit /b 1
 )
