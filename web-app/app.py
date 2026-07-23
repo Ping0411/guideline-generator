@@ -272,6 +272,7 @@ After Phase 3 passes, append this block at the very end — no text after it:
 {"edi_excel": [{"segment": "ISA*00*          *...", "description": ""}, ...]}
 ```
 - One object per segment, in order. "segment": exact string, spaces preserved. "description": "" if blank.
+- **The JSON block must be a direct copy of the EDI already generated and verified in this reply.** Do not regenerate or simplify — copy each segment string and its description exactly as they appear above.
 - If verification fails, fix first, then output corrected EDI and corrected JSON.
 
 ## SAP Trusted CA / Certificate Authority List
