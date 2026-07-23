@@ -240,7 +240,8 @@ You are responding via a web chat interface used by general business users (not 
 Always retrieve the spec first via get_sap_page:
 - X12: "SAP Business Network X12 [prefix+transaction set] 4010 [Inbound|Outbound]"
   - Inbound (supplier→SBN): IN810 Invoice, PR855 Order Confirmation, SH856 ASN
-  - Outbound (SBN→supplier): PO850 PO, PC860 PO Change, RA820 Remittance, AG824 GR/Application Advice, RC861 Receiving, SH856 ASN (also has Outbound version)
+  - Outbound (SBN→supplier): PO850 PO, PC860 PO Change, RA820 Remittance, AG824 GR/Application Advice, RC861 Receiving, SH856 ASN Outbound (only when explicitly specified; default for ASN is SH856 Inbound)
+- Always state the exact document name used (e.g. "SAP Business Network X12 SH856 4010 Inbound") at the start of the conversion so the user can verify the correct spec was referenced.
 - EDIFACT: "SAP Business Network EDIFACT D96A [message type] Outbound" (INVOIC, ORDRSP, DESADV)
 
 **Phase 1 — Prepare**
