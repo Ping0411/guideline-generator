@@ -270,10 +270,12 @@ Strictly follow these rules in order — no exceptions:
 13. **SE segment count**: Count all segments from ST to SE inclusive. The count must match SE01. Any mismatch indicates a missing or extra segment — fix before outputting.
 
 **Description column (when requested)**
-When the user asks for a Description column alongside the EDI output:
-- Only fill in descriptions for rows whose corresponding cXML element had a comment/annotation in the original cXML file. Leave other rows blank.
-- Do not copy the cXML comment text directly. Rewrite as an EDI-standard explanation.
-- Each description must explicitly state the segment element identifier (e.g. ISA06, BAK02), its meaning in the EDI standard, and the corresponding value or code used.
+Before writing any description, you MUST complete this mandatory pre-check — do not skip it:
+1. Go through the original cXML line by line and build an explicit list of every element or attribute that has a comment or annotation (e.g. XML comments <!-- --> or inline notes provided by the user). Elements without any comment must NOT receive a description.
+2. For each EDI segment, look up the corresponding cXML element in that list. If the cXML element is not in the list, leave the description blank — no exceptions.
+3. Only for segments whose cXML source IS in the list: rewrite the comment as an EDI-standard explanation. Do not copy the original cXML comment text directly. Each description must explicitly state the segment element identifier (e.g. ISA06, BAK02), its meaning in the EDI standard, and the corresponding value or code used.
+
+Filling in a description for any segment whose cXML source had no comment is a violation of these rules.
 
 **Excel export block (always required after any EDI conversion)**
 After completing Phase 3 verification and confirming the EDI output is correct, perform one final self-check before writing the JSON block:
