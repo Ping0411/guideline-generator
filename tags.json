@@ -39228,5 +39228,1237 @@
       "root CA expiry dates list"
     ],
     "taggedAt": "2026-07-16T02:26:27.648Z"
+  },
+  "file://api-specs/split/SAP_LBN_EDI_HowToGuide_Part1.pdf": {
+    "title": "SAP_LBN_EDI_HowToGuide_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_EDI_HowToGuide_Part1.pdf"
+    ],
+    "tags": [
+      "EDIFACT IFTMIN outbound configuration",
+      "SFTP connection system connections app",
+      "freight collaboration B2B integration setup",
+      "GLN alternate identifier carrier profile",
+      "IFTSTA IFTMBC INVOIC inbound messages",
+      "file name placeholders DOCUMENT_ID TIMESTAMP",
+      "freight subcontracting outbound connection",
+      "test outbound SFTP connectivity",
+      "SFTP known host key base64 encoded",
+      "SAP Business Network Logistics EDI prerequisites"
+    ],
+    "taggedAt": "2026-07-24T07:58:08.763Z"
+  },
+  "file://api-specs/split/SAP_LBN_EDI_HowToGuide_Part2.pdf": {
+    "title": "SAP_LBN_EDI_HowToGuide_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_EDI_HowToGuide_Part2.pdf"
+    ],
+    "tags": [
+      "IFTSTA IFTMBC INVOIC inbound EDI setup",
+      "enable inbound connections toggle",
+      "SFTP EDI communication configuration",
+      "EDI inbound polling job recurrence",
+      "integration error email notification",
+      "Manage Integration Logs reprocessing",
+      "basic authentication SFTP permissions",
+      "Pull EDI operation outbound connection"
+    ],
+    "taggedAt": "2026-07-24T07:58:08.763Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_HowToGuide_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 EDI integration setup",
+      "SFTP connection system connections app",
+      "outbound 204 300 303 840 864 997 messages",
+      "file name placeholders DOCUMENT_ID TIMESTAMP",
+      "carrier SFTP server known host key",
+      "freight collaboration B2B EDI prerequisites",
+      "test outbound connectivity SFTP",
+      "service operation ANSI message mapping"
+    ],
+    "taggedAt": "2026-07-24T07:58:19.587Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_HowToGuide_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_Part2.pdf"
+    ],
+    "tags": [
+      "ANSI X12 inbound SFTP polling setup",
+      "EDI inbound connection configuration",
+      "enable inbound connections toggle",
+      "SFTP authentication basic credentials",
+      "Pull EDI operation outbound connection",
+      "EDI inbounding polling job recurrence",
+      "integration error email notification",
+      "Manage Integration Logs reprocessing"
+    ],
+    "taggedAt": "2026-07-24T07:58:19.587Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part1.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part1.pdf"
+    ],
+    "tags": [
+      "EDIFACT IFTMIN message type",
+      "interchange header UNB segment",
+      "syntax identifier UNOC D_0001",
+      "sender identification D_0004 field",
+      "partner identification code qualifier D_0007",
+      "shipper LBN ID D_0008 field",
+      "date of preparation YYMMDD D_0017",
+      "interchange control reference UNB UNZ",
+      "C_S001 C_S002 C_S003 C_S004 structure",
+      "GS1 partner code qualifier value 14"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part2.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part2.pdf"
+    ],
+    "tags": [
+      "IFTMIN instruction message structure",
+      "EDIFACT D96A message segments",
+      "UNH UNZ message header trailer",
+      "BGM DTM TSR segment groups",
+      "NAD GID MEA DGS segment example",
+      "freight order consignment EDI",
+      "dangerous goods DGS segment IFTMIN",
+      "SG18 goods item details group",
+      "IFTMIN message overview principles",
+      "transport instruction shipper carrier"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part3.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part3.pdf"
+    ],
+    "tags": [
+      "BGM segment beginning of message",
+      "document message number shipping number",
+      "message function code 340 610 pre-advice final",
+      "C002 document message name coded",
+      "DTM segment date time period qualifier",
+      "delivery date requested qualifier code 2",
+      "collection date earliest qualifier code 234",
+      "delivery date latest qualifier code 63",
+      "document date order date qualifier code 137",
+      "date format qualifier 102 203 IFTMIN",
+      "pre-advice final freight order message types"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part4.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part4.pdf"
+    ],
+    "tags": [
+      "DTM C507 date time period qualifier",
+      "TSR transport service requirements segment",
+      "C537 transport priority coded values",
+      "fix delivery date before 10am code 12",
+      "C703 nature of cargo HAZ dangerous goods",
+      "MOA C516 monetary amount segment",
+      "customs value insurance value statistical value",
+      "FTX free text DEL delivery information",
+      "FTX THE temperature controlled transport",
+      "FTX RE freight order reference segment",
+      "language code ISO 639 list",
+      "C108 text literal free text field"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part5.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part5",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part5.pdf"
+    ],
+    "tags": [
+      "TOD segment Incoterms codes DDP FCA FOB",
+      "C100 terms of delivery coded Incoterm",
+      "LOC segment place location qualifier 3227",
+      "SG3 RFF reference segment group",
+      "C506 reference qualifier ZZ1 ZZ2 freight order ID",
+      "ZZ7 loading stop ID ZZ8 unloading stop ID",
+      "DQ delivery note number ON order number reference",
+      "SG11 NAD name and address party qualifier",
+      "party qualifier CZ consignor FW freight forwarder CN consignee",
+      "NAD street address country postcode fields"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part6.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part6",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part6.pdf"
+    ],
+    "tags": [
+      "NAD segment party identification",
+      "C082 party identification details",
+      "C080 party name 35 characters",
+      "C059 street address PO box",
+      "SG18 goods item segment group",
+      "GID goods item number packages",
+      "C213 number type of packages",
+      "7065 package type codelist",
+      "FTX free text DEL delivery information",
+      "FTX AAA goods description segment",
+      "ISO 3166 country code field",
+      "ISO 639 language coded field",
+      "Düsseldorfer pallet Europallet Industrial pallet codes",
+      "unloading location internal ID consignee"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part7.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part7",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part7.pdf"
+    ],
+    "tags": [
+      "MEA segment gross weight net weight volume",
+      "C174 measurement value unit qualifier",
+      "SG23 package identification SSCC NVE number",
+      "GIN goods identity number BJ qualifier",
+      "PCI 33E serial shipping container code",
+      "C502 measurement details 6313 codelist",
+      "SG32 dangerous goods segment group",
+      "6411 measure unit qualifier KGM MTQ",
+      "C208 identity number range SSCC"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part8.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part8",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part8.pdf"
+    ],
+    "tags": [
+      "DGS dangerous goods segment",
+      "ADR packing group coded",
+      "UNDG number C234 element",
+      "flashpoint temperature C223",
+      "dangerous goods label C236",
+      "FTX free text dangerous goods",
+      "hazard code C205 identification",
+      "SG32 dangerous goods group IFTMIN"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part9.pdf": {
+    "title": "SAP_LBN_IFTMIN_D96A_Part9",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMIN_D96A_Part9.pdf"
+    ],
+    "tags": [
+      "SG34 MEA dangerous goods measurements",
+      "MEA segment measurement application qualifier",
+      "C502 measurement dimension coded AAE AAF AAW",
+      "C174 value range KGM LTR measure unit",
+      "6311 measurement qualifier VOL WT",
+      "6314 measurement value decimal",
+      "UNT message trailer segment count",
+      "0074 number of segments message",
+      "0062 message reference number",
+      "IFTMIN copyright statements UN EDIFACT"
+    ],
+    "taggedAt": "2026-07-24T07:59:32.021Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part1.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part1.pdf"
+    ],
+    "tags": [
+      "IFTSTA EDIFACT message type",
+      "interchange header structure UNB UNA",
+      "C_S001 syntax identifier UNOC",
+      "C_S002 sender identification D_0004",
+      "C_S003 recipient identification D_0010",
+      "C_S004 date time preparation",
+      "D_0007 partner identification code qualifier GS1",
+      "interchange control reference D_0020",
+      "LBN shipper address reverse routing D_0008",
+      "EDIFACT interchange envelope functional group"
+    ],
+    "taggedAt": "2026-07-24T08:00:10.940Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part2.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part2.pdf"
+    ],
+    "tags": [
+      "IFTSTA EDIFACT D01C message structure",
+      "international multimodal status report",
+      "SG4 SG5 segment group CNI STS",
+      "UNH message header reference number",
+      "S009 message identifier controlling agency",
+      "BGM beginning of message LBN",
+      "RFF reference freightOrderId originatorId",
+      "S_UNZ interchange control count D0036",
+      "EDIFACT example message UNA UNB segments",
+      "transport status consignment tracking"
+    ],
+    "taggedAt": "2026-07-24T08:00:10.940Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part3.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part3.pdf"
+    ],
+    "tags": [
+      "IFTSTA SG4 SG5 segment groups",
+      "CNI consignment information segment",
+      "STS status segment code 21 delivery",
+      "C555 status description code 4405",
+      "RFF ZZ1 originatorId reference",
+      "RFF ZZ2 freightOrderId reference",
+      "RFF ZZ5 orderingPartyLbnId reference",
+      "C506 reference qualifier identifier",
+      "destination location arrival event LBN",
+      "mandatory RFF fields IFTSTA message"
+    ],
+    "taggedAt": "2026-07-24T08:00:10.940Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part4.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part4.pdf"
+    ],
+    "tags": [
+      "RFF segment freightOrderId ZZ2",
+      "RFF segment loadingStopId ZZ7",
+      "RFF segment unloadingStopId ZZ8",
+      "C506 reference code qualifier 1153 1154",
+      "DTM C507 date time period UTC timestamp",
+      "UNT message trailer segment count",
+      "IFTSTA SG5 mandatory reference fields",
+      "ZZ1 ZZ2 ZZ8 mandatory fields senderSystemId"
+    ],
+    "taggedAt": "2026-07-24T08:00:10.940Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part5.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_Part5",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_Part5.pdf"
+    ],
+    "tags": [
+      "SAP copyright disclaimer notice",
+      "SAP legal warranty disclaimer",
+      "SAP trademark registered notice",
+      "forward-looking statements disclaimer",
+      "SAP publication reproduction rights"
+    ],
+    "taggedAt": "2026-07-24T08:00:10.940Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part1.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part1.pdf"
+    ],
+    "tags": [
+      "EDIFACT INVOIC message type",
+      "interchange envelope structure UNB UNZ",
+      "UNB sender recipient identification",
+      "C_S001 syntax identifier UNOC",
+      "C_S002 sender identification D_0004",
+      "C_S003 recipient identification D_0010",
+      "C_S004 date time preparation",
+      "D_0007 partner identification code qualifier GS1",
+      "interchange control reference D_0020",
+      "SAP Business Network Logistics EDIFACT MIG"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part2.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part2.pdf"
+    ],
+    "tags": [
+      "EDIFACT INVOIC D96A message structure",
+      "UNH message header segment",
+      "S009 message identifier composite",
+      "UNZ interchange control count",
+      "SG25 line item segment group",
+      "SG48 invoice amount MOA",
+      "SG50 tax duty fee details",
+      "BGM beginning of message",
+      "NAD issuer invoicee address",
+      "CUX currency details GBP",
+      "LIN PIA line item product id",
+      "DTM date time period format"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part3.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part3.pdf"
+    ],
+    "tags": [
+      "BGM document message number invoice ID",
+      "DTM document message date time qualifier 137",
+      "C507 date format CCYYMMDD CCYYMMDDHHMM",
+      "FTX free text invoice instruction INV",
+      "C108 text literal free text lines",
+      "SG1 originator ID reference qualifier ZZ1",
+      "RFF C506 reference number sender system ID",
+      "SG2 NAD name address issuer invoicee",
+      "NAD party qualifier II issuer of invoice",
+      "EDIFACT INVOIC segment structure definitions"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part4.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part4.pdf"
+    ],
+    "tags": [
+      "NAD invoicee party qualifier IV",
+      "C082 party identification details",
+      "CUX currency charge payment",
+      "C504 ISO 4217 currency code",
+      "SG25 line item group structure",
+      "LIN line item number 1082",
+      "C829 sub-line information 5495",
+      "PIA additional product id 4347",
+      "SG7 currency segment group"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part5.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part5",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part5.pdf"
+    ],
+    "tags": [
+      "C212 item number identification 7140",
+      "QTY C186 quantity details segment",
+      "6063 quantity qualifier invoiced quantity",
+      "6411 measure unit qualifier UN ECE",
+      "MOA C516 monetary amount segment",
+      "5025 monetary amount type qualifier LBN ignored",
+      "6345 currency coded ISO 4217",
+      "SG26 monetary amount currency group",
+      "SG27 PAT payment terms basis",
+      "4279 payment terms type qualifier",
+      "PIA additional product id SG25"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part6.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part6",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part6.pdf"
+    ],
+    "tags": [
+      "PCD percentage details SG27",
+      "C501 percentage qualifier 5245",
+      "allowance charge percentage 5482",
+      "PRI price details SG28",
+      "C509 price information composite",
+      "5125 price qualifier INV invoice price",
+      "5118 price 5284 unit price basis",
+      "6411 measure unit qualifier",
+      "SG29 freight order ID reference",
+      "RFF C506 reference ZZ2 qualifier",
+      "1153 ZZ2 freight order ID",
+      "UNS section control 0081 separator"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part7.pdf": {
+    "title": "SAP_LBN_INVOIC_D96A_Part7",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_INVOIC_D96A_Part7.pdf"
+    ],
+    "tags": [
+      "SG48 invoice amount segment group",
+      "MOA monetary amount code 77",
+      "SG50 TAX-MOA tax totals",
+      "C516 monetary amount composite element",
+      "5025 monetary amount type qualifier",
+      "5004 monetary amount field",
+      "TAX segment duty tax fee qualifier",
+      "MOA tax amount code 124",
+      "UNT message trailer segment",
+      "0074 number of segments control count",
+      "EDIFACT INVOIC D96A copyright statements"
+    ],
+    "taggedAt": "2026-07-24T08:01:09.864Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part1.pdf": {
+    "title": "SAP_LBN_IFTMBC_D96A_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part1.pdf"
+    ],
+    "tags": [
+      "IFTMBC EDIFACT message type",
+      "UNB interchange header structure",
+      "EDIFACT syntax identifier UNOC",
+      "S001 S002 S003 S004 composite segments",
+      "interchange control reference D0020",
+      "sender recipient identification D0004 D0010",
+      "GS1 partner identification code qualifier",
+      "date time preparation D0017 D0019",
+      "SAP Business Network Logistics MIG",
+      "EDIFACT interchange envelope UNA UNB UNZ"
+    ],
+    "taggedAt": "2026-07-24T08:01:34.303Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part2.pdf": {
+    "title": "SAP_LBN_IFTMBC_D96A_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part2.pdf"
+    ],
+    "tags": [
+      "IFTMBC booking confirmation message",
+      "BGM segment response type coded",
+      "UNH message header IFTMBC",
+      "S009 message identifier composite",
+      "SG8 goods item details segment group",
+      "RFF reference qualifier container identification",
+      "FTX free text response segment",
+      "EDIFACT D96A IFTMBC structure",
+      "4343 accepted rejected response code",
+      "single consignment booking confirmation"
+    ],
+    "taggedAt": "2026-07-24T08:01:34.303Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part3.pdf": {
+    "title": "SAP_LBN_IFTMBC_D96A_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part3.pdf"
+    ],
+    "tags": [
+      "FTX free text response segment",
+      "C108 text literal element",
+      "SG2 reference segment group RFF",
+      "C506 consignee shipment reference number",
+      "AAO reference qualifier code",
+      "SG8 goods item details segment group",
+      "GID goods item details segment",
+      "SG12 RFF DTM goods reference group",
+      "AAQ unit load device container identification",
+      "1153 reference qualifier codelist",
+      "1154 reference number data element",
+      "IFTMBC booking confirmation segments"
+    ],
+    "taggedAt": "2026-07-24T08:01:34.303Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part4.pdf": {
+    "title": "SAP_LBN_IFTMBC_D96A_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTMBC_D96A_Part4.pdf"
+    ],
+    "tags": [
+      "UNT message trailer segment",
+      "number of segments control count",
+      "message reference number field",
+      "IFTMBC booking confirmation trailer",
+      "UN EDIFACT copyright statement",
+      "ASC X12 copyright notice",
+      "ISO codelists copyright",
+      "UN CEFACT copyright notice"
+    ],
+    "taggedAt": "2026-07-24T08:01:34.303Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 204 motor carrier load tender",
+      "ISA interchange control header fields",
+      "interchange envelope structure ISA IEA",
+      "functional group GS GE header trailer",
+      "interchange sender receiver LBN ID",
+      "D_I01 authorization information qualifier",
+      "D_I14 interchange usage indicator test production",
+      "D_479 functional identifier code",
+      "freight collaboration outbound message 204"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part2.pdf"
+    ],
+    "tags": [
+      "motor carrier load tender 204 examples",
+      "B2A freight order creation update cancellation",
+      "LH1 LH2 LFH hazardous material segments",
+      "S_GE functional group trailer D_97 D_28",
+      "S_IEA interchange control trailer",
+      "OZA fluid ounce liter conversion",
+      "G61 emergency contact segment",
+      "ST segment transaction set identifier 204",
+      "B2 beginning segment shipment payment PP prepaid",
+      "loop 0300 0310 0350 0370 structure"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part3.pdf"
+    ],
+    "tags": [
+      "B2A set purpose code 20 final transmission",
+      "L11 reference identification qualifier codes",
+      "NTE note special instruction TRA mileage",
+      "N7 equipment details description code",
+      "N7B additional equipment details TUR",
+      "L11 billing account purchasing party",
+      "transaction set purpose cancellation code 01",
+      "loop 0200 equipment segment structure"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part4.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part4.pdf"
+    ],
+    "tags": [
+      "M7 seal numbers segment",
+      "S5 stop off details loop 0300",
+      "L11 reference identification qualifier DQ PO",
+      "G62 date time scheduled pickup delivery",
+      "G62 time code UTC timezone values",
+      "stop reason code CL CN CU PL PU",
+      "N1 ship from entity identifier SF",
+      "N3 address information street format",
+      "loop 0310 stop location name address",
+      "delivery quote number purchase order L11"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part5.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part5",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part5.pdf"
+    ],
+    "tags": [
+      "N4 geographic location segment",
+      "G61 contact telephone email",
+      "OID order identification detail",
+      "L5 description marks numbers",
+      "Loop 0350 0360 structure",
+      "N401 city name state province",
+      "ISO 3166-1 country code",
+      "lading description packaging code",
+      "purchase order number OID02",
+      "shipper contact function code SH",
+      "communication number qualifier TE EM",
+      "AT8 shipment weight packaging"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part6.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part6",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part6.pdf"
+    ],
+    "tags": [
+      "AT8 shipment weight packaging quantity",
+      "weight qualifier unit code 187 188",
+      "G61 contact shipper function code",
+      "LH1 hazardous identification UN/NA code",
+      "LH2 hazardous classification flashpoint temperature",
+      "packing group code degree of danger",
+      "loop 0365 loop 0370 structure",
+      "volume unit qualifier cubic measurement codes",
+      "lading quantity handling units 80",
+      "package type codes BAG PLT CTN"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part7.pdf": {
+    "title": "SAP_LBN_ANSI_X12_204_Part7",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_204_Part7.pdf"
+    ],
+    "tags": [
+      "LFH freeform hazardous material information",
+      "hazardous material shipment qualifier 808",
+      "L3 total weight and charges segment",
+      "weight qualifier gross weight code G",
+      "volume unit qualifier cubic feet gallons",
+      "SE transaction set trailer segment",
+      "transaction set control number 329",
+      "number of included segments field 96",
+      "weight unit code kilograms pounds",
+      "marine pollutant ADI MPI qualifier codes",
+      "ASC X12 copyright statement"
+    ],
+    "taggedAt": "2026-07-24T08:02:40.153Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_990_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_990_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_990_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 990 message type",
+      "interchange control header ISA segment",
+      "functional group header GS segment",
+      "interchange sender receiver LBN ID",
+      "X12 interchange envelope structure",
+      "EDI 990 outbound logistics",
+      "ISA IEA control number fields",
+      "GS GE functional group trailer"
+    ],
+    "taggedAt": "2026-07-24T08:03:01.450Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_990_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_990_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_990_Part2.pdf"
+    ],
+    "tags": [
+      "990 response to load tender",
+      "B1 segment reservation action code",
+      "N9 reference identification qualifier 06",
+      "C040 reference identifier IX item number",
+      "558 reservation accepted cancelled codes",
+      "S_GE functional group trailer",
+      "S_IEA interchange control trailer",
+      "204 load tender response structure",
+      "carrier sender system ID N9 segment"
+    ],
+    "taggedAt": "2026-07-24T08:03:01.450Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_990_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_990_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_990_Part3.pdf"
+    ],
+    "tags": [
+      "N7 equipment details segment",
+      "K1 remarks free-form message",
+      "SE transaction set trailer",
+      "equipment number field 207",
+      "transaction set control number 329",
+      "number of included segments 96",
+      "ASC X12 copyright statement",
+      "UN EDIFACT copyright notice",
+      "990 response load tender segments"
+    ],
+    "taggedAt": "2026-07-24T08:03:01.450Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 214 freight collaboration",
+      "ISA interchange control header fields",
+      "interchange envelope structure ISA IEA",
+      "functional group header S_GS segment",
+      "D_I06 interchange sender LBN ID",
+      "D_I14 interchange usage indicator",
+      "GS functional group envelope",
+      "X12 214 message implementation guide"
+    ],
+    "taggedAt": "2026-07-24T08:03:30.530Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part2.pdf"
+    ],
+    "tags": [
+      "214 transportation carrier shipment status",
+      "B10 beginning segment shipment identification",
+      "L11 business instructions reference number",
+      "AT7 shipment status details segment",
+      "LX assigned number loop 0200",
+      "S_GE functional group trailer segment",
+      "S_IEA interchange control trailer",
+      "D_337 time format HHMMSS",
+      "SCAC standard carrier alpha code",
+      "reference identification qualifier 128",
+      "loop 0205 structure AT7 MS1"
+    ],
+    "taggedAt": "2026-07-24T08:03:30.530Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part3.pdf"
+    ],
+    "tags": [
+      "AT7 shipment status details segment",
+      "LX assigned number segment",
+      "shipment status code 1650 mapping",
+      "event reason code 1651 LBN mapping",
+      "MS1 equipment shipment location segment",
+      "longitude latitude decimal degrees fields",
+      "L11 business instructions reference number",
+      "stop sequence number location ID",
+      "ocean container number OC qualifier",
+      "time code 623 UTC timezone values",
+      "shipment appointment status code 1652",
+      "loop 0205 structure node"
+    ],
+    "taggedAt": "2026-07-24T08:03:30.530Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part4.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_Part4.pdf"
+    ],
+    "tags": [
+      "SE transaction set trailer",
+      "number of included segments field",
+      "transaction set control number",
+      "ASC X12 copyright statement",
+      "UN EDIFACT copyright notice",
+      "ISO codelists copyright",
+      "UN CEFACT copyright statement"
+    ],
+    "taggedAt": "2026-07-24T08:03:30.530Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_210_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 210 freight invoice",
+      "ISA interchange control header fields",
+      "interchange envelope functional group structure",
+      "D_I06 interchange sender LBN ID",
+      "GS functional group header segments",
+      "EDI 210 message implementation guide",
+      "interchange control version number codelist",
+      "component element separator delimiter"
+    ],
+    "taggedAt": "2026-07-24T08:04:03.210Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_210_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part2.pdf"
+    ],
+    "tags": [
+      "X12 210 motor carrier freight invoice",
+      "B3 segment invoice number shipment payment",
+      "C3 currency code billing currency",
+      "ST segment transaction set header 210",
+      "N9 reference identification qualifier",
+      "L1 rate and charges special allowance",
+      "GS GE functional group trailer D_455 D_480",
+      "IEA interchange control trailer",
+      "shipment method of payment code 146",
+      "net amount due B3 segment field 193",
+      "LX loop assigned number freight charges",
+      "X12 004010 EDI freight invoice structure"
+    ],
+    "taggedAt": "2026-07-24T08:04:03.210Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_210_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part3.pdf"
+    ],
+    "tags": [
+      "N9 reference identification segment",
+      "K1 remarks free-form message",
+      "L0 line item quantity weight",
+      "L1 rate and charges segment",
+      "LX assigned number loop 0400",
+      "C040 reference identifier composite",
+      "billing account purchasing party qualifier",
+      "freight rate special charge allowance code",
+      "billed rated-as qualifier 221",
+      "tax charge VAT percent currency code"
+    ],
+    "taggedAt": "2026-07-24T08:04:03.210Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part4.pdf": {
+    "title": "SAP_LBN_ANSI_X12_210_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_210_Part4.pdf"
+    ],
+    "tags": [
+      "L1 segment charge type codes",
+      "PW percentage of charges rate",
+      "special charge allowance code 150",
+      "element 276 charge code description",
+      "L3 total weight and charges segment",
+      "TAX charge code L3 segment",
+      "SE transaction set trailer segment",
+      "currency code tax rate field",
+      "954 tax percentage element",
+      "610 tax amount element",
+      "221 billed rated qualifier units",
+      "copyright ASC X12 UN EDIFACT"
+    ],
+    "taggedAt": "2026-07-24T08:04:03.210Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_GTT_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_HowToGuide_GTT_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_GTT_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 GTT integration guide",
+      "ANSI 213 outbound shipment tracking",
+      "ANSI 214 315 inbound SFTP pulling",
+      "System Connections app SFTP setup",
+      "EDI B2B SAP Business Network Logistics",
+      "Known Host Key base64 SFTP authentication",
+      "Enable Inbound Connections toggle",
+      "SFTP file archive folder behavior",
+      "DOCUMENT_ID TIMESTAMP filename placeholders"
+    ],
+    "taggedAt": "2026-07-24T08:46:49.685Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_GTT_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_HowToGuide_GTT_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_HowToGuide_GTT_Part2.pdf"
+    ],
+    "tags": [
+      "EDI inbound pull operation",
+      "SFTP polling job recurrence",
+      "basic authentication connection setup",
+      "system connections outbound service",
+      "manage integration logs app",
+      "reprocess failed escalated messages",
+      "EDI file archiving process"
+    ],
+    "taggedAt": "2026-07-24T08:46:49.685Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_213_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_213_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_213_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 213 GTT message type",
+      "ISA interchange control header fields",
+      "interchange sender receiver LBN ID",
+      "D_I06 interchange sender ID field",
+      "D_I07 interchange receiver ID field",
+      "ISA segment authorization security qualifier",
+      "GS functional group header structure",
+      "D_479 functional identifier code",
+      "interchange envelope outer envelope",
+      "interchange control number D_I12",
+      "acknowledgment requested D_I13",
+      "interchange usage indicator D_I14",
+      "component element separator D_I15"
+    ],
+    "taggedAt": "2026-07-24T08:47:17.049Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_213_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_213_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_213_Part2.pdf"
+    ],
+    "tags": [
+      "X12 213 motor carrier shipment status inquiry",
+      "B11 beginning segment shipment status",
+      "REF segment reference identification qualifier",
+      "GS GE functional group trailer fields",
+      "IEA interchange control trailer",
+      "D_480 version release industry identifier",
+      "loop 0100 N1 name segment",
+      "carrier reference number PRO invoice qualifier CN",
+      "freight order ID B11 identification code",
+      "transaction set identifier code 143"
+    ],
+    "taggedAt": "2026-07-24T08:47:17.049Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_213_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_213_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_213_Part3.pdf"
+    ],
+    "tags": [
+      "N1 loop ship from ship to",
+      "REF segment location number qualifier",
+      "SE transaction set trailer segment count",
+      "reference identification qualifier 4L LU QN",
+      "transaction set control number 329",
+      "entity identifier code SF ST",
+      "motor carrier shipment status inquiry segments",
+      "ASC X12 213 copyright statement"
+    ],
+    "taggedAt": "2026-07-24T08:47:17.049Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_GTT_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 214 GTT message type",
+      "interchange control header ISA segment",
+      "functional group header GS segment",
+      "interchange envelope structure",
+      "LBN sender receiver ID fields",
+      "interchange control version number D_I11",
+      "acknowledgment requested D_I13",
+      "component element separator D_I15",
+      "functional identifier code D_479",
+      "application sender receiver code GS"
+    ],
+    "taggedAt": "2026-07-24T08:47:47.042Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_GTT_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part2.pdf"
+    ],
+    "tags": [
+      "214 transportation carrier shipment status",
+      "B10 beginning segment shipment identification",
+      "L11 reference identification qualifier GTT",
+      "AT7 shipment status details segment",
+      "LX loop 0200 assigned number",
+      "GE functional group trailer D97",
+      "IEA interchange control trailer",
+      "reference qualifier 8X transaction category",
+      "reference qualifier T7 affected subsystem GTT",
+      "MS1 equipment location segment",
+      "ST transaction set header 214"
+    ],
+    "taggedAt": "2026-07-24T08:47:47.042Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_GTT_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part3.pdf"
+    ],
+    "tags": [
+      "AT7 shipment status details segment",
+      "shipment status code 1650 values",
+      "shipment status reason code 1651 mapping",
+      "LBN status code mapping AF DEPARTURE",
+      "MS1 equipment shipment location segment",
+      "longitude latitude decimal degrees MS1",
+      "L11 business reference number segment",
+      "stop sequence number QN qualifier",
+      "ocean container number OC qualifier",
+      "location number LU qualifier",
+      "LX assigned number segment 214",
+      "loop 0205 AT7 structure"
+    ],
+    "taggedAt": "2026-07-24T08:47:47.042Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part4.pdf": {
+    "title": "SAP_LBN_ANSI_X12_214_GTT_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_214_GTT_Part4.pdf"
+    ],
+    "tags": [
+      "SE transaction set trailer",
+      "number of included segments element 96",
+      "transaction set control number 329",
+      "SE segment last transaction set",
+      "ASC X12 copyright statement",
+      "UN EDIFACT copyright notice",
+      "ISO codelists copyright",
+      "UN CEFACT copyright statement"
+    ],
+    "taggedAt": "2026-07-24T08:47:47.042Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part1.pdf": {
+    "title": "SAP_LBN_ANSI_X12_315_GTT_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part1.pdf"
+    ],
+    "tags": [
+      "ANSI X12 315 GTT message type",
+      "interchange control header ISA segment",
+      "functional group header GS segment",
+      "interchange envelope outer envelope structure",
+      "LBN ID sender receiver fields",
+      "interchange control number D_I12",
+      "acknowledgment requested D_I13",
+      "interchange usage indicator test production",
+      "functional group trailer GE segment",
+      "global track and trace EDI 315"
+    ],
+    "taggedAt": "2026-07-24T08:48:13.618Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part2.pdf": {
+    "title": "SAP_LBN_ANSI_X12_315_GTT_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part2.pdf"
+    ],
+    "tags": [
+      "S_GE functional group trailer segment",
+      "S_IEA interchange control trailer",
+      "315 status details ocean transaction set",
+      "N9 reference identification qualifier codes",
+      "Q2 vessel voyage number fields",
+      "ST transaction set header 315",
+      "R4 port terminal segment",
+      "DTM date time reference segment",
+      "SG shipment status code",
+      "GTT ocean container tracking EDI",
+      "D_97 number transaction sets included",
+      "D_I16 functional groups interchange count"
+    ],
+    "taggedAt": "2026-07-24T08:48:13.618Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part3.pdf": {
+    "title": "SAP_LBN_ANSI_X12_315_GTT_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part3.pdf"
+    ],
+    "tags": [
+      "SG shipment status code values",
+      "status reason code delay causes",
+      "R4 port terminal function code",
+      "DTM date time qualifier codes",
+      "location qualifier UNLOCODE",
+      "SE transaction set trailer segment",
+      "time zone code UTC offset",
+      "vessel name Lloyd's register",
+      "shipment status AF AG D X1 X3",
+      "status reason road conditions mechanical breakdown"
+    ],
+    "taggedAt": "2026-07-24T08:48:13.618Z"
+  },
+  "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part4.pdf": {
+    "title": "SAP_LBN_ANSI_X12_315_GTT_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_ANSI_X12_315_GTT_Part4.pdf"
+    ],
+    "tags": [
+      "SAP copyright disclaimer",
+      "legal trademark notice",
+      "publication rights reserved",
+      "SAP affiliate warranty disclaimer"
+    ],
+    "taggedAt": "2026-07-24T08:48:13.618Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part1.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_GTT_Part1",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part1.pdf"
+    ],
+    "tags": [
+      "IFTSTA GTT message implementation guide",
+      "EDIFACT interchange envelope structure",
+      "UNB segment interchange control reference",
+      "C_S001 syntax identifier UNOC",
+      "C_S002 sender identification D_0004",
+      "C_S003 recipient identification D_0010",
+      "D_0007 GS1 partner identification qualifier",
+      "D_0008 shipper LBN ID routing",
+      "C_S004 date time of preparation",
+      "UNA UNB UNZ interchange segments"
+    ],
+    "taggedAt": "2026-07-24T08:48:57.249Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part2.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_GTT_Part2",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part2.pdf"
+    ],
+    "tags": [
+      "IFTSTA GTT message structure",
+      "UNH message header segment",
+      "S009 message identifier fields",
+      "BGM beginning of message IFTSTA",
+      "SG4 SG5 segment group structure",
+      "RFF reference freightOrderId trackingType",
+      "CNI consignment information segment",
+      "D0036 interchange control count",
+      "UNEDIFACT IFTSTA D01C version",
+      "RFF locationId locationType ordinalNo"
+    ],
+    "taggedAt": "2026-07-24T08:48:57.249Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part3.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_GTT_Part3",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part3.pdf"
+    ],
+    "tags": [
+      "SG4 CNI consignment information segment",
+      "SG5 STS status segment group",
+      "C555 status description code 4405",
+      "RFF ZZ1 originatorId reference",
+      "RFF ZZ2 freightOrderId reference",
+      "RFF ZZ8 unloadingStopId mandatory field",
+      "event status code ARRIV_DEST DEPARTURE DELAYED",
+      "C506 reference qualifier 1153 1154",
+      "delivery event status code 21 mapping",
+      "IFTSTA bulk status update processing"
+    ],
+    "taggedAt": "2026-07-24T08:48:57.249Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part4.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_GTT_Part4",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part4.pdf"
+    ],
+    "tags": [
+      "RFF segment ZZ5 orderingPartyLbnId",
+      "RFF segment ZZ8 unloadingStopId",
+      "RFF segment ZZ9 lbnSourceSystemId GTT",
+      "RFF segment ZZA trackingType",
+      "RFF segment ZZB locationType",
+      "C506 reference code qualifier 1153 1154",
+      "mandatory RFF fields ZZ1 ZZ2 ZZ8 ZZA",
+      "IFTSTA SG5 reference segments",
+      "freight order multiple shipments LBN"
+    ],
+    "taggedAt": "2026-07-24T08:48:57.249Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part5.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_GTT_Part5",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part5.pdf"
+    ],
+    "tags": [
+      "RFF ZZC locationId segment",
+      "RFF ZZD ordinalNo reference",
+      "RFF ZZE latitude coordinate field",
+      "RFF ZZF longitude coordinate field",
+      "DTM date time period UTC timestamp",
+      "C506 reference code qualifier 1153 1154",
+      "C507 date time period format code 2379",
+      "SG5 segment group RFF DTM fields"
+    ],
+    "taggedAt": "2026-07-24T08:48:57.249Z"
+  },
+  "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part6.pdf": {
+    "title": "SAP_LBN_IFTSTA_D01C_GTT_Part6",
+    "urls": [
+      "file://api-specs/split/SAP_LBN_IFTSTA_D01C_GTT_Part6.pdf"
+    ],
+    "tags": [
+      "UNT message trailer segment",
+      "IFTSTA segment count control",
+      "UNH UNT reference number",
+      "UN/EDIFACT copyright statement",
+      "MIG IFTSTA GTT copyright"
+    ],
+    "taggedAt": "2026-07-24T08:48:57.249Z"
   }
 }

@@ -5,7 +5,6 @@
     "business-network-for-trading-partners": "https://help.sap.com/docs/business-network-for-trading-partners?version=2605",
     "business-network-for-procurement": "https://help.sap.com/docs/business-network-for-procurement?version=2605"
   },
-
   "SAP Business Network Buyer Administration Guide": {
     "sourceUrl": "https://help.sap.com/docs/ARIBA_NETWORK/5c0bdb0caa3042a288b3a1fb83b2fb1e?locale=en-US&state=PRODUCTION&version=2605",
     "portal": "business-network-for-procurement",
@@ -154,7 +153,6 @@
     "cachePrefix": "SBN/split/",
     "parts": 2
   },
-
   "_note_scc": "SCC training materials are internal SAP documents, not from SAP Help Portal. No public source URL.",
   "SCC : Indirect Cross Training   Advanced Ship Notice ": {
     "sourceUrl": null,
@@ -162,5 +160,173 @@
     "localFile": "~/Downloads/SCC : Indirect Cross Training   Advanced Ship Notice .pdf",
     "cachePrefix": "SBN/split/",
     "parts": 4
+  },
+  "How to Integrate with SAP Business Network Freight Collaboration (EDIFACT) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/cfe1a7e4c08f40108921f0d03906a988/LBN/en-US/SAP_LBN_EDI_HowToGuide.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_EDI_HowToGuide.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 2
+  },
+  "How to Integrate with SAP Business Network Freight Collaboration (ANSI X12) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/dc351ff34d4c479090fe596529920e48/LBN/en-US/SAP_LBN_ANSI_HowToGuide.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_HowToGuide.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 2
+  },
+  "Message Implementation Guideline (IFTMIN D96A) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/709ed22386604b1d92b05f5af80f99ca/LBN/en-US/SAP_LBN_IFTMIN_D96A.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_IFTMIN_D96A.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 9
+  },
+  "Message Implementation Guideline (IFTSTA D01C) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/f350a11d62fd4706b20bca0e6ea0039b/LBN/en-US/SAP_LBN_IFTSTA_D01C.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_IFTSTA_D01C.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 5
+  },
+  "Message Implementation Guideline (INVOIC D96A) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-invoic-d96a/LBN/en-US/SAP_LBN_INVOIC_D96A.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_INVOIC_D96A.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 7
+  },
+  "Message Implementation Guideline (IFTMBC D96A) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-iftmbc-d96a/LBN/en-US/SAP_LBN_IFTMBC_D96A.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_IFTMBC_D96A.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (ANSI X12 204) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/11af08411c5b4f5bb5337df022ad4847/LBN/en-US/SAP_LBN_ANSI_X12_204.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_204.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 7
+  },
+  "Message Implementation Guideline (ANSI X12 990) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/1c51c0c79d2244d7b2a861f38bdf44c0/LBN/en-US/SAP_LBN_ANSI_X12_990.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_990.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 3
+  },
+  "Message Implementation Guideline (ANSI X12 214) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/9894868a434742d086a2bf6baecd2809/LBN/en-US/SAP_LBN_ANSI_X12_214.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_214.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (ANSI X12 210) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-210/LBN/en-US/SAP_LBN_ANSI_X12_210.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_210.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (ANSI X12 997) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/a3502fc761014eb7a19a98f9eac90b64/LBN/en-US/SAP_LBN_ANSI_X12_997.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_997.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 3
+  },
+  "Message Implementation Guideline (ANSI X12 300) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-300/LBN/en-US/SAP_LBN_ANSI_X12_300.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_300.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 6
+  },
+  "Message Implementation Guideline (ANSI X12 301) - BNL": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-301/LBN/en-US/SAP_LBN_ANSI_X12_301.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_301.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 3
+  },
+  "Message Implementation Guideline (ANSI X12 303) - BNL FC": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-303-fc/LBN/en-US/SAP_LBN_ANSI_X12_303_FC.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_303_FC.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 3
+  },
+  "Message Implementation Guideline (ANSI X12 310) - BNL FC": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-310-fc/LBN/en-US/SAP_LBN_ANSI_X12_310_FC.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_310_FC.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 5
+  },
+  "Message Implementation Guideline (ANSI X12 315) - BNL FC": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-315-fc/LBN/en-US/SAP_LBN_ANSI_X12_315_FC.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_315_FC.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (ANSI X12 840) - BNL FC": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-840-fc/LBN/en-US/SAP_LBN_ANSI_X12_840_FC.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_840_FC.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 7
+  },
+  "Message Implementation Guideline (ANSI X12 843) - BNL FC": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-843-fc/LBN/en-US/SAP_LBN_ANSI_X12_843_FC.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_843_FC.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (ANSI X12 864) - BNL FC": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-864-fc/LBN/en-US/SAP_LBN_ANSI_X12_864_FC.pdf",
+    "portal": "SAP_LBN_FC_OPTION",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_864_FC.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 3
+  },
+  "How to Integrate with SAP Business Network Global Track and Trace (ANSI X12) - GTT": {
+    "sourceUrl": "https://help.sap.com/doc/615ef19abd554241b1f1606f0d134353/LBN/en-US/SAP_LBN_ANSI_HowToGuide_GTT.pdf",
+    "portal": "business-network-global-track-and-trace",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_HowToGuide_GTT.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 2
+  },
+  "Message Implementation Guideline (ANSI X12 213) - GTT": {
+    "sourceUrl": "https://help.sap.com/doc/bd29b5dfa52e4d9a91b32cd14a1b9e4c/LBN/en-US/SAP_LBN_ANSI_X12_213.pdf",
+    "portal": "business-network-global-track-and-trace",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_213.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 3
+  },
+  "Message Implementation Guideline (ANSI X12 214) - GTT": {
+    "sourceUrl": "https://help.sap.com/doc/1b6280d5555a44e6b8c2cb4e5cfd8013/LBN/en-US/SAP_LBN_ANSI_X12_214_GTT.pdf",
+    "portal": "business-network-global-track-and-trace",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_214_GTT.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (ANSI X12 315) - GTT": {
+    "sourceUrl": "https://help.sap.com/doc/message-implementation-guideline-ansi-x12-315-gtt/LBN/en-US/SAP_LBN_ANSI_X12_315_GTT.pdf",
+    "portal": "business-network-global-track-and-trace",
+    "localFile": "~/Downloads/BNL/SAP_LBN_ANSI_X12_315_GTT.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 4
+  },
+  "Message Implementation Guideline (IFTSTA D01C) - GTT": {
+    "sourceUrl": "https://help.sap.com/doc/9cc21c6fda37437eaee763d114d5bbfe/LBN/en-US/SAP_LBN_IFTSTA_D01C_GTT.pdf",
+    "portal": "business-network-global-track-and-trace",
+    "localFile": "~/Downloads/BNL/SAP_LBN_IFTSTA_D01C_GTT.pdf",
+    "cachePrefix": "api-specs/split/",
+    "parts": 6
   }
 }
