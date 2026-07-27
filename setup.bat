@@ -16,7 +16,7 @@ echo.
 echo [1/4] Checking and installing prerequisites...
 echo.
 
-where winget >nul 2>&1
+winget --version >nul 2>&1
 if errorlevel 1 (
     echo   winget not found. Please update Windows to version 1709 or later,
     echo   then re-run this script.
