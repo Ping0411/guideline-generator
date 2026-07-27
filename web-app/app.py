@@ -255,10 +255,15 @@ Always retrieve the spec first via get_sap_page:
 6. One mapping path per field: pick ONE qualifier route per spec; never mix paths.
 7. Enumerated fields: look up Permitted Codes in spec. Never infer from name.
 8. Time zone: look up Appendix 623. UoM: look up Appendix 355 (UN/CEFACT ≠ ANSI X12). Language: ISO 639-1 two-letter only.
+8a. Amount data type: N2 = integer with implied 2 decimals (×100); R = literal decimal. Check spec per field — never infer.
+8b. Every segment: check all elements' M/O/C in spec Element Reference before filling. All M fields are mandatory without exception.
+8c. Non-US/CA address: state/province → N405=SP + N406, not N403.
 
 **Phase 3 — Verify (mandatory before output)**
 9. Header segments appear exactly once; line loop count matches cXML; every mapped element appears exactly once; segment order matches spec example.
 10. Count ST→SE inclusive. Must equal SE01. Fix any mismatch before outputting.
+11. SAC check: SAC01/02 (type+code), SAC05 (N2 ×100), SAC15 (description, M), SAC16 (language, M).
+12. TXI check: TXI01 (type), TXI02 (amount), TXI03 (rate), TXI04 (jurisdiction qualifier), TXI05 (jurisdiction), TXI08 (taxable amount).
 
 **Descriptions**
 Pre-check (mandatory, no exceptions):
@@ -328,14 +333,14 @@ def extract_binary_attachment(name, mime, b64data):
             import pypdf, io
             reader = pypdf.PdfReader(io.BytesIO(raw))
             text = '\n'.join(page.extract_text() or '' for page in reader.pages).strip()
-            return text[:40000] if text else f"[Could not extract text from {name}]"
+            return text[:200000] if text else f"[Could not extract text from {name}]"
 
         elif ext in ('.doc', '.docx'):
             from docx import Document
             import io
             doc = Document(io.BytesIO(raw))
             text = '\n'.join(p.text for p in doc.paragraphs if p.text.strip())
-            return text[:40000] if text else f"[Could not extract text from {name}]"
+            return text[:200000] if text else f"[Could not extract text from {name}]"
 
         elif ext == '.xlsx':
             import openpyxl
@@ -349,7 +354,7 @@ def extract_binary_attachment(name, mime, b64data):
                     if any(v.strip() for v in row_vals):
                         lines.append('\t'.join(row_vals))
             text = '\n'.join(lines)
-            return text[:40000] if text else f"[Could not extract text from {name}]"
+            return text[:200000] if text else f"[Could not extract text from {name}]"
 
         elif ext == '.xls':
             # openpyxl does not support legacy .xls format — use xlrd instead
@@ -364,7 +369,7 @@ def extract_binary_attachment(name, mime, b64data):
                     if any(v.strip() for v in row_vals):
                         lines.append('\t'.join(row_vals))
             text = '\n'.join(lines)
-            return text[:40000] if text else f"[Could not extract text from {name}]"
+            return text[:200000] if text else f"[Could not extract text from {name}]"
 
     except Exception as e:
         return f"[Error extracting {name}: {e}]"
