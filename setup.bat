@@ -53,48 +53,31 @@ echo.
 set PYTHON_CMD=
 set PYTHON_OK=0
 
-:: Try py launcher first (most reliable on Windows, not affected by Store aliases)
+:: Try py launcher first
 py --version >nul 2>&1
 if not errorlevel 1 (
-    for /f "tokens=*" %%v in ('py --version 2^>^&1') do set PY_VER=%%v
-    echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
+    set PYTHON_CMD=py
+    set PYTHON_OK=1
+)
+
+:: Try python3
+if %PYTHON_OK%==0 (
+    python3 --version >nul 2>&1
     if not errorlevel 1 (
-        set PYTHON_CMD=py
+        set PYTHON_CMD=python3
         set PYTHON_OK=1
     )
 )
 
+:: Try python (skip Windows Store placeholder)
 if %PYTHON_OK%==0 (
-    python3 --version >nul 2>&1
+    python --version >nul 2>&1
     if not errorlevel 1 (
-        for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
+        for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
         echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
         if not errorlevel 1 (
-            set PYTHON_CMD=python3
+            set PYTHON_CMD=python
             set PYTHON_OK=1
-        )
-    )
-)
-
-if %PYTHON_OK%==0 (
-    where python >nul 2>&1
-    if not errorlevel 1 (
-        set PY_PATH=
-        for /f "tokens=*" %%p in ('where python 2^>nul') do (
-            if not defined PY_PATH set PY_PATH=%%p
-        )
-        echo !PY_PATH! | findstr /i "WindowsApps" >nul 2>&1
-        if not errorlevel 1 (
-            echo   Skipping Windows Store python placeholder ^(!PY_PATH!^)...
-            set PY_PATH=
-        ) else (
-            for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
-            echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
-            if not errorlevel 1 (
-                set PYTHON_CMD=python
-                set PYTHON_OK=1
-            )
-            set PY_PATH=
         )
     )
 )
