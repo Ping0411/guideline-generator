@@ -27,7 +27,7 @@ if errorlevel 1 (
 :: ── Node.js ───────────────────────────────────────────────────────────────────
 
 set NODE_OK=0
-where node >nul 2>&1
+node --version >nul 2>&1
 if not errorlevel 1 (
     for /f "tokens=2 delims=v." %%a in ('node --version') do set NODE_MAJOR=%%a
     if !NODE_MAJOR! GEQ 18 (
@@ -54,7 +54,7 @@ set PYTHON_CMD=
 set PYTHON_OK=0
 
 :: Try py launcher first (most reliable on Windows, not affected by Store aliases)
-where py >nul 2>&1
+py --version >nul 2>&1
 if not errorlevel 1 (
     for /f "tokens=*" %%v in ('py --version 2^>^&1') do set PY_VER=%%v
     echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
@@ -65,7 +65,7 @@ if not errorlevel 1 (
 )
 
 if %PYTHON_OK%==0 (
-    where python3 >nul 2>&1
+    python3 --version >nul 2>&1
     if not errorlevel 1 (
         for /f "tokens=*" %%v in ('python3 --version 2^>^&1') do set PY_VER=%%v
         echo !PY_VER! | findstr /i "Python 3" >nul 2>&1
