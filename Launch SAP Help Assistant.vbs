@@ -11,6 +11,10 @@ objShell.Popup "SAP Help Assistant is starting, please wait...", 4, "SAP Help As
 ' Kill any existing instance on port 5001
 objShell.Run "cmd /c FOR /F ""tokens=5"" %%a IN ('netstat -aon ^| findstr :5001 ^| findstr LISTENING') DO taskkill /F /PID %%a", 0, True
 
+' Kill any existing Joule SSE connector and restart it
+objShell.Run "cmd /c FOR /F ""tokens=5"" %%a IN ('netstat -aon ^| findstr :3456 ^| findstr LISTENING') DO taskkill /F /PID %%a", 0, True
+objShell.Run "cmd /c set MCP_HTTP_PORT=3456 && node """ & scriptDir & "\index.js"" > ""%TEMP%\sap_help_mcp_sse.log"" 2>&1", 0, False
+
 ' Detect Python command (py launcher is most reliable on Windows)
 Dim pyCmd
 pyCmd = ""

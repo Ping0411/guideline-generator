@@ -13,6 +13,10 @@ fi
 # Kill any existing instance on port 5001
 lsof -ti:5001 | xargs kill -9 2>/dev/null
 
+# Kill any existing Joule SSE connector and restart it
+lsof -ti:3456 | xargs kill -9 2>/dev/null
+MCP_HTTP_PORT=3456 node index.js > /tmp/sap_help_mcp_sse.log 2>&1 &
+
 # Start Flask in background
 cd web-app
 python3 app.py > /tmp/sap_help_assistant.log 2>&1 &
