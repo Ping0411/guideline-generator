@@ -315,6 +315,7 @@ if (httpPort) {
       const transport = new SSEServerTransport("/messages", res);
       transports.set(transport.sessionId, transport);
       transport.onclose = () => transports.delete(transport.sessionId);
+      try { await server.close(); } catch (_) {}
       await server.connect(transport);
 
     } else if (req.method === "POST" && url.pathname === "/messages") {
