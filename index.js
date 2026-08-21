@@ -210,8 +210,8 @@ Step 6 — Read and extract the answer:
 - Once sufficient information is found, stop and answer immediately. Do not continue searching for a "more authoritative" source.
 - EDI Guide special handling: Part1 is TOC only. Segment detail starts from Part2 and is continuous — read forward if detail seems incomplete.
 - BNL EDI FC vs GTT document selection: Some transaction types (214, 315, IFTSTA D01C) exist in both a Freight Collaboration (FC) version and a Global Track and Trace (GTT) version. When analyzing an actual EDI message, determine which version to reference as follows:
-  - X12 214: If the transaction set header area (immediately after B10) contains `L11*...*T7~` (qualifier T7 = Affected Subsystem Code) with value GTT → use GTT document (`SAP_LBN_ANSI_X12_214_GTT`). If only `L11*...*06~` is present without T7 → use FC document (`SAP_LBN_ANSI_X12_214`).
-  - EDIFACT IFTSTA D01C: If any CNI segment contains `RFF+ZZ9:GTT'` → use GTT document (`SAP_LBN_IFTSTA_D01C_GTT`). If CNI contains `RFF+ZZ3:` or `RFF+ZZ4:` (port/customs fields) → use FC document (`SAP_LBN_IFTSTA_D01C`).
+  - X12 214: If the transaction set header area (immediately after B10) contains \`L11*...*T7~\` (qualifier T7 = Affected Subsystem Code) with value GTT → use GTT document (\`SAP_LBN_ANSI_X12_214_GTT\`). If only \`L11*...*06~\` is present without T7 → use FC document (\`SAP_LBN_ANSI_X12_214\`).
+  - EDIFACT IFTSTA D01C: If any CNI segment contains \`RFF+ZZ9:GTT'\` → use GTT document (\`SAP_LBN_IFTSTA_D01C_GTT\`). If CNI contains \`RFF+ZZ3:\` or \`RFF+ZZ4:\` (port/customs fields) → use FC document (\`SAP_LBN_IFTSTA_D01C\`).
   - X12 315: FC and GTT versions have identical message structure and examples — cannot be distinguished from the EDI message alone. Determine from business context (user's stated scenario or system context).
 
 For supplier-submitted document validation errors (OC / ASN / Invoice), first check Transaction Rules before looking at error message lists.
@@ -299,5 +299,57 @@ server.tool(
   }
 );
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+const httpPort = process.env.MCP_HTTP_PORT ? parseInt(process.env.MCP_HTTP_PORT) : null;
+
+if (httpPort) {
+  const { createServer } = await import("node:http");
+  const { SSEServerTransport } = await import("@modelcontextprotocol/sdk/server/sse.js");
+  const transports = new Map();
+
+  const httpServer = createServer(async (req, res) => {
+    const url = new URL(req.url, `http://127.0.0.1:${httpPort}`);
+
+    if (req.method === "GET" && url.pathname === "/sse") {
+      // SSE connection endpoint — client connects here first
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      const transport = new SSEServerTransport("/messages", res);
+      transports.set(transport.sessionId, transport);
+      transport.onclose = () => transports.delete(transport.sessionId);
+      await server.connect(transport);
+
+    } else if (req.method === "POST" && url.pathname === "/messages") {
+      // Message endpoint — client posts JSON-RPC here
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      const sessionId = url.searchParams.get("sessionId");
+      const transport = transports.get(sessionId);
+      if (!transport) {
+        res.writeHead(404);
+        res.end("Session not found");
+        return;
+      }
+      let body = "";
+      req.on("data", chunk => { body += chunk; });
+      req.on("end", async () => {
+        await transport.handlePostMessage(req, res, JSON.parse(body));
+      });
+
+    } else if (req.method === "OPTIONS") {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      res.writeHead(204);
+      res.end();
+
+    } else {
+      res.writeHead(404);
+      res.end();
+    }
+  });
+
+  httpServer.listen(httpPort, "127.0.0.1", () => {
+    process.stderr.write(`SAP Help MCP SSE server listening on http://127.0.0.1:${httpPort}/sse\n`);
+  });
+} else {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
