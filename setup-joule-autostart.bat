@@ -62,7 +62,7 @@ schtasks /delete /tn "SAP Help Joule Connector" /f >nul 2>&1
 :: Create task: runs at login for current user, hidden window
 schtasks /create ^
   /tn "SAP Help Joule Connector" ^
-  /tr "cmd /c set MCP_HTTP_PORT=3456 && \"%NODE_BIN%\" \"%~dp0index.js\" >> \"%TEMP%\sap_help_mcp_sse.log\" 2>&1" ^
+  /tr "\"%~dp0start-joule-connector.bat\"" ^
   /sc onlogon ^
   /ru "%USERNAME%" ^
   /rl limited ^
