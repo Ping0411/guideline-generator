@@ -6,6 +6,7 @@ import json
 import base64
 import threading
 import subprocess
+import tempfile
 import requests
 import datetime
 from pathlib import Path
@@ -62,9 +63,8 @@ _lock = threading.Lock()
 _edi_sessions = {}
 _edi_sessions_lock = threading.Lock()
 
-# EDI spec file cache — one file per transaction set, stored in /tmp/edi_spec_cache/
-# Files persist across requests within the same server run; regenerated if missing.
-_SPEC_CACHE_DIR = Path("/tmp/edi_spec_cache")
+# EDI spec file cache — one file per transaction set, stored in system temp dir
+_SPEC_CACHE_DIR = Path(tempfile.gettempdir()) / "edi_spec_cache"
 _SPEC_CACHE_DIR.mkdir(exist_ok=True)
 
 # Maps transaction set → (doc_name, total_parts)
