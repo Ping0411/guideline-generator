@@ -40460,5 +40460,147 @@
       "MIG IFTSTA GTT copyright"
     ],
     "taggedAt": "2026-07-24T08:48:57.249Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part1.pdf": {
+    "title": "EDIConfiguration_Part1",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part1.pdf"
+    ],
+    "tags": [
+      "EDI document flow VAN transport",
+      "EDIINT AS2 routing configuration",
+      "cXML to X12 EDIFACT translation",
+      "SAP Business Network EDI setup",
+      "VAN interconnect Inovis network",
+      "functional acknowledgment requirements",
+      "EDI configuration guide table of contents",
+      "incoming outgoing document flow"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part2.pdf": {
+    "title": "EDIConfiguration_Part2",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part2.pdf"
+    ],
+    "tags": [
+      "outgoing EDI document flow AS2",
+      "EDI document mapping cXML translation",
+      "single data map per document type",
+      "EDI implementation guides SEF files",
+      "SAP Business Network account prerequisites EDI",
+      "EDI routing configuration steps",
+      "ANSI X12 EDIFACT supported versions",
+      "EDI document types purchase order invoice",
+      "functional acknowledgment 997 CONTRL requirements",
+      "72 hour acknowledgment deadline",
+      "transaction level acknowledgment AK2 AK5 UCM",
+      "EDI 863 quality inspection document",
+      "ANSI X12 820 remittance advice",
+      "ANSI X12 856 ship notice DESADV",
+      "maximum interchange size 60 MB"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part3.pdf": {
+    "title": "EDIConfiguration_Part3",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part3.pdf"
+    ],
+    "tags": [
+      "EDI VAN configuration test account",
+      "EDI routing configuration page fields",
+      "ANSI X12 ISA qualifier interchange identifier",
+      "UN EDIFACT interchange ID qualifier",
+      "EDI administrator companywide assignment",
+      "VAN interconnect INOVIS ARIBAEDI",
+      "map purchase order tax details EDI",
+      "test production mode ISA15 UNB11",
+      "catalog tester test purchase orders",
+      "functional acknowledgment 997 CONTRL",
+      "order routing status accepted sent acknowledged failed",
+      "EDI Tester validate ANSI X12 documents",
+      "customer ANID GS02 application sender ID",
+      "switch to test account masthead"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part4.pdf": {
+    "title": "EDIConfiguration_Part4",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part4.pdf"
+    ],
+    "tags": [
+      "EDI VAN test with customers",
+      "functional acknowledgment 997 CONTRL",
+      "switch to production mode EDI",
+      "EDIINT AS2 routing configuration",
+      "AS2 digital certificate X509",
+      "EDIINT AS2 server URL ZZARIBAEDI",
+      "extrinsic data cXML to X12 EDIFACT mapping",
+      "MDN synchronous protocol required",
+      "firewall TCP port 443 HTTPS",
+      "unique ISA control number requirement",
+      "order routing troubleshooting symptoms",
+      "AS2 S/MIME SHA-1 authentication"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part5.pdf": {
+    "title": "EDIConfiguration_Part5",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part5.pdf"
+    ],
+    "tags": [
+      "EDI troubleshooting order routing",
+      "purchase orders not appearing inbox",
+      "functional acknowledgement order status",
+      "ISA15 test production mode flag",
+      "GS02 UNB0203 customer identification",
+      "EDI interchange ID mismatch VAN",
+      "non-compliant data routing failure",
+      "invoice EDI translation errors",
+      "cXML validation invoice rules",
+      "997 CONTRL functional acknowledgment",
+      "ANSI X12 850 cXML OrderRequest example",
+      "organization ID domain NetworkId DUNS"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part6.pdf": {
+    "title": "EDIConfiguration_Part6",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part6.pdf"
+    ],
+    "tags": [
+      "cXML OrderRequest to X12 850 example",
+      "EDIFACT ORDERS purchase order example",
+      "X12 997 functional acknowledgement AK9 fields",
+      "EDIFACT CONTRL acknowledgement UCI UCM segments",
+      "purchase order contact mapping PER CTA COM",
+      "extrinsics REF mapping EDI",
+      "SAC segment shipping distribution charge",
+      "cXML to EDI translation contact grouping"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
+  },
+  "file://SBN/split/EDIConfiguration_Part7.pdf": {
+    "title": "EDIConfiguration_Part7",
+    "urls": [
+      "file://SBN/split/EDIConfiguration_Part7.pdf"
+    ],
+    "tags": [
+      "purchase order REF extrinsics mapping",
+      "invoice REF RFF segment translation",
+      "reserved REF codes X12",
+      "reserved RFF codes EDIFACT",
+      "ANSI X12 REF qualifier cXML extrinsic",
+      "EDIFACT RFF qualifier cXML extrinsic",
+      "unsupported ANSI UOM codes",
+      "X12 850 cXML extrinsics transformation",
+      "header level REF 1050 qualifiers",
+      "line item REF 2120 qualifiers"
+    ],
+    "taggedAt": "2026-08-26T09:44:59.722Z"
   }
 }

@@ -830,3 +830,12 @@ You have permission to use: pdfgrep, find, ls, unzip for file operations.
   - Part4: IFTSTA RFF Reference Segments ZZ5–ZZB (orderingPartyLbnId ZZ5, unloadingStopId ZZ8, lbnSourceSystemId ZZ9 mandatory GTT value, trackingType ZZA, locationType ZZB, C506 composite element 1153/1154 field details)
   - Part5: RFF Reference Segments ZZC–ZZF + DTM Segment (locationId ZZC, ordinalNo ZZD, latitude ZZE, longitude ZZF, C506 composite element, DTM C507 UTC timestamp format codes 203/204/102)
   - Part6: UNT Message Trailer + Copyright Statements (0074 segment count element, 0062 message reference number, ASC X12 / UN/EDIFACT / ISO / UN/CEFACT copyright notices)
+
+- **EDIConfiguration** `file://SBN/split/EDIConfiguration_Part{N}.pdf` (N = 1–7)
+  - Part1: TOC + EDI Overview (VAN transport, EDIINT AS2 transport, incoming/outgoing document flow, cXML to X12 850/EDIFACT ORDERS translation, Inovis VAN network)
+  - Part2: EDI Document Flow + Supported Document Types + Functional Acknowledgment Rules (outgoing AS2 flow, cXML translation mapping, X12/EDIFACT 004010/D98A versions, PO/invoice/ship notice/remittance/quality inspection EDI types, 72-hour acknowledgment deadline, transaction-level AK2/AK5/UCM segments)
+  - Part3: EDI VAN Configuration and Testing (EDI routing configuration fields for ANSI X12/EDIFACT, VAN interconnect INOVIS/ARIBAEDI, EDI administrator setup, tax/payment/date mapping options, catalog tester self-testing, functional acknowledgment 997/CONTRL, order-routing status levels, EDI Tester tool for document validation)
+  - Part4: EDI Testing with Customers + EDIINT AS2 Configuration (functional acknowledgment sending, switch to production mode steps, extrinsic data cXML-to-EDI mapping, EDIINT AS2 server setup with SHA-1/S-MIME/HTTPS, digital certificate X.509 V3, SAP Business Network AS2 ID ZZARIBAEDI, MDN protocol, firewall port 443)
+  - Part5: EDI Troubleshooting + cXML/EDI Example Documents (orders not in inbox, interchange ID mismatch, ISA15 test/production flag, FA overdue status, invoice translation errors, cXML OrderRequest mapping example)
+  - Part6: EDI Example Documents + Contact Mapping (cXML OrderRequest to X12 850, EDIFACT ORDERS, X12 997 AK9 fields, EDIFACT CONTRL UCI/UCM, PO contact mapping to PER/CTA COM segments)
+  - Part7: REF/RFF Mapping + Unsupported Segments/UOMs (PO extrinsics to REF mapping, reserved REF/RFF codes table, ANSI X12 header/line REF qualifiers, EDIFACT RFF data element 1153, unsupported ANSI UOM bidirectional translation)

@@ -323,7 +323,7 @@ if (SKIP_INDEX) {
   console.log("  --skip-index 已设置，跳过（由调用方统一重建）");
 } else if (!DRY_RUN) {
   try {
-    execSync(`python3 ${join(__dirname, "build_index.py")}`, { stdio: "inherit" });
+    execSync(`python3 ${join(__dirname, "build_index.py")}`, { stdio: "inherit", env: { ...process.env, TRANSFORMERS_OFFLINE: "1", HF_DATASETS_OFFLINE: "1" } });
   } catch (e) {
     console.error("  build_index.py 执行出错:", e.message);
   }
