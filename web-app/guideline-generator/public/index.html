@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integration Guideline Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #0f3460;
+      color: white;
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 36px auto;
+      padding: 0 20px;
+    }
+
+    /* Step indicator */
+    .steps {
+      display: flex;
+      align-items: center;
+      margin-bottom: 32px;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #888;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ccc;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step.active .step-num { background: #0f3460; }
+    .step.active { color: #0f3460; font-weight: 600; }
+    .step.done .step-num { background: #27ae60; }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #ddd;
+      margin: 0 8px;
+    }
+
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #0f3460;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e8edf5;
+    }
+
+    /* Question block */
+    .q-block {
+      margin-bottom: 28px;
+    }
+    .q-block:last-child { margin-bottom: 0; }
+
+    .q-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .q-label .q-num {
+      background: #e8edf5;
+      color: #0f3460;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Radio / checkbox options */
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .option-btn {
+      padding: 7px 16px;
+      border: 2px solid #dde3ef;
+      border-radius: 20px;
+      background: white;
+      font-size: 13px;
+      color: #444;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .option-btn:hover { border-color: #0f3460; color: #0f3460; }
+    .option-btn.selected {
+      background: #0f3460;
+      border-color: #0f3460;
+      color: white;
+    }
+
+    /* Text input */
+    .text-input {
+      width: 100%;
+      padding: 9px 13px;
+      border: 2px solid #dde3ef;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #333;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .text-input:focus { border-color: #0f3460; }
+
+    /* Sub-question */
+    .sub-block {
+      margin-top: 14px;
+      padding: 16px;
+      background: #f7f9fc;
+      border-radius: 8px;
+      border-left: 3px solid #0f3460;
+    }
+    .sub-block .q-label { font-size: 13px; }
+
+    /* Two-col sub questions */
+    .sub-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    /* Section separator */
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #999;
+      margin: 28px 0 16px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed #c5d0e0;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #fafbfd;
+    }
+    .upload-area:hover { border-color: #0f3460; background: #f0f4fb; }
+    .upload-area.has-file { border-color: #27ae60; background: #f0fbf4; }
+    .upload-area.drag-over { border-color: #0f3460; background: #e8eef8; border-style: solid; }
+    .cxml-file-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .cxml-file-item { display: flex; align-items: center; justify-content: space-between; background: #f0fbf4; border: 1px solid #27ae60; border-radius: 6px; padding: 6px 10px; font-size: 13px; color: #1a5c38; }
+    .cxml-file-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cxml-file-delete { margin-left: 10px; cursor: pointer; color: #c0392b; font-size: 16px; font-weight: bold; line-height: 1; flex-shrink: 0; }
+    .cxml-file-delete:hover { color: #922b21; }
+    .upload-area input[type=file] { display: none; }
+    .upload-label { font-size: 13px; color: #666; }
+    .upload-label strong { color: #0f3460; }
+    .file-name { font-size: 12px; color: #27ae60; margin-top: 6px; font-weight: 600; }
+
+    /* Textarea */
+    .textarea-input {
+      width: 100%;
+      padding: 10px 13px;
+      border: 2px solid #dde3ef;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #333;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    .textarea-input:focus { border-color: #0f3460; }
+
+    /* Invoice ID sub fields */
+    .invoiceid-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .invoiceid-grid .field-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    /* Navigation buttons */
+    .nav-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .btn {
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: #0f3460;
+      color: white;
+    }
+    .btn-primary:hover { background: #0a2540; }
+    .btn-secondary {
+      background: white;
+      color: #0f3460;
+      border: 2px solid #0f3460;
+    }
+    .btn-secondary:hover { background: #f0f4fb; }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* ── Loading overlay ────────────────────────────────────────── */
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 52, 96, 0.55);
+      backdrop-filter: blur(3px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #loading-overlay.active { display: flex; }
+
+    .loading-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      min-width: 280px;
+    }
+
+    /* Spinning dots ring */
+    .spinner {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+    }
+    .spinner span {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0f3460;
+      animation: spinner-fade 1.2s linear infinite;
+    }
+    .spinner span:nth-child(1)  { transform: rotate(  0deg) translateY(-28px); animation-delay: 0s; }
+    .spinner span:nth-child(2)  { transform: rotate( 30deg) translateY(-28px); animation-delay: -1.1s; }
+    .spinner span:nth-child(3)  { transform: rotate( 60deg) translateY(-28px); animation-delay: -1.0s; }
+    .spinner span:nth-child(4)  { transform: rotate( 90deg) translateY(-28px); animation-delay: -0.9s; }
+    .spinner span:nth-child(5)  { transform: rotate(120deg) translateY(-28px); animation-delay: -0.8s; }
+    .spinner span:nth-child(6)  { transform: rotate(150deg) translateY(-28px); animation-delay: -0.7s; }
+    .spinner span:nth-child(7)  { transform: rotate(180deg) translateY(-28px); animation-delay: -0.6s; }
+    .spinner span:nth-child(8)  { transform: rotate(210deg) translateY(-28px); animation-delay: -0.5s; }
+    .spinner span:nth-child(9)  { transform: rotate(240deg) translateY(-28px); animation-delay: -0.4s; }
+    .spinner span:nth-child(10) { transform: rotate(270deg) translateY(-28px); animation-delay: -0.3s; }
+    .spinner span:nth-child(11) { transform: rotate(300deg) translateY(-28px); animation-delay: -0.2s; }
+    .spinner span:nth-child(12) { transform: rotate(330deg) translateY(-28px); animation-delay: -0.1s; }
+    @keyframes spinner-fade {
+      0%, 39%, 100% { opacity: 0.15; transform: rotate(var(--r, 0deg)) translateY(-28px) scale(0.7); }
+      40%            { opacity: 1;    transform: rotate(var(--r, 0deg)) translateY(-28px) scale(1);   }
+    }
+
+    .loading-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #0f3460;
+      margin-bottom: 8px;
+    }
+    .loading-status {
+      font-size: 13px;
+      color: #666;
+      min-height: 18px;
+      transition: opacity 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+<header style="display:flex; align-items:center; gap:12px;">
+  <span>Integration Guideline Generator</span>
+  <a href="http://localhost:5001" target="_blank" rel="noopener noreferrer" style="
+    margin-left:auto; padding:5px 13px; background:rgba(255,255,255,0.2);
+    color:#fff; border-radius:5px; font-size:13px; font-weight:500;
+    text-decoration:none; white-space:nowrap;
+  ">SAP Help Assistant ↗</a>
+</header>
+
+<div class="container">
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="step-ind-1">
+      <div class="step-num">1</div>
+      <span>Basic Setup</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step-ind-2">
+      <div class="step-num">2</div>
+      <span>Transaction Details</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="step-ind-3">
+      <div class="step-num">3</div>
+      <span>Files & Generate</span>
+    </div>
+  </div>
+
+  <!-- ===== STEP 1: Basic Setup ===== -->
+  <div id="step-1">
+    <div class="card">
+      <h2>Basic Setup</h2>
+
+      <!-- Q1: Language -->
+      <div class="q-block">
+        <div class="q-label"><span class="q-num">Q1</span> Language for Integration Guideline</div>
+        <div class="options" data-q="q1" data-type="single">
+          <div class="option-btn" data-value="en">English</div>
+          <div class="option-btn" data-value="zh">中文</div>
+          <div class="option-btn" data-value="ja">日本語</div>
+        </div>
+      </div>
+
+      <!-- Q2: Required Transactions -->
+      <div class="q-block">
+        <div class="q-label"><span class="q-num">Q2</span> Required Transactions</div>
+        <div class="options" data-q="q2" data-type="multi">
+          <div class="option-btn" data-value="PO">PO</div>
+          <div class="option-btn" data-value="OC">OC</div>
+          <div class="option-btn" data-value="ASN">ASN</div>
+          <div class="option-btn" data-value="Invoice">Invoice</div>
+          <div class="option-btn" data-value="GR">GR</div>
+        </div>
+      </div>
+
+      <!-- Q3: Optional Transactions -->
+      <div class="q-block">
+        <div class="q-label"><span class="q-num">Q3</span> Optional Transactions</div>
+        <div class="options" data-q="q3" data-type="multi">
+          <div class="option-btn" data-value="PO">PO</div>
+          <div class="option-btn" data-value="OC">OC</div>
+          <div class="option-btn" data-value="ASN">ASN</div>
+          <div class="option-btn" data-value="Invoice">Invoice</div>
+          <div class="option-btn" data-value="GR">GR</div>
+          <div class="option-btn" data-value="None">None</div>
+        </div>
+      </div>
+
+      <!-- Q14_MC: Multiple Countries/Region Involved -->
+      <div class="q-block hidden" id="q14mc-block">
+        <div class="q-label"><span class="q-num">Q4</span> Multiple Countries/Region Involved?</div>
+        <div class="options" data-q="q14mc" data-type="single">
+          <div class="option-btn" data-value="Yes">Yes</div>
+          <div class="option-btn" data-value="No">No</div>
+        </div>
+      </div>
+
+      <!-- Q13: EDI Required -->
+      <div class="q-block">
+        <div class="q-label"><span class="q-num">Q5</span> EDI Required?</div>
+        <div class="options" data-q="q13" data-type="single">
+          <div class="option-btn" data-value="Yes">Yes</div>
+          <div class="option-btn" data-value="No">No</div>
+        </div>
+        <!-- EDI Format sub-question -->
+        <div class="sub-block hidden" id="q13-sub">
+          <div class="q-label"><span class="q-num">↳</span> EDI Format</div>
+          <div class="options" data-q="q13-format" data-type="single">
+            <div class="option-btn" data-value="X12">X12</div>
+            <div class="option-btn" data-value="EDIFACT">EDIFACT</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="nav-bar">
+      <button class="btn btn-primary" onclick="goStep(2)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 2: Transaction Details ===== -->
+  <div id="step-2" class="hidden">
+    <div class="card">
+      <h2>Transaction Details</h2>
+
+      <!-- PO section -->
+      <div id="po-section" class="hidden">
+        <div class="section-title">Purchase Order (PO)</div>
+
+        <!-- Q4 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q5</span> Supported PO Types</div>
+          <div class="options" data-q="q4" data-type="multi">
+            <div class="option-btn" data-value="Catalog PO">Catalog PO</div>
+            <div class="option-btn" data-value="Non-Catalog PO">Non-Catalog PO</div>
+            <div class="option-btn" data-value="Blanket Order">Blanket Order</div>
+            <div class="option-btn" data-value="Service PO (Service structure)">Service PO (Service structure)</div>
+            <div class="option-btn" data-value="Service PO (Material structure)">Service PO (Material structure)</div>
+            <div class="option-btn" data-value="Change Order">Change Order</div>
+            <div class="option-btn" data-value="Cancel Order">Cancel Order</div>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q6</span> Is shipTo sent on header or line level always?</div>
+          <div class="options" data-q="q5" data-type="single">
+            <div class="option-btn" data-value="Header">Header</div>
+            <div class="option-btn" data-value="Line Level">Line Level</div>
+            <div class="option-btn" data-value="Both">Both</div>
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q7</span> Is payment terms included in PO?</div>
+          <div class="options" data-q="q6" data-type="single">
+            <div class="option-btn" data-value="Yes">Yes</div>
+            <div class="option-btn" data-value="No">No</div>
+            <div class="option-btn" data-value="Optional">Optional</div>
+          </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q8</span> Is tax information included in PO?</div>
+          <div class="options" data-q="q7" data-type="single">
+            <div class="option-btn" data-value="Yes">Yes</div>
+            <div class="option-btn" data-value="No">No</div>
+            <div class="option-btn" data-value="Optional">Optional</div>
+          </div>
+        </div>
+
+        <!-- Q8 (conditional on Non-Catalog PO in Q4) -->
+        <div class="q-block hidden" id="q8-block">
+          <div class="q-label"><span class="q-num">Q9</span> How to identify non-catalog PO?</div>
+          <div class="options" data-q="q8" data-type="single">
+            <div class="option-btn" data-value='isAdHoc="yes"'>isAdHoc="yes"</div>
+            <div class="option-btn" data-value='SupplierPartID is "NotAvailable"'>SupplierPartID is "NotAvailable"</div>
+            <div class="option-btn" data-value="Other">Other</div>
+          </div>
+          <div class="hidden" id="q8-other-wrap" style="margin-top:10px;">
+            <input type="text" class="text-input" id="q8-other" placeholder="Please describe how to identify non-catalog PO..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- OC section -->
+      <div id="oc-section" class="hidden">
+        <div class="section-title">Order Confirmation (OC)</div>
+
+        <!-- Q9 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q10</span> Enhanced order confirmation integration capabilities for hosted and integrated suppliers?</div>
+          <div class="options" data-q="q9" data-type="single">
+            <div class="option-btn" data-value="Yes">Yes</div>
+            <div class="option-btn" data-value="No">No</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice section -->
+      <div id="invoice-section" class="hidden">
+        <div class="section-title">Invoice</div>
+
+        <!-- Q10 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q11</span> Supported Invoice Types</div>
+          <div class="options" data-q="q10" data-type="multi">
+            <div class="option-btn" data-value="Catalog PO Invoice">Catalog PO Invoice</div>
+            <div class="option-btn" data-value="Non-Catalog Invoice">Non-Catalog Invoice</div>
+            <div class="option-btn" data-value="Contract Invoice">Contract Invoice</div>
+            <div class="option-btn" data-value="Blanket PO Invoice">Blanket PO Invoice</div>
+            <div class="option-btn" data-value="Non-PO Invoice">Non-PO Invoice</div>
+            <div class="option-btn" data-value="Service Invoice">Service Invoice</div>
+            <div class="option-btn" data-value="Credit – Header Level">Credit – Header Level</div>
+            <div class="option-btn" data-value="Credit – Line Level">Credit – Line Level</div>
+            <div class="option-btn" data-value="Debit – Header Level">Debit – Header Level</div>
+            <div class="option-btn" data-value="Debit – Line Level">Debit – Line Level</div>
+          </div>
+        </div>
+
+        <!-- Q11 -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q12</span> Decimal Place &amp; Rounding Rules</div>
+          <div class="sub-row">
+            <div>
+              <div class="q-label" style="font-weight:500;color:#555;margin-bottom:8px;">Decimal Place</div>
+              <div class="options" data-q="q11-decimal" data-type="single">
+                <div class="option-btn" data-value="0">0</div>
+                <div class="option-btn" data-value="1">1</div>
+                <div class="option-btn" data-value="2">2</div>
+              </div>
+            </div>
+            <div>
+              <div class="q-label" style="font-weight:500;color:#555;margin-bottom:8px;">Rounding Rule</div>
+              <div class="options" data-q="q11-rounding" data-type="single">
+                <div class="option-btn" data-value="Round Half-Up">Round Half-Up</div>
+                <div class="option-btn" data-value="Round-Up">Round-Up</div>
+                <div class="option-btn" data-value="Round-Off">Round-Off</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Q12: InvoiceID -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q13</span> InvoiceID Requirements</div>
+          <div class="invoiceid-grid">
+            <div>
+              <div class="field-label">Max Length (bytes) <span style="color:#aaa;font-weight:400;">default: 16</span></div>
+              <input type="number" class="text-input" id="q12-maxlen" placeholder="16" min="1" />
+            </div>
+            <div>
+              <div class="field-label">Allowed Special Characters</div>
+              <input type="text" class="text-input" id="q12-allowed" placeholder='e.g. - _ / .' />
+            </div>
+            <div>
+              <div class="field-label">Disallowed Special Characters</div>
+              <input type="text" class="text-input" id="q12-disallowed" placeholder='Leave blank for default' />
+            </div>
+            <div>
+              <div class="field-label">Other Requirements</div>
+              <input type="text" class="text-input" id="q12-other" placeholder="Any additional requirements..." />
+            </div>
+          </div>
+        </div>
+
+        <!-- Q14: Country/Region Based Invoice Rules -->
+        <div class="q-block">
+          <div class="q-label"><span class="q-num">Q14</span> Country/Region based invoice rule applicable?</div>
+          <div class="options" data-q="q14" data-type="single">
+            <div class="option-btn" data-value="Yes">Yes</div>
+            <div class="option-btn" data-value="No">No</div>
+          </div>
+        </div>
+
+        <!-- Q15: Attachment required on Invoice (zh + Invoice in scope only) -->
+        <div class="q-block hidden" id="q15-block">
+          <div class="q-label"><span class="q-num">Q15</span> Is attachment file required on Invoice?</div>
+          <div class="options" data-q="q15" data-type="single">
+            <div class="option-btn" data-value="Yes">Yes</div>
+            <div class="option-btn" data-value="No">No</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Fallback: nothing selected -->
+      <div id="no-transactions-msg" class="hidden" style="color:#999;font-size:14px;padding:12px 0;">
+        No additional configuration needed for the selected transactions. You can proceed to the next step.
+      </div>
+
+    </div>
+
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ===== STEP 3: Files & Generate ===== -->
+  <div id="step-3" class="hidden">
+    <div class="card">
+      <h2>Files &amp; Generate</h2>
+
+      <!-- cXML upload -->
+      <div class="q-block">
+        <div class="q-label">Upload cXML File(s)</div>
+        <div class="upload-area" id="cxml-upload-area" onclick="document.getElementById('cxml-input').click()">
+          <input type="file" id="cxml-input" multiple accept=".xml,.cxml" onchange="handleCxmlUpload()" />
+          <div class="upload-label"><strong>Click to upload</strong> or drag and drop</div>
+          <div class="upload-label" style="margin-top:4px;font-size:12px;">Supports .xml / .cxml — multiple files allowed</div>
+        </div>
+        <div id="cxml-file-list" class="cxml-file-list hidden"></div>
+      </div>
+
+      <!-- Transaction Rules upload -->
+      <div class="q-block">
+        <div class="q-label">Upload Transaction Rules (Excel)</div>
+        <div class="upload-area" id="rules-upload-area" onclick="document.getElementById('rules-input').click()">
+          <input type="file" id="rules-input" accept=".xlsx,.xls" onchange="handleFileUpload('rules')" />
+          <div class="upload-label"><strong>Click to upload</strong> the buyer's Transaction Rules Excel</div>
+          <div class="file-name hidden" id="rules-file-names"></div>
+        </div>
+      </div>
+
+      <!-- Country/Region Based Invoice Rules upload (conditional on Q14=Yes) -->
+      <div class="q-block hidden" id="country-rules-upload-block">
+        <div class="q-label">Upload Country/Region Based Invoice Rules File</div>
+        <div class="upload-area" id="country-rules-upload-area" onclick="document.getElementById('country-rules-input').click()">
+          <input type="file" id="country-rules-input" accept=".xlsx,.xls,.csv,.html,.htm" onchange="handleFileUpload('country-rules')" />
+          <div class="upload-label"><strong>Click to upload</strong> the Country/Region Based Invoice Rules file</div>
+          <div class="file-name hidden" id="country-rules-file-names"></div>
+        </div>
+      </div>
+
+      <!-- Free text -->
+      <div class="q-block">
+        <div class="q-label">Additional Notes (optional)</div>
+        <textarea class="textarea-input" id="free-text" placeholder="Any additional context or requirements..."></textarea>
+      </div>
+
+    </div>
+
+    <div class="nav-bar">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="generateGuideline()">Generate Guideline ↓</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // ─── State ───────────────────────────────────────────────────────────────
+  const state = {
+    q1: null,
+    q2: [],
+    q3: [],
+    q4: [],
+    q5: null,
+    q6: null,
+    q7: null,
+    q8: null,
+    q8other: '',
+    q9: null,
+    q10: [],
+    q11decimal: null,
+    q11rounding: null,
+    q12maxlen: '',
+    q12allowed: '',
+    q12disallowed: '',
+    q12other: '',
+    q13: null,
+    q13format: null,
+    q14mc: null,
+    q14: null,
+    q15: null,
+  };
+
+  // ─── Option button click handler ─────────────────────────────────────────
+  document.querySelectorAll('.options').forEach(group => {
+    group.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const q = group.dataset.q;
+        const type = group.dataset.type;
+        const val = btn.dataset.value;
+
+        if (type === 'single') {
+          group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          handleSingleSelect(q, val);
+        } else {
+          // multi — toggle; "None" clears others
+          if (val === 'None') {
+            group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+          } else {
+            // deselect None if present
+            group.querySelectorAll('.option-btn[data-value="None"]').forEach(b => b.classList.remove('selected'));
+            btn.classList.toggle('selected');
+          }
+          handleMultiSelect(q, group);
+        }
+        onStateChange();
+      });
+    });
+  });
+
+  function handleSingleSelect(q, val) {
+    const key = q.replace('-', ''); // q13-format → q13format
+    state[camelize(q)] = val;
+  }
+
+  function handleMultiSelect(q, group) {
+    const selected = [...group.querySelectorAll('.option-btn.selected')].map(b => b.dataset.value);
+    state[camelize(q)] = selected;
+  }
+
+  function camelize(str) {
+    // q13-format → q13format
+    return str.replace(/-([a-z])/g, (_, c) => c);
+  }
+
+  // ─── React to state changes ───────────────────────────────────────────────
+  function onStateChange() {
+    // Q13 sub
+    toggle('q13-sub', state.q13 === 'Yes');
+
+    // Q14 country rules upload
+    toggle('country-rules-upload-block', state.q14 === 'Yes');
+
+    // Q8 (Non-Catalog PO selected in Q4)
+    toggle('q8-block', state.q4.includes('Non-Catalog PO'));
+
+    // Q8 Other text
+    toggle('q8-other-wrap', state.q8 === 'Other');
+
+    // Q14mc: only show when Invoice is in scope (Q2 or Q3)
+    const invoiceInScope = state.q2.includes('Invoice') || state.q3.includes('Invoice');
+    toggle('q14mc-block', invoiceInScope);
+
+    // Q15: attachment required — only show when zh + Invoice in scope
+    toggle('q15-block', state.q1 === 'zh' && invoiceInScope);
+  }
+
+  function toggle(id, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('hidden', !show);
+  }
+
+  // ─── Step navigation ─────────────────────────────────────────────────────
+  function goStep(n) {
+    [1, 2, 3].forEach(i => {
+      document.getElementById(`step-${i}`).classList.toggle('hidden', i !== n);
+      const ind = document.getElementById(`step-ind-${i}`);
+      ind.classList.remove('active', 'done');
+      if (i === n) ind.classList.add('active');
+      if (i < n) ind.classList.add('done');
+    });
+
+    if (n === 2) renderStep2();
+  }
+
+  function renderStep2() {
+    const inScope = [...new Set([...state.q2, ...state.q3.filter(v => v !== 'None')])];
+
+    const hasPO = inScope.includes('PO');
+    const hasOC = inScope.includes('OC');
+    const hasInvoice = inScope.includes('Invoice');
+    const hasAny = hasPO || hasOC || hasInvoice;
+
+    toggle('po-section', hasPO);
+    toggle('oc-section', hasOC);
+    toggle('invoice-section', hasInvoice);
+    toggle('no-transactions-msg', !hasAny);
+  }
+
+  // ─── File upload ──────────────────────────────────────────────────────────
+  // ─── cXML file list (accumulative) ───────────────────────────────────────
+  let cxmlFileList = [];
+
+  function handleCxmlUpload(fileList) {
+    const input = document.getElementById('cxml-input');
+    const incoming = fileList ? [...fileList] : [...input.files];
+    if (!incoming.length) return;
+
+    // Append, deduplicating by filename
+    for (const f of incoming) {
+      if (!cxmlFileList.some(existing => existing.name === f.name)) {
+        cxmlFileList.push(f);
+      }
+    }
+
+    // Reset input so the same file can be re-added after deletion
+    input.value = '';
+
+    renderCxmlFileList();
+  }
+
+  function removeCxmlFile(name) {
+    cxmlFileList = cxmlFileList.filter(f => f.name !== name);
+    renderCxmlFileList();
+  }
+
+  function renderCxmlFileList() {
+    const listEl = document.getElementById('cxml-file-list');
+    const area = document.getElementById('cxml-upload-area');
+
+    if (!cxmlFileList.length) {
+      listEl.classList.add('hidden');
+      listEl.innerHTML = '';
+      area.classList.remove('has-file');
+      return;
+    }
+
+    listEl.classList.remove('hidden');
+    area.classList.add('has-file');
+    listEl.innerHTML = cxmlFileList.map(f => `
+      <div class="cxml-file-item">
+        <span title="${f.name}">📄 ${f.name}</span>
+        <span class="cxml-file-delete" onclick="removeCxmlFile('${f.name.replace(/'/g, "\\'")}')" title="Remove">✕</span>
+      </div>
+    `).join('');
+  }
+
+  function handleFileUpload(type, fileList) {
+    const input = document.getElementById(`${type}-input`);
+    const area = document.getElementById(`${type}-upload-area`);
+    const nameEl = document.getElementById(`${type}-file-names`);
+    const files = fileList ? [...fileList] : [...input.files];
+    if (!files.length) return;
+
+    // For drag-and-drop: transfer files to the input element via DataTransfer
+    if (fileList) {
+      const dt = new DataTransfer();
+      files.forEach(f => dt.items.add(f));
+      input.files = dt.files;
+    }
+
+    const names = files.map(f => f.name).join(', ');
+    nameEl.textContent = names;
+    nameEl.classList.remove('hidden');
+    area.classList.add('has-file');
+  }
+
+  // ─── Drag and drop setup ──────────────────────────────────────────────────
+  ['cxml', 'rules', 'country-rules'].forEach(type => {
+    const area = document.getElementById(`${type}-upload-area`);
+    if (!area) return;
+
+    area.addEventListener('dragenter', e => { e.preventDefault(); e.stopPropagation(); area.classList.add('drag-over'); });
+    area.addEventListener('dragover',  e => { e.preventDefault(); e.stopPropagation(); area.classList.add('drag-over'); });
+    area.addEventListener('dragleave', e => { e.preventDefault(); e.stopPropagation(); area.classList.remove('drag-over'); });
+    area.addEventListener('drop', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      area.classList.remove('drag-over');
+      if (type === 'cxml') {
+        if (e.dataTransfer.files.length) handleCxmlUpload(e.dataTransfer.files);
+      } else {
+        if (e.dataTransfer.files.length) handleFileUpload(type, e.dataTransfer.files);
+      }
+    });
+  });
+
+  // ─── Generate ─────────────────────────────────────────────────────────────
+  async function generateGuideline() {
+    const rulesInput = document.getElementById('rules-input');
+
+    if (!cxmlFileList.length) {
+      alert('Please upload at least one cXML file.');
+      return;
+    }
+    if (!rulesInput.files.length) {
+      alert('Please upload the Transaction Rules Excel file.');
+      return;
+    }
+
+    const btn = document.querySelector('#step-3 .btn-primary');
+    btn.textContent = 'Processing…';
+    btn.disabled = true;
+
+    // Show animated status below button for long-running EDI conversions
+    // Show loading overlay
+    const overlay = document.getElementById('loading-overlay');
+    const overlayStatus = document.getElementById('overlay-status');
+    overlay.classList.add('active');
+
+    const steps = ['Evaluating rules…', 'Matching transaction rules…', 'Building description entries…'];
+    if (state.q13 === 'Yes') steps.push(...['Generating EDI conversion…', 'EDI conversion in progress…', 'EDI conversion in progress — this may take several minutes depending on document size and complexity.']);
+    let stepIdx = 0;
+    overlayStatus.textContent = steps[0];
+    const statusTimer = setInterval(() => {
+      overlayStatus.style.opacity = '0';
+      setTimeout(() => {
+        overlayStatus.textContent = steps[Math.min(++stepIdx, steps.length - 1)];
+        overlayStatus.style.opacity = '1';
+      }, 300);
+    }, 4000);
+
+    try {
+      const formData = new FormData();
+      formData.append('answers', JSON.stringify({
+        q1: state.q1,
+        q2: state.q2,
+        q3: state.q3,
+        q4: state.q4,
+        q5: state.q5,
+        q6: state.q6,
+        q7: state.q7,
+        q8: state.q8,
+        q8other: document.getElementById('q8-other').value,
+        q9: state.q9,
+        q10: state.q10,
+        q11decimal: state.q11decimal,
+        q11rounding: state.q11rounding,
+        q12maxlen: document.getElementById('q12-maxlen').value,
+        q12allowed: document.getElementById('q12-allowed').value,
+        q12disallowed: document.getElementById('q12-disallowed').value,
+        q12other: document.getElementById('q12-other').value,
+        q13: state.q13,
+        q13format: state.q13format,
+        q14mc: state.q14mc,
+        q14: state.q14,
+        q15: state.q15,
+        freeText: document.getElementById('free-text').value,
+      }));
+
+      for (const f of cxmlFileList) formData.append('cxmlFiles', f);
+      formData.append('rulesFile', rulesInput.files[0]);
+
+      const countryRulesInput = document.getElementById('country-rules-input');
+      if (state.q14 === 'Yes' && countryRulesInput.files.length > 0) {
+        formData.append('countryRulesFile', countryRulesInput.files[0]);
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12 * 60 * 1000); // 12 min
+
+      let resp;
+      try {
+        resp = await fetch('/api/evaluate-rules', { method: 'POST', body: formData, signal: controller.signal });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      const data = await resp.json();
+
+      if (!data.success) throw new Error(data.error || 'Unknown error');
+
+      // Show results summary
+      showResults(data);
+
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      clearInterval(statusTimer);
+      overlay.classList.remove('active');
+      btn.textContent = 'Generate Guideline ↓';
+      btn.disabled = false;
+    }
+  }
+
+  function showResults(data) {
+    let existing = document.getElementById('results-section');
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.id = 'results-section';
+    div.className = 'card';
+    div.style.marginTop = '20px';
+
+    let html = '<h2>Evaluation Results</h2>';
+    html += `<p style="font-size:13px;color:#666;margin-bottom:16px;">In-scope transactions: <strong>${data.inScope.join(', ') || 'None'}</strong></p>`;
+
+    for (const [docType, result] of Object.entries(data.results)) {
+      html += `<div style="margin-bottom:20px;">`;
+      html += `<div style="font-weight:700;color:#0f3460;font-size:14px;margin-bottom:8px;">${docType} — ${result.fileName}</div>`;
+
+      if (result.descriptionTriggers.length) {
+        html += `<div style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;">B Column Descriptions to add:</div>`;
+        html += `<ul style="font-size:13px;padding-left:18px;">`;
+        for (const t of result.descriptionTriggers) {
+          html += `<li style="margin-bottom:6px;"><span style="color:#888;font-size:11px;">${t.cxmlElement}</span><br/>${t.description}</li>`;
+        }
+        html += `</ul>`;
+      }
+
+      if (result.unmatchedTriggers && result.unmatchedTriggers.length) {
+        html += `<div style="font-size:12px;font-weight:600;color:#b8860b;margin-top:10px;margin-bottom:6px;">`;
+        html += `⚠️ The following rules were triggered but no matching element was found in the uploaded cXML. Please add descriptions for these fields manually:`;
+        html += `</div>`;
+        html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;">`;
+        for (const t of result.unmatchedTriggers) {
+          html += `<li style="margin-bottom:4px;">${t.ruleText}</li>`;
+        }
+        html += `</ul>`;
+      }
+
+      if (result.projectReqTriggers.length) {
+        html += `<div style="font-size:12px;font-weight:600;color:#555;margin-top:10px;margin-bottom:6px;">Project Requirements entries:</div>`;
+        html += `<ul style="font-size:13px;padding-left:18px;">`;
+        for (const t of result.projectReqTriggers) {
+          html += `<li style="margin-bottom:4px;">${t.ruleText}</li>`;
+        }
+        html += `</ul>`;
+      }
+
+      if (!result.descriptionTriggers.length && !result.projectReqTriggers.length && !(result.unmatchedTriggers && result.unmatchedTriggers.length)) {
+        html += `<div style="font-size:13px;color:#aaa;">No mandatory rules triggered for this document.</div>`;
+      }
+
+      html += `</div>`;
+    }
+
+    // Download button + EDI Strict Verification button (only when EDI was generated)
+    if (data.generateToken) {
+      const hasEdi = data.results && Object.values(data.results).some(r => r.edi && !r.edi.error);
+      html += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e0e0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">`;
+      html += `<button class="btn btn-primary" onclick="downloadExcel('${data.generateToken}')" style="background:#27ae60;">`;
+      html += `&#8595; Download Integration Guideline (Excel)`;
+      html += `</button>`;
+      if (hasEdi) {
+        html += `<button class="btn btn-secondary" id="btn-edi-verify" onclick="runEdiVerify('${data.generateToken}')">`;
+        html += `&#10003; EDI Strict Verification`;
+        html += `</button>`;
+      }
+      html += `</div>`;
+      html += `<div id="edi-verify-result" style="margin-top:16px;"></div>`;
+    }
+
+    div.innerHTML = html;
+    document.querySelector('.container').appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function downloadExcel(token) {
+    window.location.href = `/api/generate?token=${token}`;
+  }
+
+  async function runEdiVerify(token) {
+    const btn = document.getElementById('btn-edi-verify');
+    const resultDiv = document.getElementById('edi-verify-result');
+    btn.disabled = true;
+    btn.textContent = '⏳ Verifying EDI…';
+    resultDiv.innerHTML = `<div style="color:#888;font-size:13px;">Running strict verification against EDI spec. This may take a few minutes…</div>`;
+
+    try {
+      const resp = await fetch(`/api/edi_verify?token=${token}`, { method: 'POST' });
+      const data = await resp.json();
+
+      if (data.error) {
+        resultDiv.innerHTML = `<div style="color:#c0392b;font-size:13px;">Verification error: ${data.error}</div>`;
+        btn.disabled = false;
+        btn.textContent = '✓ EDI Strict Verification';
+        return;
+      }
+
+      const verified = data.verified || [];
+      let html = `<div style="font-weight:600;font-size:14px;margin-bottom:10px;">EDI Verification Results</div>`;
+
+      let totalIssues = 0;
+      for (const v of verified) {
+        if (v.error) {
+          html += `<div style="margin-bottom:8px;padding:8px 12px;background:#fff3f3;border-left:3px solid #e74c3c;font-size:13px;">`;
+          html += `<strong>${v.fileName}</strong> — verification failed: ${v.error}`;
+          html += `</div>`;
+          continue;
+        }
+        totalIssues += v.issueCount || 0;
+        const hasFailed = v.corrected_failed;
+        const color = v.issueCount === 0 ? '#27ae60' : '#e67e22';
+        const icon  = v.issueCount === 0 ? '✅' : '⚠️';
+        html += `<div style="margin-bottom:8px;padding:8px 12px;background:#f9f9f9;border-left:3px solid ${color};font-size:13px;">`;
+        html += `<strong>${v.fileName}</strong> ${icon} `;
+        html += v.issueCount === 0
+          ? `No issues found.`
+          : `${v.issueCount} issue(s) found.`;
+        if (hasFailed) {
+          html += ` <span style="color:#c0392b;font-weight:600;">⚠ Correction output was incomplete — please review manually.</span>`;
+        }
+        if (v.issues && v.issues.length > 0) {
+          html += `<ul style="margin:6px 0 0 16px;padding:0;">`;
+          for (const issue of v.issues.slice(0, 10)) {
+            html += `<li style="margin-bottom:3px;">${issue}</li>`;
+          }
+          if (v.issues.length > 10) html += `<li style="color:#888;">…and ${v.issues.length - 10} more</li>`;
+          html += `</ul>`;
+        }
+        html += `</div>`;
+      }
+
+      const anyFailed = verified.some(v => v.corrected_failed);
+
+      if (totalIssues > 0) {
+        html += `<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">`;
+        html += `<button class="btn btn-primary" onclick="downloadVerifiedExcel('${token}')" style="background:#2980b9;">`;
+        html += `&#8595; Download Verified Integration Guideline (Excel)`;
+        html += `</button>`;
+        if (anyFailed) {
+          html += `<button class="btn btn-secondary" id="btn-edi-retry" onclick="retryEdiCorrections('${token}')">`;
+          html += `↺ Retry Failed Corrections`;
+          html += `</button>`;
+        }
+        html += `</div>`;
+      } else if (verified.length > 0 && !verified.some(v => v.error)) {
+        html += `<div style="margin-top:8px;font-size:13px;color:#27ae60;">✅ All EDI segments verified — no corrections needed. Use the original download above.</div>`;
+      }
+
+      resultDiv.innerHTML = html;
+      btn.textContent = '✓ EDI Strict Verification';
+      btn.disabled = false;
+
+    } catch (err) {
+      resultDiv.innerHTML = `<div style="color:#c0392b;font-size:13px;">Verification failed: ${err.message}</div>`;
+      btn.disabled = false;
+      btn.textContent = '✓ EDI Strict Verification';
+    }
+  }
+
+  function downloadVerifiedExcel(token) {
+    window.location.href = `/api/edi_verified_excel?token=${token}`;
+  }
+
+  async function retryEdiCorrections(token) {
+    const btn = document.getElementById('btn-edi-retry');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Retrying…'; }
+
+    try {
+      const resp = await fetch(`/api/edi_retry_correct?token=${token}`, { method: 'POST' });
+      const data = await resp.json();
+
+      if (data.error) {
+        alert('Retry failed: ' + data.error);
+        if (btn) { btn.disabled = false; btn.textContent = '↺ Retry Failed Corrections'; }
+        return;
+      }
+
+      const stillFailed = (data.retried || []).some(r => r.corrected_failed);
+      if (btn) {
+        if (stillFailed) {
+          btn.disabled = false;
+          btn.textContent = '↺ Retry Failed Corrections';
+          btn.insertAdjacentHTML('afterend', '<span style="color:#c0392b;font-size:12px;margin-left:8px;">Retry incomplete — please review manually.</span>');
+        } else {
+          btn.remove();
+          const downloadBtn = document.querySelector('[onclick*="downloadVerifiedExcel"]');
+          if (downloadBtn) {
+            downloadBtn.insertAdjacentHTML('afterend', '<span style="color:#27ae60;font-size:12px;margin-left:8px;">✅ Corrections applied.</span>');
+          }
+        }
+      }
+    } catch (err) {
+      alert('Retry error: ' + err.message);
+      if (btn) { btn.disabled = false; btn.textContent = '↺ Retry Failed Corrections'; }
+    }
+  }
+</script>
+<!-- Loading overlay -->
+<div id="loading-overlay">
+  <div class="loading-card">
+    <div class="spinner">
+      <span style="--r:0deg"></span><span style="--r:30deg"></span>
+      <span style="--r:60deg"></span><span style="--r:90deg"></span>
+      <span style="--r:120deg"></span><span style="--r:150deg"></span>
+      <span style="--r:180deg"></span><span style="--r:210deg"></span>
+      <span style="--r:240deg"></span><span style="--r:270deg"></span>
+      <span style="--r:300deg"></span><span style="--r:330deg"></span>
+    </div>
+    <div class="loading-title">Generating Guideline…</div>
+    <div class="loading-status" id="overlay-status"></div>
+  </div>
+</div>
+
+</body>
+</html>

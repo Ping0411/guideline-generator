@@ -1249,6 +1249,10 @@ def chat_edi():
     doc_type = (data.get("doc_type") or "").strip()   # PO | OC | ASN | Invoice | GR
     edi_format = (data.get("format") or "X12").strip()  # X12 | EDIFACT
 
+    import time as _time
+    _req_id = f"guideline-{int(_time.time()*1000) % 100000}"
+    print(f"[chat_edi] {_req_id} doc_type={doc_type} format={edi_format} cxml_len={len(cxml)}", flush=True)
+
     if not api_key:
         return jsonify({"error": "api_key is required"}), 400
     if not base_url:
@@ -1420,14 +1424,17 @@ def chat_edi():
                 decoder = json.JSONDecoder()
                 parsed, _ = decoder.raw_decode(full_reply, json_start)
                 segments = parsed.get("edi_segments", [])
+                print(f"[chat_edi] {_req_id} SUCCESS(edi_segments) segments={len(segments)}", flush=True)
                 return jsonify({"segments": segments})
 
         if json_start is not None:
             decoder = json.JSONDecoder()
             parsed, _ = decoder.raw_decode(full_reply, json_start)
             rows = parsed.get("edi_excel", [])
+            print(f"[chat_edi] {_req_id} SUCCESS segments={len(rows)}", flush=True)
             return jsonify({"segments": rows})
 
+        print(f"[chat_edi] {_req_id} FAILED no structured result, stop_reason={stop_reason!r}, raw_len={len(full_reply)}, raw[:500]={full_reply[:500]!r}", flush=True)
         return jsonify({"error": "EDI conversion did not return a structured result", "raw": full_reply[:2000]}), 500
 
     except requests.exceptions.Timeout:
