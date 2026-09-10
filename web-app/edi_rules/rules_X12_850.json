@@ -1,0 +1,2270 @@
+{
+  "transaction": "X12-850",
+  "direction": "cXML-to-X12",
+  "document_type": "OrderRequest",
+  "segments": [
+    {
+      "segment_id": "BEG",
+      "loop": "header",
+      "description": "Beginning Segment for Purchase Order",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "OrderRequestHeader/@type",
+          "lookup_table": "mapBCH353",
+          "type": "lookup",
+          "note": "Purpose code: new→00, delete→03, update→05"
+        },
+        {
+          "position": 2,
+          "type": "complex_logic",
+          "note": "Order type code. Priority: Extrinsic[@name='orderType'] → dropship=DS, rushorder=RO, blanket=BK, release=RL. Fallback: @type=new→NE, update→KN, delete+@isInternalVersion=yes→IN, delete→KN"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "OrderRequestHeader/@orderID",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "OrderRequestHeader/@releaseRequired",
+          "type": "direct"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "OrderRequestHeader/@orderDate",
+          "type": "date_yyyymmdd",
+          "note": "Date formatted YYYYMMDD; only set if date is parseable"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "CUR",
+      "loop": "header",
+      "description": "Currency (header level – order total currency)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "BY",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "OrderRequestHeader/Total/Money/@currency",
+          "type": "direct"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "OrderRequestHeader/Total/Money/@alternateAmount",
+          "type": "direct",
+          "note": "Only set when alternate amount is present"
+        },
+        {
+          "position": 4,
+          "value": "SE",
+          "type": "literal",
+          "note": "Only set when alternate amount is present"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "OrderRequestHeader/Total/Money/@alternateCurrency",
+          "type": "direct",
+          "note": "Only set when alternate amount is present"
+        }
+      ],
+      "condition": "OrderRequestHeader/Total/Money text value is non-empty"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference Identification (header level – multiple REF segments emitted)",
+      "note": "Each call to _REF_KV_X12D or _REF_KV_X12T emits one REF segment. Positions: 1=qualifier, 2=ref value, 3=additional ref (for _X12T only).",
+      "elements": [
+        {
+          "qualifier": "06",
+          "cxml_xpath": "/cXML/Header/From/Credential[@domain='SystemID']/Identity",
+          "note": "Sender SystemID from cXML envelope"
+        },
+        {
+          "qualifier": "0L",
+          "value_pos2": "FOB05",
+          "cxml_xpath_pos3": "OrderRequestHeader/TermsOfDelivery/TransportTerms[@value='Other'] text",
+          "note": "Only when TransportTerms value is Other"
+        },
+        {
+          "qualifier": "PO",
+          "cxml_xpath": "OrderRequestHeader/@orderID"
+        },
+        {
+          "qualifier": "8X",
+          "value_pos2": "orderType",
+          "cxml_xpath_pos3": "OrderRequestHeader/Extrinsic[@name='orderType']"
+        },
+        {
+          "qualifier": "RQ",
+          "cxml_xpath": "OrderRequestHeader/@requisitionID"
+        },
+        {
+          "qualifier": "BO",
+          "cxml_xpath": "OrderRequestHeader/@parentAgreementID"
+        },
+        {
+          "qualifier": "AH",
+          "cxml_xpath": "OrderRequestHeader/@agreementID"
+        },
+        {
+          "qualifier": "PP",
+          "cxml_xpath": "OrderRequestHeader/@orderVersion"
+        },
+        {
+          "qualifier": "2I",
+          "cxml_xpath_pos2": "OrderRequestHeader/Shipping/@trackingDomain",
+          "cxml_xpath_pos3": "OrderRequestHeader/Shipping/@trackingId"
+        },
+        {
+          "qualifier": "CR",
+          "cxml_xpath": "OrderRequestHeader/IdReference[@domain='CustomerReferenceID']/@identifier"
+        },
+        {
+          "qualifier": "ZB",
+          "cxml_xpath": "OrderRequestHeader/IdReference[@domain='UltimateCustomerReferenceID']/@identifier"
+        },
+        {
+          "qualifier": "AEC",
+          "cxml_xpath": "OrderRequestHeader/IdReference[@domain='governmentNumber']/@identifier"
+        },
+        {
+          "qualifier": "D2",
+          "cxml_xpath": "OrderRequestHeader/IdReference[@domain='supplierReference']/@identifier"
+        },
+        {
+          "qualifier": "DD",
+          "cxml_xpath": "OrderRequestHeader/IdReference[@domain='documentName']/@identifier"
+        },
+        {
+          "qualifier": "RPP",
+          "note": "Priority segment. REF*RPP*level*description with REF401=RPP, REF402=sequence. Condition: Priority/@level OR Priority/Description OR Priority/@sequence present",
+          "complex_logic": true,
+          "cxml_xpath": "OrderRequestHeader/OrderRequestHeaderIndustry/Priority"
+        },
+        {
+          "qualifier": "CT",
+          "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='contractNo']"
+        },
+        {
+          "qualifier": "Q1",
+          "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='quoteNo']"
+        },
+        {
+          "qualifier": "PD",
+          "cxml_xpath_pos2": "OrderRequestHeader/Extrinsic[@name='promotionalDealID']",
+          "cxml_xpath_pos3": "OrderRequestHeader/Extrinsic[@name='promotionalDealIDDesc']"
+        },
+        {
+          "qualifier": "IA",
+          "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='internalVendorNo']"
+        },
+        {
+          "qualifier": "VN",
+          "cxml_xpath": "OrderRequestHeader/SupplierOrderInfo/@orderID"
+        },
+        {
+          "qualifier": "ZZ (dynamic)",
+          "note": "Any other Extrinsic not excluded: if mapped in mapREF128 → REF*<code>*value[0:30]*value[30:110]; else REF*ZZ*extrinsicName*value[0:80]",
+          "lookup_table": "mapREF128"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "PER",
+      "loop": "header",
+      "description": "Administrative Communications Contact (header org unit info)",
+      "note": "Multiple PER segments emitted for CompanyCode, PurchasingOrg, PurchasingGroup",
+      "elements": [
+        {
+          "position": 1,
+          "value": "ZZ",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "type": "complex_logic",
+          "note": "IdReference/@identifier for each org unit domain"
+        },
+        {
+          "position": 9,
+          "type": "complex_logic",
+          "note": "Label: 'CompanyCode', 'PurchasingOrg', or 'PurchasingGroup'"
+        }
+      ],
+      "sources": [
+        {
+          "cxml_xpath": "OrderRequestHeader/LegalEntity/IdReference[@domain='CompanyCode']/@identifier",
+          "label": "CompanyCode"
+        },
+        {
+          "cxml_xpath": "OrderRequestHeader/OrganizationalUnit/IdReference[@domain='PurchasingOrganization']/@identifier",
+          "label": "PurchasingOrg"
+        },
+        {
+          "cxml_xpath": "OrderRequestHeader/OrganizationalUnit/IdReference[@domain='PurchasingGroup']/@identifier",
+          "label": "PurchasingGroup"
+        }
+      ],
+      "condition": "Each PER only emitted if its identifier is non-empty"
+    },
+    {
+      "segment_id": "FOB",
+      "loop": "header",
+      "description": "F.O.B. Related Instructions",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "OrderRequestHeader/TermsOfDelivery/ShippingPaymentMethod/@value",
+          "lookup_table": "mapFOB146",
+          "type": "lookup",
+          "default": "DF"
+        },
+        {
+          "position": 2,
+          "type": "complex_logic",
+          "note": "If Extrinsic[@name='transportResponsibilityLocation'] present → use its value; else if TermsOfDeliveryCode/@value='other' → 'ZZ'; else → 'OF'"
+        },
+        {
+          "position": 3,
+          "type": "complex_logic",
+          "note": "If TermsOfDeliveryCode/@value='other' → TermsOfDeliveryCode text; else → TermsOfDeliveryCode/@value"
+        },
+        {
+          "position": 4,
+          "value": "ZZ",
+          "type": "literal",
+          "note": "Only when TransportTerms/@value is non-empty"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "OrderRequestHeader/TermsOfDelivery/TransportTerms/@value",
+          "lookup_table": "mapFOB335",
+          "type": "lookup",
+          "note": "Falls back to raw value if not in map"
+        },
+        {
+          "position": 6,
+          "value": "ZZ",
+          "type": "literal",
+          "note": "Only when ShippingPaymentMethod/@value is non-empty"
+        },
+        {
+          "position": 7,
+          "type": "complex_logic",
+          "note": "If ShippingPaymentMethod/@value='other' → ShippingPaymentMethod text; else → ShippingPaymentMethod/@value"
+        }
+      ],
+      "condition": "OrderRequestHeader/TermsOfDelivery/ShippingPaymentMethod/@value OR TransportTerms/@value is non-empty"
+    },
+    {
+      "segment_id": "CSH",
+      "loop": "header",
+      "description": "Sales Requirements",
+      "elements": [
+        {
+          "position": 1,
+          "value": "SC",
+          "type": "literal"
+        }
+      ],
+      "condition": "OrderRequestHeader/@shipComplete = 'yes'"
+    },
+    {
+      "segment_id": "SAC (G830)",
+      "loop": "header",
+      "description": "Service, Promotion, Allowance or Charge – Shipping charge",
+      "elements": [
+        {
+          "position": 1,
+          "value": "C",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "G830",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "OrderRequestHeader/Shipping/Money text",
+          "type": "x100",
+          "note": "Amount multiplied by 100"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "OrderRequestHeader/Shipping/@tracking",
+          "type": "direct"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "OrderRequestHeader/Shipping/ShortName OR Description",
+          "type": "complex_logic"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "OrderRequestHeader/Shipping/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "OrderRequestHeader/Shipping/Money text is non-empty",
+      "followed_by": "CUR*BY*currency*alternateAmount*SE*alternateCurrency~"
+    },
+    {
+      "segment_id": "SAC (F050)",
+      "loop": "header",
+      "description": "Service, Promotion, Allowance or Charge – Original price / discount",
+      "elements": [
+        {
+          "position": 1,
+          "value": "N",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "F050",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Modification/OriginalPrice/Money text",
+          "type": "x100"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "Modification/OriginalPrice/@type",
+          "type": "direct"
+        },
+        {
+          "position": 15,
+          "value": "Original Price",
+          "type": "literal"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "Modification/ModificationDetail/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "OrderRequestHeader/Total/Modifications/Modification/OriginalPrice/Money is present; only first Modification processed (break after first)",
+      "followed_by": "CUR*BY*currency~"
+    },
+    {
+      "segment_id": "SAC (AdditionalDeduction)",
+      "loop": "header",
+      "description": "Service, Promotion, Allowance or Charge – Allowance/deduction from Modification",
+      "elements": [
+        {
+          "position": 1,
+          "value": "A",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Modification/ModificationDetail/@name",
+          "lookup_table": "mapSAC1300",
+          "type": "lookup"
+        },
+        {
+          "position": 5,
+          "type": "complex_logic",
+          "note": "If DeductionAmount/Money present → x100(DeductionAmount); else → x100(DeductedPrice/Money)"
+        },
+        {
+          "position": 6,
+          "value": "6",
+          "type": "literal",
+          "note": "Only when DeductionPercent/@percent is non-empty"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "Modification/AdditionalDeduction/DeductionPercent/@percent",
+          "type": "direct",
+          "note": "Only when percent present"
+        },
+        {
+          "position": 13,
+          "value": "AMT_PRI",
+          "type": "literal"
+        },
+        {
+          "position": 14,
+          "value": "1",
+          "type": "literal",
+          "note": "Only when DeductionAmount used (not DeductedPrice)"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "Modification/ModificationDetail/Description",
+          "type": "direct",
+          "default": "No Description Provided"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "Modification/ModificationDetail/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "Modification/AdditionalDeduction is present",
+      "followed_by": "CUR*BY*currency*[dates]~ when no percent"
+    },
+    {
+      "segment_id": "SAC (AdditionalCost)",
+      "loop": "header",
+      "description": "Service, Promotion, Allowance or Charge – Additional cost from Modification",
+      "elements": [
+        {
+          "position": 1,
+          "value": "C",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Modification/ModificationDetail/@name",
+          "lookup_table": "mapSAC1300",
+          "type": "lookup"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Modification/AdditionalCost/Money text",
+          "type": "x100"
+        },
+        {
+          "position": 6,
+          "value": "6",
+          "type": "literal",
+          "note": "Only when AdditionalCost/Percentage present"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "Modification/AdditionalCost/Percentage text",
+          "type": "direct"
+        },
+        {
+          "position": 13,
+          "value": "AMT_PRI",
+          "type": "literal"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "Modification/ModificationDetail/Description",
+          "type": "direct"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "Modification/ModificationDetail/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "Modification/AdditionalCost is present"
+    },
+    {
+      "segment_id": "ITD",
+      "loop": "header",
+      "description": "Terms of Sale/Deferred Terms of Sale",
+      "elements_branch_a": {
+        "condition": "Discount/DiscountPercent/@percent OR Discount/DiscountAmount/Money is non-empty",
+        "elements": [
+          {
+            "position": 1,
+            "value": "52",
+            "type": "literal"
+          },
+          {
+            "position": 2,
+            "value": "3",
+            "type": "literal"
+          },
+          {
+            "position": 3,
+            "cxml_xpath": "OrderRequestHeader/PaymentTerm/Discount/DiscountPercent/@percent",
+            "type": "direct"
+          },
+          {
+            "position": 5,
+            "cxml_xpath": "OrderRequestHeader/PaymentTerm/@payInNumberOfDays",
+            "type": "direct"
+          },
+          {
+            "position": 8,
+            "cxml_xpath": "OrderRequestHeader/PaymentTerm/Discount/DiscountAmount/Money text",
+            "type": "direct"
+          },
+          {
+            "position": 12,
+            "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='paymentTermsDescription']",
+            "type": "direct"
+          }
+        ]
+      },
+      "elements_branch_b": {
+        "condition": "else (net terms only)",
+        "elements": [
+          {
+            "position": 1,
+            "value": "05",
+            "type": "literal"
+          },
+          {
+            "position": 2,
+            "value": "3",
+            "type": "literal"
+          },
+          {
+            "position": 7,
+            "cxml_xpath": "OrderRequestHeader/PaymentTerm/@payInNumberOfDays",
+            "type": "direct"
+          },
+          {
+            "position": 12,
+            "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='paymentTermsDescription']",
+            "type": "direct"
+          },
+          {
+            "position": 15,
+            "value": "0",
+            "type": "literal"
+          }
+        ]
+      },
+      "condition": "OrderRequestHeader/PaymentTerm element is present"
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "header",
+      "description": "Date/Time Reference – multiple DTM segments emitted for different date types",
+      "pattern": "DTM*qualifier*YYYYMMDD*HHMMSS~ (time only when non-zero)",
+      "mappings": [
+        {
+          "qualifier": "004",
+          "cxml_xpath": "OrderRequestHeader/@orderDate"
+        },
+        {
+          "qualifier": "007",
+          "cxml_xpath": "OrderRequestHeader/@effectiveDate"
+        },
+        {
+          "qualifier": "036",
+          "cxml_xpath": "OrderRequestHeader/@expirationDate"
+        },
+        {
+          "qualifier": "118",
+          "cxml_xpath": "OrderRequestHeader/@pickUpDate"
+        },
+        {
+          "qualifier": "002",
+          "cxml_xpath": "OrderRequestHeader/@requestedDeliveryDate"
+        },
+        {
+          "qualifier": "070",
+          "cxml_xpath": "OrderRequestHeader/DeliveryPeriod/Period/@startDate"
+        },
+        {
+          "qualifier": "073",
+          "cxml_xpath": "OrderRequestHeader/DeliveryPeriod/Period/@endDate"
+        },
+        {
+          "qualifier": "010",
+          "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='ShipDate']"
+        },
+        {
+          "qualifier": "177",
+          "cxml_xpath": "OrderRequestHeader/Extrinsic[@name='CancelDate']"
+        }
+      ],
+      "condition": "Individual date only emitted if the xpath resolves and is parseable"
+    },
+    {
+      "segment_id": "PID",
+      "loop": "header",
+      "description": "Product/Item Description – Shipping Instructions (header level)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "F",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "93",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "OrderRequestHeader/ShipTo/TransportInformation/ShippingInstructions/Description",
+          "type": "direct",
+          "note": "Truncated to 80 chars per segment; multiple PID emitted for long text"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "OrderRequestHeader/ShipTo/TransportInformation/ShippingInstructions/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "ShipTo/TransportInformation/ShippingInstructions/Description is non-empty"
+    },
+    {
+      "segment_id": "TXI",
+      "loop": "header",
+      "description": "Tax Information – header level (two variants)",
+      "variants": [
+        {
+          "note": "Total tax amount line",
+          "condition": "OrderRequestHeader/Tax/Money is non-empty",
+          "elements": [
+            {
+              "position": 1,
+              "value": "TX",
+              "type": "literal"
+            },
+            {
+              "position": 2,
+              "cxml_xpath": "OrderRequestHeader/Tax/Money text",
+              "type": "direct"
+            }
+          ]
+        },
+        {
+          "note": "Per TaxDetail line (one TXI per TaxDetail)",
+          "condition": "OrderRequestHeader/Tax/TaxDetail elements present; skipped if no TaxAmount, percentageRate, or exemptDetail",
+          "elements": [
+            {
+              "position": 1,
+              "cxml_xpath": "TaxDetail/@category",
+              "lookup_table": "mapTXI963",
+              "type": "lookup",
+              "default": "ZZ"
+            },
+            {
+              "position": 2,
+              "cxml_xpath": "TaxDetail/TaxAmount/Money text",
+              "type": "direct"
+            },
+            {
+              "position": 3,
+              "cxml_xpath": "TaxDetail/@percentageRate",
+              "type": "direct"
+            },
+            {
+              "position": 4,
+              "value": "CD",
+              "type": "literal",
+              "note": "Only when TaxLocation is present"
+            },
+            {
+              "position": 5,
+              "cxml_xpath": "TaxDetail/TaxLocation text",
+              "type": "direct"
+            },
+            {
+              "position": 6,
+              "type": "complex_logic",
+              "note": "zeroRated→'0', exempt→'2'"
+            },
+            {
+              "position": 8,
+              "cxml_xpath": "TaxDetail/TaxableAmount/Money text",
+              "type": "direct",
+              "note": "Only when percentageRate present"
+            },
+            {
+              "position": 9,
+              "cxml_xpath": "TaxDetail/@category",
+              "type": "direct",
+              "note": "Only when category is not 'other' AND not in mapTXI963"
+            },
+            {
+              "position": 10,
+              "cxml_xpath": "TaxDetail/Description text",
+              "type": "direct"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "segment_id": "N9 (Pcard)",
+      "loop": "header",
+      "description": "Reference Identification – Purchasing Card",
+      "elements": [
+        {
+          "position": 1,
+          "value": "PSM",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "OrderRequestHeader/Payment/Pcard/@number",
+          "type": "direct"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "OrderRequestHeader/Payment/Pcard/@name",
+          "type": "direct"
+        }
+      ],
+      "condition": "OrderRequestHeader/Payment/Pcard element is present",
+      "followed_by": {
+        "segment_id": "DTM",
+        "elements": [
+          {
+            "position": 1,
+            "value": "036",
+            "type": "literal"
+          },
+          {
+            "position": 5,
+            "value": "UN",
+            "type": "literal"
+          },
+          {
+            "position": 6,
+            "cxml_xpath": "OrderRequestHeader/Payment/Pcard/@expiration",
+            "type": "direct"
+          }
+        ]
+      }
+    },
+    {
+      "segment_id": "N9 (ExternalDocumentType)",
+      "loop": "header",
+      "description": "Reference Identification – External Document Type",
+      "elements": [
+        {
+          "position": 1,
+          "value": "43",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "External Document Reference",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "OrderRequestHeader/OrderRequestHeaderIndustry/ExternalDocumentType/@documentType",
+          "type": "direct"
+        }
+      ],
+      "condition": "ExternalDocumentType element is present",
+      "followed_by": "MSG*description~ with Description text"
+    },
+    {
+      "segment_id": "N9 (Extrinsic)",
+      "loop": "header",
+      "description": "Reference Identification – Extrinsic values not excluded from N9",
+      "elements": [
+        {
+          "position": 1,
+          "value": "ZZ",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic/@name",
+          "type": "direct"
+        }
+      ],
+      "condition": "Extrinsic @name is not in _extExcludeFromN9 list",
+      "followed_by": "MSG*extrinsic_value~"
+    },
+    {
+      "segment_id": "N9 (ControlKeys)",
+      "loop": "header",
+      "description": "Reference Identification – Control key instructions (OCInstruction, ASNInstruction, InvoiceInstruction, SESInstruction)",
+      "pattern": "N9*KD*value*label~ for each control key field",
+      "mappings": [
+        {
+          "cxml_xpath": "ControlKeys/OCInstruction/@value",
+          "label": "OCValue"
+        },
+        {
+          "cxml_xpath": "ControlKeys/OCInstruction/Lower/Tolerances/TimeTolerance[@type='days']/@limit",
+          "label": "OCLowerTimeToleranceInDays"
+        },
+        {
+          "cxml_xpath": "ControlKeys/OCInstruction/Upper/Tolerances/TimeTolerance[@type='days']/@limit",
+          "label": "OCUpperTimeToleranceInDays"
+        },
+        {
+          "cxml_xpath": "ControlKeys/ASNInstruction/@value",
+          "label": "ASNValue"
+        },
+        {
+          "cxml_xpath": "ControlKeys/ASNInstruction/Lower/Tolerances/TimeTolerance[@type='days']/@limit",
+          "label": "ASNLowerTimeToleranceInDays"
+        },
+        {
+          "cxml_xpath": "ControlKeys/ASNInstruction/Upper/Tolerances/TimeTolerance[@type='days']/@limit",
+          "label": "ASNUpperTimeToleranceInDays"
+        },
+        {
+          "cxml_xpath": "ControlKeys/InvoiceInstruction/@value",
+          "label": "INVValue"
+        },
+        {
+          "cxml_xpath": "ControlKeys/InvoiceInstruction/@verificationType",
+          "label": "INVVerification"
+        },
+        {
+          "cxml_xpath": "ControlKeys/InvoiceInstruction/@unitPriceEditable",
+          "label": "INV_unitPriceEditable"
+        },
+        {
+          "cxml_xpath": "ControlKeys/SESInstruction/@value",
+          "label": "SESValue"
+        },
+        {
+          "cxml_xpath": "ControlKeys/SESInstruction/@unitPriceEditable",
+          "label": "SES_UnitPriceEditable"
+        }
+      ],
+      "condition": "Each N9 only emitted if the xpath resolves to a non-empty value"
+    },
+    {
+      "segment_id": "N9 (Comments/Attachment/URL)",
+      "loop": "header",
+      "description": "Reference Identification – Attachment URL",
+      "elements": [
+        {
+          "position": 1,
+          "value": "URL",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "URL",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "OrderRequestHeader/Comments/Attachment/URL/@name",
+          "type": "direct"
+        }
+      ],
+      "condition": "Comments/Attachment/URL is present",
+      "followed_by": "MSG*url_text~"
+    },
+    {
+      "segment_id": "N1",
+      "loop": "header/N1",
+      "description": "Name – party identification (header level parties)",
+      "note": "N1 loop includes N1, N2, N3, N4, REF, PER, TD5, TD4 sub-segments",
+      "party_sources": [
+        {
+          "source": "OrderRequestHeader/BusinessPartner",
+          "qualifier_map": "mapN1BP98",
+          "qualifier_input": "@role",
+          "id_domain_map": "mapN1BP66",
+          "address_source": "BusinessPartner/Address"
+        },
+        {
+          "source": "OrderRequestHeader/BillTo",
+          "qualifier": "BT",
+          "id_domain_map": "mapN1_66",
+          "vat_extrinsic": "Extrinsic[@name='buyerVatID']"
+        },
+        {
+          "source": "OrderRequestHeader/ShipTo",
+          "qualifier": "ST",
+          "id_domain_map": "mapN1_66"
+        },
+        {
+          "source": "OrderRequestHeader/TermsOfDelivery",
+          "qualifier": "DA"
+        },
+        {
+          "source": "OrderRequestHeader/Contact",
+          "qualifier_map": "mapN1_98",
+          "qualifier_input": "@role",
+          "note": "For SU role, also emits VAT REF from Extrinsic[@name='supplierVatID']"
+        },
+        {
+          "source": "OrderRequestHeader/Extrinsic[@name='buyerInfo']",
+          "qualifier": "BY",
+          "note": "Simplified N1 with only N1*BY*buyerInfo~; no address"
+        }
+      ],
+      "N1_elements": [
+        {
+          "position": 1,
+          "type": "party_qualifier",
+          "note": "Mapped from party role"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Address/Name",
+          "type": "direct",
+          "note": "Truncated to 60 chars; default 'Not Available'"
+        },
+        {
+          "position": 3,
+          "type": "address_id_domain_lookup",
+          "note": "Mapped via mapN1BP66/mapN1_66 from @addressIDDomain"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Address/@addressID",
+          "type": "direct"
+        }
+      ],
+      "condition": "Address or Name must be non-empty"
+    },
+    {
+      "segment_id": "N2",
+      "loop": "header/N1",
+      "description": "Additional Name Information – DeliverTo lines",
+      "note": "One N2 per two DeliverTo values (via _twoSegX12). Each N2 has up to 2 DeliverTo values.",
+      "source": "Address/PostalAddress/DeliverTo"
+    },
+    {
+      "segment_id": "N3",
+      "loop": "header/N1",
+      "description": "Address Information – Street lines",
+      "note": "One N3 per two Street values (via _twoSegX12 with max 55 chars each).",
+      "source": "Address/PostalAddress/Street"
+    },
+    {
+      "segment_id": "N4",
+      "loop": "header/N1",
+      "description": "Geographic Location",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "Address/PostalAddress/City",
+          "type": "direct"
+        },
+        {
+          "position": 2,
+          "type": "complex_logic",
+          "note": "For US/CA: 2-char state code (normalised via mapN4_156 if needed). For IN: first 2 chars of State/@isoStateCode. For others: position 2 left empty; positions 5='SP', 6=state text used instead."
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Address/PostalAddress/PostalCode",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Address/PostalAddress/Country/@isoCountryCode",
+          "type": "direct"
+        },
+        {
+          "position": 5,
+          "value": "SP",
+          "type": "literal",
+          "note": "Non US/CA/IN countries only"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "Address/PostalAddress/State or State/@isoStateCode",
+          "type": "direct",
+          "note": "Non US/CA/IN countries only"
+        }
+      ],
+      "condition": "PostalCode or City is non-empty"
+    },
+    {
+      "segment_id": "REF (in N1 loop)",
+      "loop": "header/N1",
+      "description": "Reference Identification – party-specific references",
+      "note": "Different REF qualifiers emitted depending on party type (BP/BT/ST/DA/CN), using mapN1BPREF128, mapN1REF128_I. Also: VX for VAT ID, ME for address name, ZZ for unmapped domains.",
+      "complex_logic": true
+    },
+    {
+      "segment_id": "PER (in N1 loop)",
+      "loop": "header/N1",
+      "description": "Administrative Communications Contact – contact details within address",
+      "note": "Emitted by _PER_for_Contact. Role qualifier varies: AP for BT, RE for ST, CN for DA.",
+      "complex_logic": true
+    },
+    {
+      "segment_id": "TD5",
+      "loop": "header/N1 (ST loop)",
+      "description": "Carrier Details (Routing Sequence/Transit Time)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "Z",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "ZZ",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ShipTo/TransportInformation/ShippingContractNumber",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ShipTo/TransportInformation/Route/@method",
+          "lookup_table": "mapTD5_91",
+          "type": "lookup"
+        },
+        {
+          "position": 7,
+          "value": "ZZ",
+          "type": "literal"
+        },
+        {
+          "position": 8,
+          "cxml_xpath": "ShipTo/TransportInformation/ShippingInstructions/Description",
+          "type": "direct",
+          "note": "Truncated to 30 chars"
+        }
+      ],
+      "condition": "ShipTo/TransportInformation/ShippingContractNumber OR Route/@method is present (one TD5 per TransportInformation element)"
+    },
+    {
+      "segment_id": "TD4",
+      "loop": "header/N1 (ST loop)",
+      "description": "Carrier Details (Special Handling/Hazardous Materials)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "ZZZ",
+          "type": "literal"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ShipTo/CarrierIdentifier text + '@domain' + @domain",
+          "type": "complex_logic",
+          "note": "Concatenated as 'value@domaindomain'"
+        }
+      ],
+      "condition": "ShipTo/CarrierIdentifier elements present (one TD4 per identifier)"
+    },
+    {
+      "segment_id": "PO1",
+      "loop": "detail/PO1",
+      "description": "Baseline Item Data",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "ItemOut/@lineNumber",
+          "type": "direct"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ItemOut/@quantity",
+          "type": "direct"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ItemOut/ItemDetail/UnitOfMeasure OR BlanketItemDetail/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ItemOut/ItemDetail/UnitPrice/Money text OR BlanketItemDetail/UnitPrice/Money text",
+          "type": "direct"
+        },
+        {
+          "position": "6+",
+          "type": "complex_logic",
+          "note": "Item ID pairs starting at position 6, two elements per ID (qualifier+value). Sources: BP=ItemID/BuyerPartID, C3=Classification, EN=ItemDetailIndustry/ItemDetailRetail/EANID, EN=ItemID/IdReference[@domain='EAN-13']/@identifier, MF=ManufacturerName, MG=ManufacturerPartID, VP=ItemID/SupplierPartID, VS=ItemID/SupplierPartAuxiliaryID, UP=ItemID/IdReference[@domain='UPCConsumerPackageCode']/@identifier, SK=ItemID/IdReference[@domain='custSKU']/@identifier. Duplicate EN values removed."
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "LIN (delete)",
+      "loop": "detail/PO1",
+      "description": "Item Identification – delete marker",
+      "elements": [
+        {
+          "position": 2,
+          "value": "KF",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "value": "KF",
+          "type": "literal"
+        }
+      ],
+      "condition": "ItemOut/@operation = 'delete'"
+    },
+    {
+      "segment_id": "LIN (purchaseDescription)",
+      "loop": "detail/PO1",
+      "description": "Item Identification – purchase description and merchandise type",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "ItemOut/@lineNumber",
+          "type": "direct"
+        },
+        {
+          "position": 2,
+          "value": "SZ",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ItemOut/ItemDetail/Extrinsic[@name='purchaseDescription']",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "value": "CL",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemOut/ItemDetail/Extrinsic[@name='merchandiseTypeCode']",
+          "type": "direct"
+        }
+      ],
+      "condition": "purchaseDescription OR merchandiseTypeCode Extrinsic is present"
+    },
+    {
+      "segment_id": "CUR (item level)",
+      "loop": "detail/PO1",
+      "description": "Currency – item unit price currency",
+      "elements": [
+        {
+          "position": 1,
+          "value": "BY",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ItemOut/ItemDetail/UnitPrice/Money/@currency",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "value": "ZZ",
+          "type": "literal",
+          "note": "Only when alternateCurrency present"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemOut/ItemDetail/UnitPrice/Money/@alternateCurrency OR OrderRequestHeader/@alternateCurrency fallback",
+          "type": "direct"
+        }
+      ],
+      "condition": "ItemOut/ItemDetail/UnitPrice/Money/@currency is non-empty"
+    },
+    {
+      "segment_id": "PO3",
+      "loop": "detail/PO1",
+      "description": "Additional Item Data (BlanketItemDetail quantities)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "ZZ",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "value": "ST",
+          "type": "literal"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "ItemOut/@quantity",
+          "type": "direct"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "BlanketItemDetail/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        }
+      ],
+      "condition": "ItemOut contains BlanketItemDetail (not ItemDetail)"
+    },
+    {
+      "segment_id": "CTP",
+      "loop": "detail/PO1",
+      "description": "Pricing Information – PriceBasisQuantity (unit conversion)",
+      "elements": [
+        {
+          "position": 1,
+          "type": "complex_logic",
+          "note": "PY if BlanketItemDetail context; WS if ItemDetail context"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ItemDetail/PriceBasisQuantity/@quantity OR BlanketItemDetail/PriceBasisQuantity/@quantity",
+          "type": "direct"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemDetail/PriceBasisQuantity/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        },
+        {
+          "position": 6,
+          "value": "CSD",
+          "type": "literal"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "ItemDetail/PriceBasisQuantity/@conversionFactor",
+          "type": "direct"
+        }
+      ],
+      "condition": "PriceBasisQuantity/@quantity is non-empty"
+    },
+    {
+      "segment_id": "CTP (BlanketItemDetail MaxAmount)",
+      "loop": "detail/PO1",
+      "description": "Pricing Information – BlanketItemDetail max amount",
+      "elements": [
+        {
+          "position": 1,
+          "value": "TR",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "MAX",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "BlanketItemDetail/MaxAmount/Money text",
+          "type": "direct"
+        }
+      ],
+      "condition": "BlanketItemDetail/MaxAmount is present",
+      "followed_by": "CUR*BY*currency*altAmount*ZZ*altCurrency~"
+    },
+    {
+      "segment_id": "CTP (BlanketItemDetail MinAmount)",
+      "loop": "detail/PO1",
+      "description": "Pricing Information – BlanketItemDetail min amount",
+      "elements": [
+        {
+          "position": 1,
+          "value": "TR",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "MIN",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "BlanketItemDetail/MinAmount/Money text",
+          "type": "direct"
+        }
+      ],
+      "condition": "BlanketItemDetail/MinAmount is present",
+      "followed_by": "CUR*BY*currency*altAmount*ZZ*altCurrency~"
+    },
+    {
+      "segment_id": "MEA",
+      "loop": "detail/PO1",
+      "description": "Measurements – item dimensions",
+      "elements": [
+        {
+          "position": 1,
+          "value": "PD",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ItemDetail/Dimension/@type",
+          "lookup_table": "mapMEA738",
+          "type": "lookup"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ItemDetail/Dimension/@quantity",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ItemDetail/Dimension/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        }
+      ],
+      "condition": "ItemDetail/Dimension elements present (one MEA per Dimension)"
+    },
+    {
+      "segment_id": "PID (item description)",
+      "loop": "detail/PO1",
+      "description": "Product/Item Description – item description text",
+      "variants": [
+        {
+          "condition": "ItemDetail/Description text is non-empty",
+          "elements": [
+            {
+              "position": 1,
+              "value": "F",
+              "type": "literal"
+            },
+            {
+              "position": 5,
+              "cxml_xpath": "ItemDetail/Description text (vt2_x12)",
+              "type": "direct"
+            },
+            {
+              "position": 9,
+              "cxml_xpath": "ItemDetail/Description/@xml:lang",
+              "type": "direct",
+              "default": "EN"
+            }
+          ]
+        },
+        {
+          "condition": "Description/ShortName is also present → second PID",
+          "elements": [
+            {
+              "position": 1,
+              "value": "F",
+              "type": "literal"
+            },
+            {
+              "position": 2,
+              "value": "GEN",
+              "type": "literal"
+            },
+            {
+              "position": 5,
+              "cxml_xpath": "ItemDetail/Description/ShortName",
+              "type": "direct"
+            },
+            {
+              "position": 9,
+              "cxml_xpath": "ItemDetail/Description/@xml:lang",
+              "type": "direct",
+              "default": "EN"
+            }
+          ]
+        },
+        {
+          "condition": "else (no description)",
+          "elements": [
+            {
+              "position": 1,
+              "value": "F",
+              "type": "literal"
+            },
+            {
+              "position": 5,
+              "value": " ",
+              "type": "literal"
+            },
+            {
+              "position": 9,
+              "value": "EN",
+              "type": "literal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "segment_id": "PID (Classification)",
+      "loop": "detail/PO1",
+      "description": "Product/Item Description – commodity classification",
+      "elements": [
+        {
+          "position": 1,
+          "value": "S",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "MAC",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "type": "complex_logic",
+          "note": "If domain=UNSPSC → 'UN'; else → 'AS'"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ItemDetail/Classification/@code OR 'Not Provided'",
+          "type": "direct",
+          "note": "Truncated to 12 chars"
+        },
+        {
+          "position": 7,
+          "type": "complex_logic",
+          "note": "If domain=UNSPSC → 'SPSC'; else → domain text truncated to 15 chars"
+        }
+      ],
+      "condition": "ItemDetail/Classification elements present (one PID per Classification)"
+    },
+    {
+      "segment_id": "PID (ShippingInstructions item)",
+      "loop": "detail/PO1",
+      "description": "Product/Item Description – item-level shipping instructions",
+      "elements": [
+        {
+          "position": 1,
+          "value": "F",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "93",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemOut/ItemDetail/ShipTo/TransportInformation/ShippingInstructions/Description text",
+          "type": "direct",
+          "note": "Truncated to 80 chars per segment"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "ShippingInstructions/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "ItemDetail/ShipTo/TransportInformation/ShippingInstructions/Description is present"
+    },
+    {
+      "segment_id": "PID (isConfigurableMaterial)",
+      "loop": "detail/PO1",
+      "description": "Product/Item Description – configurable material indicator",
+      "elements": [
+        {
+          "position": 1,
+          "value": "F",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "21",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "value": "Configurable Material",
+          "type": "literal"
+        }
+      ],
+      "condition": "ItemDetail/ItemDetailIndustry/@isConfigurableMaterial = 'yes'"
+    },
+    {
+      "segment_id": "PID (itemClassification)",
+      "loop": "detail/PO1",
+      "description": "Product/Item Description – item classification code",
+      "elements": [
+        {
+          "position": 1,
+          "value": "F",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemOut/@itemClassification",
+          "type": "direct"
+        }
+      ],
+      "condition": "ItemOut/@itemClassification is present"
+    },
+    {
+      "segment_id": "REF (item level)",
+      "loop": "detail/PO1",
+      "description": "Reference Identification – line item references",
+      "note": "Same pattern as header REF but sourced from ItemOut/ItemDetail",
+      "mappings": [
+        {
+          "qualifier": "RQ",
+          "cxml_xpath": "ItemOut/@requisitionID"
+        },
+        {
+          "qualifier": "ZA",
+          "cxml_xpath_pos2": "ItemOut/SupplierID",
+          "cxml_xpath_pos3": "ItemOut/SupplierID/@domain"
+        },
+        {
+          "qualifier": "FL",
+          "cxml_xpath_pos2": "ItemOut/@parentLineNumber",
+          "cxml_xpath_pos3": "ItemOut/@itemType"
+        },
+        {
+          "qualifier": "0L",
+          "value_pos2": "FOB05",
+          "cxml_xpath_pos3": "TermsOfDelivery/TransportTerms[@value='Other'] text"
+        },
+        {
+          "qualifier": "2I",
+          "cxml_xpath_pos2": "ItemOut/Shipping/@trackingDomain",
+          "cxml_xpath_pos3": "ItemOut/Shipping/@trackingId"
+        },
+        {
+          "qualifier": "BT",
+          "cxml_xpath": "ItemOut/Batch/SupplierBatchID"
+        },
+        {
+          "qualifier": "LT",
+          "cxml_xpath": "ItemOut/Batch/BuyerBatchID"
+        },
+        {
+          "qualifier": "AH",
+          "cxml_xpath": "ItemOut/MasterAgreementIDInfo/@agreementID"
+        },
+        {
+          "qualifier": "S1",
+          "cxml_xpath": "ItemDetail/Extrinsic[@name='engineeringSpecificationNo']"
+        },
+        {
+          "qualifier": "CO",
+          "cxml_xpath": "ItemDetail/Extrinsic[@name='customerOrderNo']"
+        },
+        {
+          "qualifier": "QJ",
+          "cxml_xpath": "ItemOut/@returnAuthorizationNumber"
+        },
+        {
+          "qualifier": "KQ",
+          "cxml_xpath": "ItemOut/@itemCategory"
+        },
+        {
+          "qualifier": "SE",
+          "cxml_xpath": "ItemOut/ItemOutIndustry/SerialNumberInfo/SerialNumber text (one REF per serial)"
+        },
+        {
+          "qualifier": "CT",
+          "cxml_xpath": "ItemOut/@agreementItemNumber"
+        },
+        {
+          "qualifier": "YB",
+          "cxml_xpath": "ItemOut/ItemID/SupplierPartID/@revisionID"
+        },
+        {
+          "qualifier": "ZZ (dynamic)",
+          "note": "Remaining Extrinsics via mapREF128 lookup, same logic as header REF"
+        }
+      ]
+    },
+    {
+      "segment_id": "SAC (item G830)",
+      "loop": "detail/PO1",
+      "description": "Service, Promotion, Allowance or Charge – item-level shipping (same structure as header G830)",
+      "source": "ItemOut/Shipping",
+      "note": "Same logic as header SAC G830 but sourced from ItemOut/Shipping"
+    },
+    {
+      "segment_id": "SAC (item F050 / AdditionalDeduction / AdditionalCost)",
+      "loop": "detail/PO1",
+      "description": "Item-level price modifications",
+      "source": "ItemOut/ItemDetail/UnitPrice/Modifications/Modification",
+      "note": "Same structure as header SAC F050/AdditionalDeduction/AdditionalCost but sourced from ItemDetail"
+    },
+    {
+      "segment_id": "SAC (item B840 – accounting distribution)",
+      "loop": "detail/PO1",
+      "description": "Service, Promotion, Allowance or Charge – GL account distribution",
+      "elements": [
+        {
+          "position": 1,
+          "value": "N",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "B840",
+          "type": "literal"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemOut/Distribution/Charge/Money text",
+          "type": "x100"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "ItemOut/Distribution/Accounting/AccountingSegment/@id (concatenated with '-' prefix)",
+          "type": "complex_logic"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "AccountingSegment/Description/ShortName (concatenated) OR Description (concatenated) OR 'LISA'",
+          "type": "complex_logic"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "ItemOut/Distribution/Accounting/Description/@xml:lang",
+          "type": "direct",
+          "default": "EN"
+        }
+      ],
+      "condition": "ItemOut/Distribution/Charge/Money is non-empty",
+      "followed_by": "CUR*BY*currency~"
+    },
+    {
+      "segment_id": "FOB (item level)",
+      "loop": "detail/PO1",
+      "description": "F.O.B. Related Instructions – item level (same structure as header FOB)",
+      "source": "ItemOut/TermsOfDelivery",
+      "note": "Slight difference: position 4 uses '01' (not 'ZZ') for non-other TransportTerms",
+      "condition": "ItemOut/TermsOfDelivery/ShippingPaymentMethod/@value OR TransportTerms/@value present"
+    },
+    {
+      "segment_id": "SDQ",
+      "loop": "detail/PO1",
+      "description": "Destination Quantity – retail store distribution",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "ItemOutIndustry/PackagingDistribution/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        },
+        {
+          "position": 2,
+          "value": "54",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ItemOutIndustry/PackagingDistribution/StoreCode",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ItemOutIndustry/PackagingDistribution/@quantity",
+          "type": "direct"
+        }
+      ],
+      "condition": "ItemOut/ItemOutIndustry/PackagingDistribution elements present (one SDQ per entry)"
+    },
+    {
+      "segment_id": "DTM (item level)",
+      "loop": "detail/PO1",
+      "description": "Date/Time Reference – item-level dates",
+      "mappings": [
+        {
+          "qualifier": "002",
+          "cxml_xpath": "ItemOut/@requestedDeliveryDate"
+        },
+        {
+          "qualifier": "010",
+          "cxml_xpath": "ItemOut/@requestedShipmentDate"
+        },
+        {
+          "qualifier": "LEA",
+          "cxml_xpath": "ItemOut/@agreementDate"
+        },
+        {
+          "qualifier": "150",
+          "cxml_xpath": "ItemOut/SpendDetail/Extrinsic[@name='ServicePeriod']/Period/@startDate"
+        },
+        {
+          "qualifier": "151",
+          "cxml_xpath": "ItemOut/SpendDetail/Extrinsic[@name='ServicePeriod']/Period/@endDate"
+        }
+      ]
+    },
+    {
+      "segment_id": "TXI (item level)",
+      "loop": "detail/PO1",
+      "description": "Tax Information – item level (same structure as header TXI)",
+      "source": "ItemOut",
+      "note": "Same logic as header TXI but sourced from ItemOut/Tax"
+    },
+    {
+      "segment_id": "QTY (MaxQuantity)",
+      "loop": "detail/PO1",
+      "description": "Quantity – BlanketItemDetail maximum quantity",
+      "elements": [
+        {
+          "position": 1,
+          "value": "7D",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "BlanketItemDetail/MaxQuantity text",
+          "type": "direct"
+        }
+      ],
+      "condition": "BlanketItemDetail/MaxQuantity is non-empty"
+    },
+    {
+      "segment_id": "QTY (MinQuantity)",
+      "loop": "detail/PO1",
+      "description": "Quantity – BlanketItemDetail minimum quantity",
+      "elements": [
+        {
+          "position": 1,
+          "value": "7E",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "BlanketItemDetail/MinQuantity text",
+          "type": "direct"
+        }
+      ],
+      "condition": "BlanketItemDetail/MinQuantity is non-empty"
+    },
+    {
+      "segment_id": "SCH",
+      "loop": "detail/PO1",
+      "description": "Line Item Schedule – one SCH per ScheduleLine",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "ScheduleLine/@quantity",
+          "type": "direct"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ScheduleLine/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        },
+        {
+          "position": 3,
+          "value": "ST",
+          "type": "literal",
+          "note": "Only when ShipTo/Address/Name present"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ScheduleLine/ShipTo/Address/Name",
+          "type": "direct"
+        },
+        {
+          "position": 5,
+          "value": "002",
+          "type": "literal",
+          "note": "Date qualifier for requestedDeliveryDate"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "ScheduleLine/@requestedDeliveryDate",
+          "type": "date_yyyymmdd"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "ScheduleLine/@requestedDeliveryDate",
+          "type": "time_hhmmss"
+        },
+        {
+          "position": 8,
+          "value": "010",
+          "type": "literal",
+          "note": "Date qualifier for requestedShipmentDate; only when date present"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "ScheduleLine/@requestedShipmentDate",
+          "type": "date_yyyymmdd"
+        },
+        {
+          "position": 12,
+          "type": "complex_logic",
+          "note": "Delivery window end date: requestedDeliveryDate + @deliveryWindow days (format: 14-char date string)"
+        }
+      ],
+      "condition": "ItemOut/ScheduleLine elements present (one SCH per ScheduleLine)"
+    },
+    {
+      "segment_id": "PKG",
+      "loop": "detail/PO1",
+      "description": "Marking, Packaging, Loading",
+      "elements": [
+        {
+          "position": 1,
+          "value": "F",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "01",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "value": "ZZ",
+          "type": "literal"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "ItemDetail/Packaging/Description/@type",
+          "type": "direct",
+          "note": "Truncated to 7 chars"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ItemDetail/Packaging/Description text OR 'Packaging Description Not Provided'",
+          "type": "direct"
+        }
+      ],
+      "condition": "Packaging/Description/@type OR Description text OR Dimension elements present",
+      "followed_by": "MEA*PD*dimensionType*quantity*UOM~ for each Packaging/Dimension"
+    },
+    {
+      "segment_id": "N9 (item URL)",
+      "loop": "detail/PO1",
+      "description": "Reference Identification – item attachment URL",
+      "elements": [
+        {
+          "position": 1,
+          "value": "URL",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "URL",
+          "type": "literal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ItemDetail/URL/@name",
+          "type": "direct"
+        }
+      ],
+      "condition": "ItemDetail/URL is present",
+      "followed_by": "MSG*url_text~"
+    },
+    {
+      "segment_id": "N9 (item Comments)",
+      "loop": "detail/PO1",
+      "description": "Reference Identification – item comments",
+      "elements": [
+        {
+          "position": 1,
+          "value": "L1",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "value": "Comments",
+          "type": "literal"
+        }
+      ],
+      "condition": "ItemOut/Comments elements present (one N9 per Comment)",
+      "followed_by": "MSG*comment_text~"
+    },
+    {
+      "segment_id": "N9 (SerialNumberInfo)",
+      "loop": "detail/PO1",
+      "description": "Reference Identification – serial number requirement",
+      "elements": [
+        {
+          "position": 1,
+          "value": "SE",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ItemOutIndustry/SerialNumberInfo/@type",
+          "type": "direct"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ItemOutIndustry/SerialNumberInfo/@requiresSerialNumber",
+          "type": "direct"
+        }
+      ],
+      "condition": "SerialNumberInfo/@type is present OR @requiresSerialNumber = 'yes'"
+    },
+    {
+      "segment_id": "N9 (ReferenceDocumentInfo)",
+      "loop": "detail/PO1",
+      "description": "Reference Identification – reference document info",
+      "elements": [
+        {
+          "position": 1,
+          "value": "0L",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ReferenceDocumentInfo/DocumentInfo/@documentID",
+          "type": "direct"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ReferenceDocumentInfo/DocumentInfo/@documentType",
+          "type": "direct"
+        },
+        {
+          "position": 4,
+          "type": "date_from_field",
+          "cxml_xpath": "ReferenceDocumentInfo/DocumentInfo/@documentDate"
+        },
+        {
+          "position": 701,
+          "value": "LI",
+          "type": "literal"
+        },
+        {
+          "position": 702,
+          "cxml_xpath": "ReferenceDocumentInfo/@lineNumber",
+          "type": "direct"
+        },
+        {
+          "position": 703,
+          "value": "72",
+          "type": "literal"
+        },
+        {
+          "position": 704,
+          "cxml_xpath": "ReferenceDocumentInfo/@scheduleLineNumber",
+          "type": "direct"
+        }
+      ],
+      "condition": "ItemOutIndustry/ReferenceDocumentInfo elements present (one N9 per entry)"
+    },
+    {
+      "segment_id": "N9 (isDeliveryCompleted etc.)",
+      "loop": "detail/PO1",
+      "description": "Reference Identification – boolean item flags",
+      "mappings": [
+        {
+          "qualifier": "ACC",
+          "cxml_xpath": "ItemOut/@isDeliveryCompleted",
+          "label": "delivery complete",
+          "note": "Only when value = 'yes'"
+        },
+        {
+          "qualifier": "ACC",
+          "cxml_xpath": "ItemOut/@isReturn",
+          "label": "return item",
+          "note": "Only when value = 'yes'"
+        },
+        {
+          "qualifier": "ACE",
+          "cxml_xpath": "ItemOut/@requiresServiceEntry",
+          "label": "requiresServiceEntry",
+          "note": "Only when value = 'yes'"
+        },
+        {
+          "qualifier": "BT",
+          "cxml_xpath": "ItemOut/ItemOutIndustry/BatchInfo/@requiresBatch",
+          "label": "requiresBatch",
+          "note": "Only when value = 'yes'"
+        }
+      ]
+    },
+    {
+      "segment_id": "N1 (item level)",
+      "loop": "detail/PO1/N1",
+      "description": "Name – item-level party identification (ShipTo, TermsOfDelivery, Contact)",
+      "note": "Same sub-structure as header N1 (N2/N3/N4/REF/PER) but sourced from ItemOut",
+      "party_sources": [
+        {
+          "source": "ItemOut/ShipTo",
+          "qualifier": "ST"
+        },
+        {
+          "source": "ItemOut/TermsOfDelivery",
+          "qualifier": "DA"
+        },
+        {
+          "source": "ItemOut/Contact",
+          "qualifier_map": "mapN1_98",
+          "qualifier_input": "@role"
+        }
+      ]
+    },
+    {
+      "segment_id": "SLN",
+      "loop": "detail/PO1/SLN",
+      "description": "Subline Item Detail – subcontracting components",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "ScheduleLine/@lineNumber",
+          "type": "direct"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ScheduleLine/@lineNumber (parent)",
+          "type": "direct"
+        },
+        {
+          "position": 3,
+          "value": "O",
+          "type": "literal"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "SubcontractingComponent/@quantity",
+          "type": "direct"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "SubcontractingComponent/UnitOfMeasure",
+          "lookup_table": "mapUOM355",
+          "type": "lookup"
+        },
+        {
+          "position": "9+",
+          "type": "complex_logic",
+          "note": "Component item ID pairs from position 9: BP=Product/BuyerPartID, VP=Product/SupplierPartID, VS=Product/SupplierPartAuxiliaryID, EN=Product/IdReference[@domain='EAN-13']/@identifier, SK=Product/IdReference[@domain='custSKU']/@identifier, UP=Product/IdReference[@domain='UPCConsumerPackageCode']/@identifier"
+        }
+      ],
+      "condition": "ItemOut/ScheduleLine/SubcontractingComponent elements present",
+      "followed_by": "MSG, DTM(@requirementDate/002), N9(SU/materialProvisionIndicator), N9(BT/SupplierBatchID), N9(LT/BuyerBatchID), N9(4C/storageLocation)"
+    },
+    {
+      "segment_id": "CTT",
+      "loop": "summary",
+      "description": "Transaction Totals",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "count(OrderRequest/ItemOut)",
+          "type": "computed",
+          "note": "Total number of ItemOut elements"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "sum of ItemOut/@quantity",
+          "type": "computed",
+          "note": "Running total of all line quantities"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "AMT",
+      "loop": "summary",
+      "description": "Monetary Amount",
+      "elements": [
+        {
+          "position": 1,
+          "value": "TT",
+          "type": "literal"
+        },
+        {
+          "position": 2,
+          "type": "complex_logic",
+          "note": "If Extrinsic[@name='hideAmount'] OR Extrinsic[@name='hideUnitPrice'] is set → '0'; else → OrderRequestHeader/Total/Money text"
+        }
+      ],
+      "condition": null
+    }
+  ],
+  "lookup_tables": {
+    "mapBCH353": {
+      "new": "00",
+      "delete": "03",
+      "update": "05"
+    },
+    "mapMEA738": {
+      "grossWeight": "G",
+      "unitGrossWeight": "GW",
+      "height": "HT",
+      "length": "LN",
+      "unitNetWeight": "N",
+      "stackHeight": "S",
+      "volume": "VOL",
+      "grossVolume": "VWT",
+      "width": "WD",
+      "weight": "WT"
+    },
+    "mapN1_66": {
+      "duns": "1",
+      "scac": "2",
+      "iata": "4",
+      "duns+4": "9"
+    },
+    "mapN1_98": {
+      "correspondent": "40",
+      "componentsupplier": "42",
+      "sales": "60",
+      "taxrepresentative": "7X",
+      "customerservice": "A9",
+      "buyermasteraccount": "AP",
+      "buyercorporate": "B4",
+      "billfrom": "BF",
+      "receivingcorrespondentbank": "BK",
+      "billto": "BT",
+      "buyer": "BY",
+      "carriercorporate": "CA",
+      "enduser": "EN",
+      "from": "FR",
+      "issuerofinvoice": "II",
+      "technicalsupport": "KY",
+      "subsequentbuyer": "MA",
+      "buyerplannercode": "MI",
+      "suppliermasteraccount": "MJ",
+      "administrator": "NG",
+      "originatingbank": "O1",
+      "buyeraccount": "OB",
+      "purchasingagent": "PD",
+      "payee": "PE",
+      "payer": "PR",
+      "requester": "R6",
+      "wirereceivingbank": "RB",
+      "remitto": "RI",
+      "supplieraccount": "SE",
+      "shipfrom": "SF",
+      "soldto": "SO",
+      "shipto": "ST",
+      "suppliercorporate": "SU",
+      "receipientparty": "TO",
+      "senderbusinesssystemid": "UK",
+      "default": "ZZ"
+    },
+    "mapN1BP98": {
+      "soldto": "SO",
+      "shipfrom": "SF"
+    },
+    "mapN1BP66": {
+      "duns": "1",
+      "scac": "2",
+      "iata": "4",
+      "duns+4": "9"
+    },
+    "mapN1BPREF128": {
+      "buyeraccountid": "YD",
+      "supplierid": "ZA"
+    },
+    "mapN1REF128_I": {
+      "abaroutingnumber": "01",
+      "swiftid": "02",
+      "chipsid": "03",
+      "accountid": "11",
+      "accountpayableid": "12",
+      "ibanid": "14",
+      "bankbranchid": "3L",
+      "pstid": "3S",
+      "loadingpoint": "4B",
+      "storagelocation": "4C",
+      "provincialtaxid": "4G",
+      "supplierlocationid": "4L",
+      "qstid": "4O",
+      "buyerplannercode": "72",
+      "banknationalid": "8W",
+      "transportationzone": "9S",
+      "accounttype": "9X",
+      "accountname": "ACT",
+      "governmentnumber": "AEC",
+      "accountreceivableid": "AP",
+      "suppliertaxid": "BAA",
+      "statetaxid": "BAD",
+      "contactdepartmentid": "BR",
+      "supplierreference": "D2",
+      "documentname": "DD",
+      "duns4": "DNS",
+      "departmentname": "DP",
+      "duns": "DUN",
+      "reference": "F8",
+      "gsttaxid": "GT",
+      "creditorrefid": "J1",
+      "cradcrsdindicator": "KK",
+      "buyerlocationid": "LU",
+      "bankaccountid": "PB",
+      "bankroutingid": "RT",
+      "contactperson": "SA",
+      "federaltaxid": "TJ",
+      "taxexemptionid": "TX",
+      "vatid": "VX",
+      "partyadditionalid": "YD",
+      "partyadditionalid2": "ZA"
+    },
+    "mapTD5_66": {
+      "duns": "1",
+      "scac": "2",
+      "iata": "4"
+    },
+    "mapTD5_91": {
+      "air": "A",
+      "motor": "J",
+      "rail": "R",
+      "ship": "S"
+    },
+    "mapTXI963": {
+      "gst": "GS",
+      "sales": "ST",
+      "qst": "ST",
+      "hst": "ST",
+      "pst": "ST",
+      "vat": "VA"
+    },
+    "mapFOB146": {
+      "rule11shipment": "11",
+      "paidbybuyer": "BP",
+      "advancecollect": "CA",
+      "collect": "CC",
+      "collectondelivery": "CD",
+      "collectfreightcreditedtopaymentcustomer": "CF",
+      "percontract": "DE",
+      "account": "DF",
+      "cashondeliveryservicechargepaidbyconsignee": "DF",
+      "cashondeliveryservicechargepaidbyconsignor": "DF",
+      "definedbybuyerandseller": "DF",
+      "informationcopy-nopaymentdue": "DF",
+      "insurancecostspaidbyconsignee": "DF",
+      "insurancecostspaidbyconsignor": "DF",
+      "notspecified": "DF",
+      "payableelsewhere": "DF",
+      "other": "DF",
+      "fobportofcall": "FO",
+      "halfprepaid": "HP",
+      "mixed": "MX",
+      "servicefreight-nocharge": "NC",
+      "nonrevenue": "NR",
+      "advanceprepaid": "PA",
+      "customerpick-uporbackhaul": "PB",
+      "prepaidbutchargedtocustomer": "PC",
+      "prepaidbyprocessor": "PD",
+      "prepaidandsummarybill": "PE",
+      "prepaidlocalcollectoutstate": "PL",
+      "prepaidonly": "PO",
+      "prepaid-byseller": "PP",
+      "paidbysupplierorseller": "PS",
+      "pickup": "PU",
+      "returncontainerfreightpaidbycustomer": "RC",
+      "returncontainerfreightfree": "RF",
+      "returncontainerfreightpaidbysupplier": "RS",
+      "thirdpartypay": "TP",
+      "weightcondition": "WC"
+    },
+    "mapFOB335": {
+      "costandfreight": "CAF",
+      "cost-insuranceandfreight": "CIF",
+      "carriage-insurancepaidto": "CIP",
+      "carriagepaidto": "CPT",
+      "deliveredatfrontier": "DAF",
+      "delivereddutypaid": "DDP",
+      "delivereddutyunpaid": "DDU",
+      "deliveredex-quay": "DEQ",
+      "deliveredex-ship": "DES",
+      "ex-works": "EXW",
+      "freealongsideship": "FAS",
+      "free-carrier": "FCA",
+      "freeonboard": "FOB",
+      "other": "ZZZ",
+      "deliveryatplace": "",
+      "deliveryatterminal": ""
+    },
+    "mapSAC1300": {
+      "note": "Very large table (hundreds of SAC service/charge codes). Key pattern: charge description string (lowercased, spaces removed) → X12 SAC-02 code. Examples: absoluteminimumcharge→A010, freight→FRE, handling→G830, discount→H060. Full table in source JS."
+    },
+    "mapREF128": {
+      "note": "Very large table (hundreds of REF qualifier codes). Key entries used in logic: contractNo→CT (hardcoded), quoteNo→Q1 (hardcoded), internalVendorNo→IA (hardcoded). All other Extrinsic names are dynamically looked up in this table; if found → REF*code*value[0:30]*value[30:]; if not → REF*ZZ*name*value[0:80]. Full table in source JS."
+    },
+    "mapUOM355": {
+      "note": "UOM mapping table (class Ft). Converts cXML UnitOfMeasure text values to X12 Unit of Measure codes. Full table is in a separate class (Ft) not extracted here."
+    }
+  }
+}

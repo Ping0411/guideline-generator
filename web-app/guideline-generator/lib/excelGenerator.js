@@ -38,7 +38,7 @@ const SHEET_EXTRINSIC          = 'Extrinsic fields';
 const SHEET_JA_DESIRED_DATE    = '注文書_ 希望納期日';
 const SHEET_JA_SHIPTO_DETAIL   = '注文書_納入先住所_詳細';
 const SHEET_ZH_DESIRED_DATE    = 'PO-交货日期';
-const SHEET_ZH_SHIPTO_DETAIL   = 'PO-交货地址详情';
+const SHEET_ZH_SHIPTO_DETAIL   = 'PO-送货地址详情';
 
 /**
  * Generate the complete Excel file.
@@ -72,7 +72,10 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
     const invoiceInScope = inScope.includes('Invoice');
     const multipleCountries = invoiceInScope && answers.q14mc === 'Yes';
     console.log('[README] invoiceInScope:', invoiceInScope, 'q14mc:', answers.q14mc, 'multipleCountries:', multipleCountries);
-    const readmeRows = extractReadmeRows(tmplReadme, language, { removeColumnC: !(invoiceInScope && answers.q14mc === 'Yes') });
+    const readmeRows = extractReadmeRows(tmplReadme, language, {
+      removeColumnDE: !ediFormat,
+      removeColumnC:  !(invoiceInScope && answers.q14mc === 'Yes'),
+    });
     const wsReadme = output.addWorksheet('READ ME');
 
     // Hide grid lines (inherit from template views)
@@ -146,7 +149,7 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
   if (tmplPR) {
     const wsPR = output.addWorksheet('Project Requirements');
     copySheetContent(tmplPR, wsPR);
-    fillProjectRequirements(wsPR, answers, evalResults);
+    fillProjectRequirements(wsPR, answers, evalResults, cxmlFiles);
   }
 
   // ── 4. Doc type sheets (one per uploaded cXML) ────────────────────────────
@@ -443,6 +446,14 @@ function copySheetContent(src, dst) {
         editAs: img.range.editAs || 'oneCell',
       });
     } catch (_) {}
+  }
+
+  // Copy data validations (e.g. dropdown lists)
+  const dvModel = src.dataValidations && src.dataValidations.model;
+  if (dvModel) {
+    for (const [addr, dv] of Object.entries(dvModel)) {
+      try { dst.dataValidations.add(addr, { ...dv }); } catch (_) {}
+    }
   }
 
 }

@@ -355,6 +355,11 @@
 <header>
   <h1>SAP Help Assistant</h1>
   <span>SAP Business Network / SAP Business Network For Logistics</span>
+  <button id="generator-btn" onclick="launchGenerator()" style="
+    margin-left:auto; padding:6px 14px; background:rgba(255,255,255,0.2);
+    color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:6px;
+    font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;
+  ">Guideline Generator ↗</button>
 </header>
 
 <div id="config-bar">
@@ -391,6 +396,27 @@
 </div>
 
 <script>
+  async function launchGenerator() {
+    const btn = document.getElementById('generator-btn');
+    const original = btn.textContent;
+    btn.textContent = 'Starting…';
+    btn.disabled = true;
+    try {
+      const res = await fetch('/launch_generator');
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, '_blank');
+      } else {
+        alert('Could not start Guideline Generator:\n' + (data.error || 'Unknown error'));
+      }
+    } catch (e) {
+      alert('Could not start Guideline Generator:\n' + e.message);
+    } finally {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  }
+
   const chatContainer = document.getElementById('chat-container');
   const userInput = document.getElementById('user-input');
   const sendBtn = document.getElementById('send-btn');
@@ -442,6 +468,10 @@
   //   data (image): { base64, mediaType }
   //   data (text):  { content }
   let pendingAttachments = [];
+
+  // Session key returned by /parse_edi_file when user uploads an xlsx EDI file.
+  // Cleared when the user sends the message (bound to export button at that moment).
+  let _pendingEdiSessionKey = null;
 
   const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
   const TEXT_EXTENSIONS = ['.txt', '.csv', '.xml', '.json', '.cxml', '.html', '.htm', '.log', '.md'];
@@ -522,6 +552,25 @@
       try {
         const att = await readFileAsAttachment(file);
         pendingAttachments.push(att);
+
+        // For xlsx files, pre-parse on the backend and store session_key for export
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (ext === '.xlsx' && att.type === 'binary') {
+          try {
+            const resp = await fetch('/parse_edi_file', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ base64: att.data.base64, filename: file.name })
+            });
+            const parsed = await resp.json();
+            if (parsed.session_key) {
+              _pendingEdiSessionKey = parsed.session_key;
+              console.log('[edi_session] Parsed', parsed.row_count, 'rows, key:', parsed.session_key);
+            }
+          } catch (e) {
+            console.warn('[edi_session] Failed to pre-parse xlsx:', e);
+          }
+        }
       } catch (e) {
         showError(`Failed to read file: ${file.name}`);
       }
@@ -735,6 +784,10 @@
     pendingAttachments = [];
     renderAttachmentStrip();
 
+    // Capture EDI session key for this message's export button, then reset
+    const thisEdiSessionKey = _pendingEdiSessionKey;
+    _pendingEdiSessionKey = null;
+
     userInput.value = '';
     userInput.style.height = 'auto';
     setWaiting(true);
@@ -831,6 +884,48 @@
             scrollToBottom();
           }
 
+          if (event.verify_result !== undefined) {
+            const passed = event.passed;
+            const hasExtOk = event.verify_result && event.verify_result.includes('[EXT-OK]');
+            // Green if fully passed, blue-info if passed with EXT-OK advisory items, orange if spec failures
+            const bg = passed ? (hasExtOk ? '#e8f0fe' : '#e6f4ea') : '#fff3e0';
+            const border = passed ? (hasExtOk ? '#4285f4' : '#34a853') : '#f9ab00';
+            const box = document.createElement('div');
+            box.style.cssText = `margin-top:8px;padding:8px 12px;border-radius:6px;font-size:13px;white-space:pre-wrap;font-family:monospace;background:${bg};border-left:4px solid ${border};`;
+            if (passed && hasExtOk) {
+              const note = document.createElement('div');
+              note.style.cssText = 'font-weight:bold;margin-bottom:4px;color:#1a73e8;';
+              note.textContent = 'ℹ️ Spec verified ✅ — Extension advisory items below (current values confirmed correct):';
+              box.appendChild(note);
+            }
+            const content = document.createElement('div');
+            content.innerHTML = marked.parse(event.verify_result);
+            box.appendChild(content);
+            if (assistantDiv) { assistantDiv.appendChild(box); scrollToBottom(); }
+          }
+
+          if (event.fix_result !== undefined) {
+            const passed = event.passed;
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'margin-top:8px;';
+            const fixBox = document.createElement('details');
+            fixBox.style.cssText = 'border-radius:6px;border:1px solid #ddd;padding:4px 8px;font-size:12px;';
+            const summary = document.createElement('summary');
+            summary.style.cssText = 'cursor:pointer;font-weight:bold;color:#1a73e8;';
+            summary.textContent = `Fix attempt ${event.round} — click to expand corrected EDI`;
+            const pre = document.createElement('pre');
+            pre.style.cssText = 'font-size:11px;overflow-x:auto;margin:6px 0 0 0;';
+            pre.textContent = event.fix_result;
+            fixBox.appendChild(summary);
+            fixBox.appendChild(pre);
+            const verifyBox = document.createElement('div');
+            verifyBox.style.cssText = `margin-top:6px;padding:6px 10px;border-radius:6px;font-size:13px;background:${passed ? '#e6f4ea' : '#fff3e0'};border-left:4px solid ${passed ? '#34a853' : '#f9ab00'};`;
+            verifyBox.innerHTML = marked.parse(event.verify_result);
+            wrap.appendChild(fixBox);
+            wrap.appendChild(verifyBox);
+            if (assistantDiv) { assistantDiv.appendChild(wrap); scrollToBottom(); }
+          }
+
           if (event.done) {
             const elapsed = thinking._stopTimer ? thinking._stopTimer() : '';
             history.push({ role: 'assistant', content: event.full_reply || fullReply });
@@ -849,6 +944,80 @@
               assistantDiv.appendChild(document.createElement('br'));
               assistantDiv.appendChild(btn);
               scrollToBottom();
+            }
+            // If no excel_url but reply contains EDI check results or EDI segments, show export button
+            if (!event.excel_url && assistantDiv) {
+              const replyText = event.full_reply || fullReply || '';
+              const firstLine = replyText.split('\n')[0].trim();
+              const isCheckMode = firstLine === '[MODE:CHECK]';
+              const isConvertMode = firstLine === '[MODE:CONVERT]';
+              // Keyword detection only applies when an EDI session exists (i.e. a file was uploaded)
+              const hasCheckResult = isCheckMode || (thisEdiSessionKey && !isConvertMode && (
+                replyText.includes('❌') || replyText.includes('Issues found')
+                || replyText.includes('🔴') || replyText.includes('规范依据')
+                || replyText.includes('问題') || replyText.includes('问题 ') || replyText.includes('問題')));
+              const ediLines = replyText.split('\n').filter(l => /^[A-Z][A-Z0-9]{1,2}\*/.test(l.trim()));
+              const hasEdi = isConvertMode && ediLines.length > 2;
+
+              if (hasCheckResult || hasEdi) {
+                const exportBtn = document.createElement('button');
+                exportBtn.className = 'download-btn';
+                exportBtn.style.cssText = 'margin-top:8px;cursor:pointer;border:none;';
+                exportBtn.textContent = hasCheckResult
+                  ? '⬇ Export corrected EDI as Excel'
+                  : '⬇ Export EDI as Excel';
+                // Bind session key and check findings at creation time
+                const capturedSessionKey = thisEdiSessionKey;
+                const capturedCheckFindings = replyText;
+                exportBtn.onclick = async () => {
+                  exportBtn.disabled = true;
+                  exportBtn.textContent = '⏳ Generating…';
+                  try {
+                    let resp, result;
+                    if (hasCheckResult) {
+                      if (!capturedSessionKey) {
+                        exportBtn.textContent = '❌ No EDI session — please re-upload the file';
+                        exportBtn.disabled = false;
+                        return;
+                      }
+                      resp = await fetch('/export_corrected_edi', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          api_key: apiKeyInput.value.trim(),
+                          base_url: baseUrlInput.value.trim() || null,
+                          session_key: capturedSessionKey,
+                          check_findings: capturedCheckFindings
+                        })
+                      });
+                    } else {
+                      // Plain EDI in reply — just convert segments to Excel directly
+                      resp = await fetch('/generate_excel_from_edi', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ edi: ediLines.join('\n') })
+                      });
+                    }
+                    result = await resp.json();
+                    if (result.excel_url) {
+                      const a = document.createElement('a');
+                      a.href = result.excel_url;
+                      a.download = '';
+                      a.click();
+                      exportBtn.textContent = '✅ Downloaded';
+                    } else {
+                      exportBtn.textContent = '❌ Failed: ' + (result.error || 'unknown error');
+                      exportBtn.disabled = false;
+                    }
+                  } catch (e) {
+                    exportBtn.textContent = '❌ Network error';
+                    exportBtn.disabled = false;
+                  }
+                };
+                assistantDiv.appendChild(document.createElement('br'));
+                assistantDiv.appendChild(exportBtn);
+                scrollToBottom();
+              }
             }
           }
         }

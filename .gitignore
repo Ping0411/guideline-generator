@@ -8,3 +8,12 @@ chroma_db/
 *.bak
 pending-retag.json
 .cache_hash
+edi_conversion_log.jsonl
+cache.json.bak.*
+tags.json.bak.*
+
+# Guideline Generator
+web-app/guideline-generator/node_modules/
+web-app/guideline-generator/templates/~$*
+web-app/guideline-generator/Launch\ Guideline\ Generator.app/
+web-app/guideline-generator/Launch\ Guideline\ Generator.vbs

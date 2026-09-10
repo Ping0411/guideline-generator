@@ -1,0 +1,2368 @@
+{
+  "transaction": "X12-810",
+  "direction": "cXML-to-X12",
+  "document_type": "InvoiceDetailRequest",
+  "segments": [
+    {
+      "segment_id": "BIG",
+      "loop": "header",
+      "description": "Beginning Segment for Invoice",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "@invoiceDate",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "date_YYYYMMDD",
+          "notes": "parsed via U.parseToDateSTD2 then U.getYYYYMMDD"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@invoiceID",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string_max22",
+          "notes": "truncated to 22 chars"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "InvoiceDetailOrderInfo/OrderReference/@orderDate",
+          "context": "first InvoiceDetailOrder/InvoiceDetailHeaderOrder",
+          "type": "date_YYYYMMDD",
+          "notes": "parsed via U.parseToDateSTD2"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "InvoiceDetailOrderInfo/OrderReference/@orderID",
+          "context": "first InvoiceDetailOrder",
+          "type": "conditional",
+          "notes": "Set based on Extrinsic[@name='invoiceSourceDocument']: if isHeaderInvoice or NoOrderInformation -> empty; if PurchaseOrder -> orderID; if ExternalPurchaseOrder -> 'NONPO' (also sets _bNONPO=true); default -> not set"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "@purpose",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "lookup_mapBIG640_or_computed",
+          "notes": "if purpose.toLowerCase()=='standard': FD (if multiple orders=summary) else DI; else: mapBIG640[purpose]. Also sets _sBIG7 and _bSummaryInvoice flags"
+        },
+        {
+          "position": 8,
+          "cxml_xpath": "@operation",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "lookup",
+          "lookup_table": "mapBIG353",
+          "notes": "new->00, delete->03"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "@isInformationOnly",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "constant_if_present",
+          "value_constant": "NA",
+          "notes": "Set to 'NA' only when attribute is present/truthy"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "NTE",
+      "loop": "header",
+      "description": "Note/Special Instruction — LegalStatus",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "REG",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic[@name='LegalStatus']",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "text_value"
+        }
+      ],
+      "condition": "Only generated when Extrinsic[@name='LegalStatus'] exists"
+    },
+    {
+      "segment_id": "NTE",
+      "loop": "header",
+      "description": "Note/Special Instruction — LegalCapital",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "CBH",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic[@name='LegalCapital']/Money + ' ' + Extrinsic[@name='LegalCapital']/Money/@currency",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "concatenated"
+        }
+      ],
+      "condition": "Only generated when Extrinsic[@name='LegalCapital'] exists"
+    },
+    {
+      "segment_id": "CUR",
+      "loop": "header",
+      "description": "Currency",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "SE",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "SubtotalAmount/Money/@currency or DueAmount/Money/@currency",
+          "context": "InvoiceDetailSummary",
+          "type": "currency_ISO",
+          "notes": "SubtotalAmount preferred, fallback to DueAmount"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Extrinsic[@name='TaxExchangeRate' or @name='taxExchangeRate']",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "decimal"
+        },
+        {
+          "position": 4,
+          "value_constant": "SE",
+          "type": "constant",
+          "condition": "Only when alternate currency found in any of SubtotalAmount/DueAmount/Tax/TotalAmountWithoutTax Money/@alternateCurrency"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "first non-empty @alternateCurrency from SubtotalAmount/Money, DueAmount/Money, Tax/Money, TotalAmountWithoutTax/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "currency_ISO",
+          "condition": "Only when alternate currency found"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — InvoiceID overflow (I5 = invoice ID)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "I5",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "InvoiceIDInfo/@invoiceID",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "Generated by _REF_KV_X12D('I5',...)"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Invoice ID long overflow (IV)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "IV",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@invoiceID",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "Only when invoiceID length > 22"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Ship Notice ID (MA)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "MA",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeIDInfo/@shipNoticeID",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When shipNoticeID present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — PO/AH/VN block (_REF_PO_AH_VN)",
+      "complex_logic": true,
+      "notes": "Called when _should_REF_ON_header() returns true (i.e. not summary invoice AND _sBIG7=='DI'). Generates: REF*PO*OrderReference/@orderID or OrderIDInfo/@orderID; REF*AH*MasterAgreementReference/@agreementID (with pos3='1' if agreementType==scheduling_agreement); REF*VN*SupplierOrderInfo/@orderID",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "PO/AH/VN",
+          "type": "qualifier"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "OrderReference/@orderID or @agreementID or SupplierOrderInfo/@orderID",
+          "context": "InvoiceDetailOrderInfo of first order",
+          "type": "string"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "MasterAgreementReference/@agreementType",
+          "context": "InvoiceDetailOrderInfo",
+          "type": "constant_conditional",
+          "notes": "Set to '1' when agreementType=='scheduling_agreement'"
+        }
+      ],
+      "condition": "_should_REF_ON_header() == true"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Pack List ID (PK)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "PK",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeIDInfo/IdReference[@domain='packListID']/@identifier",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Freight Bill ID (BM)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "BM",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeIDInfo/IdReference[@domain='freightBillID']/@identifier",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Ultimate Customer Reference ID (EU)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "EU",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic[@name='ultimateCustomerReferenceID']",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Delivery Note Number (KK)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "KK",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic[@name='DeliveryNoteNumber']",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Customer Reference ID (CR)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "CR",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "IdReference[@domain='CustomerReferenceID' or @domain='customerReferenceID']/@identifier",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Receipt ID (RV)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "RV",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "conditional: if _bNONPO -> InvoiceDetailReceiptInfo/ReceiptIDInfo/@receiptID; else -> InvoiceDetailReceiptInfo/ReceiptReference/@receiptID",
+          "context": "first InvoiceDetailOrder",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Payment Proposal ID (4N)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "4N",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "PaymentProposalIDInfo/@paymentProposalID",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "header",
+      "description": "Reference — Extrinsic elements (variable qualifier via mapREF128 or ZZ)",
+      "complex_logic": true,
+      "notes": "_extrinsic_all(): iterates all Extrinsic children. Excludes: _arrExcludeREF_ZZ list, names starting with 'AribaNetwork.', names starting with 'legal', 'invoiceSubmissionMethod'. If Extrinsic @name maps in mapREF128 -> REF*<mapped_qualifier>*value(0..29)*value(30+); else -> REF*ZZ*@name*value. Max 12 REF segments (counter check). _arrExcludeREF_ZZ = ['gstTaxID','DeliveryNoteNumber','ultimateCustomerReferenceID','totalNumberOfLineItems','supplierCommercialIdentifier','invoiceSourceDocument','taxExchangeRate','TaxExchangeRate','vatID','taxID','paymentMethod']",
+      "elements": [
+        {
+          "position": 1,
+          "type": "lookup_or_constant",
+          "lookup_table": "mapREF128",
+          "key": "Extrinsic/@name (lowercased)",
+          "fallback_constant": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic/text()[0..29]",
+          "type": "string_max30"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Extrinsic/text()[30+]",
+          "type": "string_overflow",
+          "condition": "Only when value length > 30 (for mapped) or always for ZZ as @name value"
+        }
+      ],
+      "condition": "For each qualifying Extrinsic under header node"
+    },
+    {
+      "segment_id": "N1",
+      "loop": "N1_loop_header",
+      "description": "Party Identification (from InvoicePartner/Contact and InvoiceDetailShipping/Contact)",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "InvoicePartner/Contact/@role",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "lookup",
+          "lookup_table": "mapN1_98_InvoicePartner",
+          "fallback": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Contact/Name",
+          "type": "string_max60"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Contact/@addressIDDomain",
+          "type": "lookup",
+          "lookup_table": "mapN1_66",
+          "fallback": "92"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Contact/@addressID",
+          "type": "string"
+        }
+      ],
+      "condition": "Generated for each InvoicePartner and each Contact in InvoiceDetailShipping"
+    },
+    {
+      "segment_id": "N2",
+      "loop": "N1_loop_header",
+      "description": "Additional Name (DeliverTo lines)",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "PostalAddress/DeliverTo[1]",
+          "type": "string"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "PostalAddress/DeliverTo[2]",
+          "type": "string",
+          "condition": "if 2 or more DeliverTo elements"
+        }
+      ],
+      "condition": "When PostalAddress/DeliverTo elements exist (via _twoSegX12)"
+    },
+    {
+      "segment_id": "N3",
+      "loop": "N1_loop_header",
+      "description": "Address Information (Street lines, max 55 chars each)",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "PostalAddress/Street[1]",
+          "type": "string_max55"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "PostalAddress/Street[2]",
+          "type": "string_max55",
+          "condition": "if 2 or more Street elements"
+        }
+      ],
+      "condition": "When PostalAddress/Street elements exist"
+    },
+    {
+      "segment_id": "N4",
+      "loop": "N1_loop_header",
+      "description": "Geographic Location",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "PostalAddress/City",
+          "type": "string"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "PostalAddress/State or PostalAddress/State/@isoStateCode",
+          "type": "string_max2",
+          "notes": "For US/CA: use isoStateCode or mapN4_156 lookup if State.length!=2; for IN: first 2 chars; for others: not set here (set in pos5/6 instead)"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "PostalAddress/PostalCode",
+          "type": "string"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "PostalAddress/Country/@isoCountryCode",
+          "type": "string"
+        },
+        {
+          "position": 5,
+          "value_constant": "SP",
+          "type": "constant",
+          "condition": "Only for non-US/CA/IN countries"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "PostalAddress/State or PostalAddress/State/@isoStateCode",
+          "type": "string",
+          "condition": "Only for non-US/CA/IN countries — full state value"
+        }
+      ],
+      "condition": "When PostalCode or City present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "N1_loop_header",
+      "description": "Reference — Address Name (ME)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "ME",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "PostalAddress/@name",
+          "type": "string"
+        }
+      ],
+      "condition": "When PostalAddress/@name present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "N1_loop_header",
+      "description": "Reference — Shipment Identifier (SI) — for SF/ST party roles",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "SI",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipmentIdentifier/text()",
+          "context": "InvoiceDetailShipping",
+          "type": "string"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ShipmentIdentifier/@trackingNumberDate",
+          "context": "InvoiceDetailShipping",
+          "type": "date",
+          "condition": "Only for first SI segment, when date present"
+        }
+      ],
+      "condition": "Only when party role is SF (ship-from) or ST (ship-to) AND value present; one REF per ShipmentIdentifier"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "N1_loop_header",
+      "description": "Reference — Carrier Identifier (CN) — for CA party role",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "CN",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "CarrierIdentifier/@domain -> mapped via mapN1_98_InvoiceDetailShipping or raw domain",
+          "type": "lookup_or_raw"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "CarrierIdentifier/text()",
+          "context": "InvoiceDetailShipping",
+          "type": "string"
+        }
+      ],
+      "condition": "Only when party role is CA (carrier) AND value present; one REF per CarrierIdentifier"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "N1_loop_header",
+      "description": "Reference — Tax ID (TW) — for non-shipping InvoicePartner",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "TW",
+          "type": "constant"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Contact/IdReference[@domain='taxID']/@identifier",
+          "type": "string"
+        }
+      ],
+      "condition": "Only for non-shipping party (no InvoiceDetailShipping context)"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "N1_loop_header",
+      "description": "Reference — VAT ID (VX) — for FR (from/supplier) or BT (bill-to) roles",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "VX",
+          "type": "constant"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "IdReference[@domain='vatID']/@identifier",
+          "context": "InvoicePartner element (s param)",
+          "type": "string"
+        }
+      ],
+      "condition": "Only when party role is FR or BT, and InvoicePartner element has vatID"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "N1_loop_header",
+      "description": "Reference — IdReference mapped or ZZ",
+      "complex_logic": true,
+      "notes": "Iterates Contact/IdReference and InvoicePartner/IdReference. If domain in mapN1_REF128 -> REF*<mapped>**identifier; else if not in _arrExcludeREF_ZZ -> REF*ZZ*domain*identifier. Deduplication: Contact IdRefs processed first, InvoicePartner IdRefs only if domain not already seen.",
+      "elements": [
+        {
+          "position": 1,
+          "type": "lookup_or_constant",
+          "lookup_table": "mapN1_REF128",
+          "key": "IdReference/@domain",
+          "fallback_constant": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "IdReference/@domain (only for ZZ path)",
+          "type": "string"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "IdReference/@identifier",
+          "type": "string"
+        }
+      ],
+      "condition": "For each IdReference under Contact and InvoicePartner elements"
+    },
+    {
+      "segment_id": "PER",
+      "loop": "N1_loop_header",
+      "description": "Administrative Communications Contact",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "CN",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "default",
+          "type": "constant"
+        },
+        {
+          "position": 3,
+          "type": "qualifier_TE_FX_EM_UR",
+          "notes": "Pairs of qualifier+value: TE=Phone(CountryCode-Number), FX=Fax(CountryCode-Number), EM=Email, UR=URL"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Phone/TelephoneNumber/CountryCode + '-' + Phone/TelephoneNumber/Number or Fax/.../Number or Email or URL",
+          "type": "string"
+        },
+        {
+          "position": "5-8",
+          "notes": "Additional qualifier+value pairs for each contact channel present (max 4 channels = 8 elements after pos2)"
+        }
+      ],
+      "condition": "When any of Phone, Fax, Email, URL present on Contact"
+    },
+    {
+      "segment_id": "PER",
+      "loop": "N1_loop_header",
+      "description": "Administrative Communications Contact — Supplier Commercial Credentials",
+      "elements": [
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic[@name='supplierCommercialCredentials']",
+          "context": "Contact",
+          "type": "string"
+        }
+      ],
+      "condition": "Only when party role is 'from' AND Extrinsic[@name='supplierCommercialCredentials'] present"
+    },
+    {
+      "segment_id": "ITD",
+      "loop": "header",
+      "description": "Terms of Sale/Deferred Terms of Sale",
+      "complex_logic": true,
+      "notes": "Generated by _ITD(). Processes PaymentTerm elements and pairs positive (discount) terms with negative (penalty) terms. One ITD segment per pair (or unpaired term). PaymentTerms with negative percent or negative amount go to 'penalty' array, zero-discount terms alternate between arrays, positive discount to 'standard' array.",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "01",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "3",
+          "type": "constant"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "PaymentTerm/Discount/DiscountPercent/@percent",
+          "type": "decimal",
+          "condition": "From discount (positive) PaymentTerm, when percent present"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "PaymentTerm/Extrinsic[@name='discountDueDate']",
+          "type": "date_MMDDYY_102",
+          "notes": "U.dateStr102() format",
+          "condition": "When discountDueDate extrinsic present (applied to same ITD from either discount or penalty term)"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "PaymentTerm/@payInNumberOfDays",
+          "context": "discount PaymentTerm",
+          "type": "integer"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "PaymentTerm/@payInNumberOfDays",
+          "context": "penalty PaymentTerm",
+          "type": "integer"
+        },
+        {
+          "position": 8,
+          "cxml_xpath": "PaymentTerm/Discount/DiscountAmount/Money",
+          "context": "discount PaymentTerm",
+          "type": "decimal",
+          "notes": "Set to '0' when neither percent nor amount present"
+        },
+        {
+          "position": 10,
+          "cxml_xpath": "PaymentTerm/Discount/DiscountAmount/Money (posSign)",
+          "context": "penalty PaymentTerm",
+          "type": "decimal_positive",
+          "notes": "Set to '0' when neither percent nor amount present"
+        },
+        {
+          "position": 14,
+          "cxml_xpath": "Extrinsic[@name='paymentMethod']",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "lookup",
+          "lookup_table": "mapITD107"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "PaymentTerm/Discount/DiscountPercent/@percent (posSign)",
+          "context": "penalty PaymentTerm",
+          "type": "decimal_positive",
+          "condition": "When percent present in penalty term"
+        }
+      ],
+      "condition": "Generated for each PaymentTerm in InvoiceDetailRequestHeader"
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "header",
+      "description": "Date/Time Reference — multiple instances",
+      "notes": "Multiple DTM segments generated in sequence for header:",
+      "instances": [
+        {
+          "qualifier": "003",
+          "cxml_xpath": "@invoiceDate",
+          "context": "InvoiceDetailRequestHeader"
+        },
+        {
+          "qualifier": "922",
+          "cxml_xpath": "InvoiceIDInfo/@invoiceDate",
+          "context": "InvoiceDetailRequestHeader"
+        },
+        {
+          "qualifier": "004",
+          "cxml_xpath": "OrderReference/@orderDate",
+          "context": "InvoiceDetailOrderInfo of first order (if _bNONPO) or from _nFirstOrderRef directly"
+        },
+        {
+          "qualifier": "008",
+          "cxml_xpath": "InvoiceDetailOrderInfo/SupplierOrderInfo/@orderDate",
+          "context": "first InvoiceDetailOrder"
+        },
+        {
+          "qualifier": "011",
+          "cxml_xpath": "@shippingDate",
+          "context": "InvoiceDetailShipping"
+        },
+        {
+          "qualifier": "050",
+          "cxml_xpath": "if _bNONPO: InvoiceDetailReceiptInfo/ReceiptIDInfo/@receiptDate; else: InvoiceDetailReceiptInfo/ReceiptReference/@receiptDate",
+          "context": "first InvoiceDetailOrder"
+        },
+        {
+          "qualifier": "111",
+          "cxml_xpath": "@shipNoticeDate",
+          "context": "ShipNoticeIDInfo in InvoiceDetailRequestHeader"
+        },
+        {
+          "qualifier": "186",
+          "cxml_xpath": "Period/@startDate",
+          "context": "InvoiceDetailRequestHeader"
+        },
+        {
+          "qualifier": "187",
+          "cxml_xpath": "Period/@endDate",
+          "context": "InvoiceDetailRequestHeader"
+        },
+        {
+          "qualifier": "LEA",
+          "cxml_xpath": "MasterAgreementReference/@agreementDate",
+          "context": "InvoiceDetailOrderInfo of first order"
+        }
+      ],
+      "elements": [
+        {
+          "position": 1,
+          "type": "qualifier_from_instances_above"
+        },
+        {
+          "position": 2,
+          "type": "date_YYYYMMDD",
+          "notes": "parsed via U.parseToDateSTD2 then U.getYYYYMMDD or U.getFullDateStr"
+        }
+      ],
+      "condition": "Each instance only generated when the source value is present"
+    },
+    {
+      "segment_id": "N9",
+      "loop": "header",
+      "description": "Reference Identification — Comments header",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "L1",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Comments/@xml:lang",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string"
+        },
+        {
+          "position": 3,
+          "value_constant": "Comments",
+          "type": "constant"
+        }
+      ],
+      "condition": "Only when Comments element exists under InvoiceDetailRequestHeader and has text content"
+    },
+    {
+      "segment_id": "MSG",
+      "loop": "header",
+      "description": "Message Text — Comments content (chunked at 264 chars)",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "Comments/text()[chunk]",
+          "context": "InvoiceDetailRequestHeader",
+          "type": "string_max264",
+          "notes": "Text extracted via _vt_x12, chunked at 264 chars"
+        },
+        {
+          "position": 2,
+          "value_constant": "LC",
+          "type": "constant",
+          "condition": "Set to 'LC' for all continuation chunks (not the first chunk)"
+        }
+      ],
+      "condition": "One or more MSG segments following N9, one per 264-char chunk of Comments text"
+    },
+    {
+      "segment_id": "IT1",
+      "loop": "IT1_line_item",
+      "description": "Baseline Item Data — Line Item",
+      "notes": "Generated by _item() for each InvoiceDetailItem and InvoiceDetailServiceItem, or by _headerInvoice_item() for header-level invoice",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "InvoiceDetailItemReference/@lineNumber or InvoiceDetailServiceItemReference/@lineNumber",
+          "type": "string",
+          "notes": "Service item uses ServiceItemReference; header invoice: not set (left empty)"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@quantity",
+          "type": "decimal_posSign",
+          "notes": "header invoice: hardcoded '1'"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "UnitOfMeasure",
+          "type": "lookup",
+          "lookup_table": "mapUOM355 (Ft.mapUOM355)",
+          "notes": "header invoice: hardcoded 'ZZ'"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "UnitPrice/Money",
+          "type": "decimal",
+          "notes": "Not set if value isNaN; header invoice: SubtotalAmount/Money from InvoiceDetailOrderSummary"
+        },
+        {
+          "position": 6,
+          "type": "product_id_qualifier",
+          "notes": "IT1-6/7, 8/9 pairs from _IT1_help(). For material items: BP=BuyerPartID, C3=UNSPSC, CH=Country isoCode, EA=EuropeanWasteCatalogID, EN=EANID, MG=ManufacturerPartID, MF=ManufacturerName, SN=serialNumber, UP=UPCConsumerPackageCode, VP=SupplierPartID, VS=SupplierPartAuxiliaryID. For service items: BP=BuyerPartID, C3=UNSPSC, SH=SupplierPartID, VS=SupplierPartAuxiliaryID. Header invoice: PO=orderID, VO=SupplierOrderInfo/@orderID"
+        },
+        {
+          "position": 7,
+          "type": "product_id_value",
+          "notes": "Value corresponding to qualifier in position 6"
+        },
+        {
+          "position": "8-N",
+          "type": "additional_qualifier_value_pairs",
+          "notes": "Additional qualifier+value pairs from _IT1_help result list, starting at position 8"
+        }
+      ],
+      "condition": "One per InvoiceDetailItem or InvoiceDetailServiceItem (or once for header invoice)"
+    },
+    {
+      "segment_id": "CUR",
+      "loop": "IT1_line_item",
+      "description": "Currency — Line level",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "SE",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "SubtotalAmount/Money/@currency",
+          "type": "currency_ISO"
+        },
+        {
+          "position": 3,
+          "value_constant": "",
+          "type": "empty"
+        },
+        {
+          "position": 4,
+          "value_constant": "SE",
+          "type": "constant",
+          "condition": "Only when alternate currency present"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Tax/Money/@alternateCurrency",
+          "type": "currency_ISO",
+          "condition": "Only when alternateCurrency present"
+        }
+      ],
+      "condition": "Only when SubtotalAmount/Money/@currency present on line item"
+    },
+    {
+      "segment_id": "CTP",
+      "loop": "IT1_line_item",
+      "description": "Pricing Information",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "WS",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "CHG",
+          "type": "constant",
+          "condition": "Only when _isPriceAdjustmentInLine is true (InvoiceDetailLineIndicator/@isPriceAdjustmentInLine=='yes')"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "PriceBasisQuantity/@quantity",
+          "type": "decimal"
+        },
+        {
+          "position": 501,
+          "cxml_xpath": "PriceBasisQuantity/UnitOfMeasure",
+          "type": "lookup",
+          "lookup_table": "mapUOM355 (Ft.mapUOM355)",
+          "notes": "position 501 = composite element 5, sub-element 1"
+        },
+        {
+          "position": 6,
+          "value_constant": "CSD",
+          "type": "constant"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "PriceBasisQuantity/@conversionFactor",
+          "type": "decimal"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "PAM",
+      "loop": "IT1_line_item",
+      "description": "Period Amount — multiple instances for line item amounts",
+      "instances": [
+        {
+          "qualifier": "1",
+          "cxml_xpath": "SubtotalAmount/Money"
+        },
+        {
+          "qualifier": "KK",
+          "cxml_xpath": "GrossAmount/Money"
+        },
+        {
+          "qualifier": "N",
+          "cxml_xpath": "NetAmount/Money"
+        },
+        {
+          "qualifier": "GW",
+          "cxml_xpath": "TotalCharges/Money"
+        },
+        {
+          "qualifier": "EC",
+          "cxml_xpath": "TotalAllowances/Money"
+        },
+        {
+          "qualifier": "ZZ",
+          "cxml_xpath": "TotalAmountWithoutTax/Money"
+        }
+      ],
+      "elements": [
+        {
+          "position": 4,
+          "type": "amount_qualifier_from_instances"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "respective Money element text",
+          "type": "decimal"
+        }
+      ],
+      "condition": "Each instance only when Money value present"
+    },
+    {
+      "segment_id": "PID",
+      "loop": "IT1_line_item",
+      "description": "Product/Item Description",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "F",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "GEN",
+          "type": "constant",
+          "condition": "Only for ShortName PID segment"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "InvoiceDetailItemReference/Description or InvoiceDetailServiceItemReference/Description",
+          "type": "text",
+          "notes": "_vt2_x12 extracts text"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "InvoiceDetailItemReference/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "When Description or Description/ShortName present. Two PID may be generated: one for full Description (pos5=description, no pos2), one for ShortName (pos2='GEN', pos5=ShortName)"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — PO/AH/VN for line (same as header _REF_PO_AH_VN)",
+      "complex_logic": true,
+      "notes": "Same structure as header REF*PO/AH/VN. Called when _should_REF_ON_header() is false (i.e., summary invoice or BIG7 != DI).",
+      "condition": "_should_REF_ON_header() == false"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Ship Notice Line Reference (MA)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "MA",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeReference/@shipNoticeID",
+          "context": "InvoiceDetailShipNoticeInfo",
+          "type": "string"
+        },
+        {
+          "position": 401,
+          "value_constant": "LI",
+          "type": "constant",
+          "condition": "When shipNoticeLineNumber present"
+        },
+        {
+          "position": 402,
+          "cxml_xpath": "ShipNoticeLineItemReference/@shipNoticeLineNumber",
+          "type": "string",
+          "condition": "When present"
+        }
+      ],
+      "condition": "When ShipNoticeReference/@shipNoticeID present in InvoiceDetailShipNoticeInfo"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Receiving Advice ID (RV)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "RV",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeIDInfo/IdReference[@domain='ReceivingAdviceID']/@identifier",
+          "type": "string"
+        },
+        {
+          "position": 401,
+          "value_constant": "LI",
+          "type": "constant",
+          "condition": "When receiptLineNumber present"
+        },
+        {
+          "position": 402,
+          "cxml_xpath": "ReceiptLineItemReference/@receiptLineNumber",
+          "type": "string",
+          "condition": "When present"
+        }
+      ],
+      "condition": "When ReceivingAdviceID identifier present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Invoice Line Number (FJ)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "FJ",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@invoiceLineNumber",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Pack List ID line level (PK)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "PK",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeIDInfo/IdReference[@domain='packListID']/@identifier",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Delivery Note ID (KK)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "KK",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeIDInfo/IdReference[@domain='deliveryNoteID']/@identifier",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Promotion Deal ID (PD)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "PD",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "InvoiceDetailItemIndustry/InvoiceDetailItemRetail/PromotionDealID",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Supplier Batch ID (BT)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "BT",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "InvoiceDetailItemReference/SupplierBatchID or InvoiceDetailServiceItemReference/SupplierBatchID",
+          "type": "string"
+        }
+      ],
+      "condition": "When value present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Item Type (FL) for composite/item types",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "FL",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@itemType",
+          "type": "string"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "@compositeItemType",
+          "type": "string",
+          "condition": "Only when itemType == 'composite'"
+        },
+        {
+          "position": 401,
+          "value_constant": "LI",
+          "type": "constant",
+          "condition": "Only when itemType == 'item' AND parentInvoiceLineNumber present"
+        },
+        {
+          "position": 402,
+          "cxml_xpath": "parentInvoiceLineNumber",
+          "type": "string",
+          "condition": "Only when itemType == 'item' AND parentInvoiceLineNumber present"
+        }
+      ],
+      "condition": "When @itemType attribute present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Service Entry ID (ACE)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "ACE",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ServiceEntryItemReference/@serviceEntryID",
+          "type": "string"
+        },
+        {
+          "position": 401,
+          "value_constant": "LI",
+          "type": "constant",
+          "condition": "When serviceLineNumber present"
+        },
+        {
+          "position": 402,
+          "cxml_xpath": "ServiceEntryItemReference/@serviceLineNumber",
+          "type": "string",
+          "condition": "When present"
+        }
+      ],
+      "condition": "When ServiceEntryItemReference/@serviceEntryID present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Classification (8L) — non-UNSPSC",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "8L",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Classification/@domain",
+          "type": "string",
+          "notes": "UNSPSC domain is skipped"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Classification/text()",
+          "type": "string"
+        }
+      ],
+      "condition": "For each Classification under InvoiceDetailItemReference or InvoiceDetailServiceItemReference where domain != 'UNSPSC'"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Product Movement ID (4M)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "4M",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ProductMovementItemIDInfo/@movementID",
+          "type": "string"
+        },
+        {
+          "position": 401,
+          "value_constant": "LI",
+          "type": "constant",
+          "condition": "When movementLineNumber present"
+        },
+        {
+          "position": 402,
+          "cxml_xpath": "ProductMovementItemIDInfo/@movementLineNumber",
+          "type": "string",
+          "condition": "When present"
+        }
+      ],
+      "condition": "When ProductMovementItemIDInfo/@movementID present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Comments (L1)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "L1",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Comments/@xml:lang",
+          "type": "string",
+          "notes": "defaults to 'en'"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Comments/text()",
+          "type": "string"
+        }
+      ],
+      "condition": "When Comments text present on line item"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "IT1_line_item",
+      "description": "Reference — Extrinsic elements (same logic as header _extrinsic_all)",
+      "complex_logic": true,
+      "notes": "Same _extrinsic_all() logic applied to line item node",
+      "condition": "For each qualifying Extrinsic on line item"
+    },
+    {
+      "segment_id": "YNQ",
+      "loop": "IT1_line_item",
+      "description": "Yes/No Question — Return Item",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "Q3",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "Y",
+          "type": "constant"
+        }
+      ],
+      "condition": "When @reason == 'return' on the item"
+    },
+    {
+      "segment_id": "YNQ",
+      "loop": "IT1_line_item",
+      "description": "Yes/No Question — Ad Hoc Item",
+      "elements": [
+        {
+          "position": 2,
+          "value_constant": "Y",
+          "type": "constant"
+        },
+        {
+          "position": 10,
+          "value_constant": "ad-hoc item",
+          "type": "constant"
+        }
+      ],
+      "condition": "When @isAdHoc == 'yes' on the item"
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "IT1_line_item",
+      "description": "Date/Time Reference — multiple instances for line items",
+      "instances": [
+        {
+          "qualifier": "004",
+          "cxml_xpath": "InvoiceDetailOrderInfo/OrderReference/@orderDate",
+          "condition": "Only when _bSummaryInvoice is true"
+        },
+        {
+          "qualifier": "008",
+          "cxml_xpath": "InvoiceDetailOrderInfo/SupplierOrderInfo/@orderDate",
+          "condition": "Only when _bSummaryInvoice is true"
+        },
+        {
+          "qualifier": "111",
+          "cxml_xpath": "ShipNoticeIDInfo/@shipNoticeDate"
+        },
+        {
+          "qualifier": "011",
+          "cxml_xpath": "InvoiceDetailLineShipping/InvoiceDetailShipping/@shippingDate"
+        },
+        {
+          "qualifier": "192",
+          "cxml_xpath": "ShipNoticeIDInfo/IdReference[@domain='deliveryNoteDate']/@identifier"
+        },
+        {
+          "qualifier": "150",
+          "cxml_xpath": "Period/@startDate"
+        },
+        {
+          "qualifier": "151",
+          "cxml_xpath": "Period/@endDate"
+        },
+        {
+          "qualifier": "214",
+          "cxml_xpath": "@referenceDate"
+        },
+        {
+          "qualifier": "LEA",
+          "cxml_xpath": "MasterAgreementReference/@agreementDate",
+          "context": "InvoiceDetailOrderInfo"
+        },
+        {
+          "qualifier": "517",
+          "cxml_xpath": "@inspectionDate"
+        },
+        {
+          "qualifier": "472",
+          "cxml_xpath": "ServiceEntryItemReference/@serviceEntryDate"
+        },
+        {
+          "qualifier": "514",
+          "cxml_xpath": "ProductMovementItemIDInfo/@movementDate"
+        }
+      ],
+      "condition": "Each only when value present"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "IT1_line_item",
+      "description": "Service, Promotion, Allowance, or Charge — Item Modifications (InvoiceItemModifications)",
+      "complex_logic": true,
+      "notes": "Generated by _item_mod('13', modification) for each Modification in InvoiceItemModifications. Also _item_mod('02', modification) for each Modification in UnitPrice/Modifications. SAC pos12 = '13' or '02' (the passed type). Otherwise same as header SAC modification logic.",
+      "elements": [
+        {
+          "position": 1,
+          "type": "A_or_C",
+          "notes": "'A' for AdditionalDeduction, 'C' for AdditionalCost"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ModificationDetail/@name",
+          "type": "lookup",
+          "lookup_table": "mapSAC1300",
+          "fallback": "ZZZZ"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "AdditionalDeduction/DeductionAmount/Money or AdditionalDeduction/DeductedPrice/Money or AdditionalCost/Money",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "AdditionalDeduction/DeductionPercent/@percent or AdditionalCost/Percentage/@percent",
+          "type": "decimal"
+        },
+        {
+          "position": 12,
+          "value_constant": "13_or_02",
+          "type": "constant_passed_in"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "OriginalPrice/Money",
+          "type": "decimal"
+        },
+        {
+          "position": 14,
+          "cxml_xpath": "OriginalPrice/@type",
+          "type": "string"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "ModificationDetail/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "ModificationDetail/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "For each Modification in InvoiceItemModifications/Modification and UnitPrice/Modifications/Modification"
+    },
+    {
+      "segment_id": "TXI",
+      "loop": "IT1_line_item_mod",
+      "description": "Tax Information — from _TXI_mod_common() following SAC modification",
+      "notes": "Two TXI segments may be generated per modification: first TXI*ZZ for Tax/Money total, second TXI for TaxDetail. See _TXI_mod_common().",
+      "elements": [
+        {
+          "position": 1,
+          "type": "ZZ_or_category_lookup",
+          "notes": "First TXI: 'ZZ'. Second TXI: mapTXI963[TaxDetail/@category] fallback 'VA'"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Tax/Money (first TXI) or TaxDetail/TaxAmount/Money (second TXI)",
+          "type": "decimal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "TaxDetail/@percentageRate",
+          "type": "decimal",
+          "condition": "second TXI only"
+        },
+        {
+          "position": 4,
+          "value_constant": "VD",
+          "type": "constant",
+          "condition": "second TXI only"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "TaxDetail/TaxLocation",
+          "type": "string_max10",
+          "condition": "second TXI only"
+        },
+        {
+          "position": 6,
+          "type": "exemption_code",
+          "notes": "second TXI: '2' if exemptDetail=='exempt', '0' if 'zeroRated'",
+          "condition": "second TXI only"
+        },
+        {
+          "position": 8,
+          "cxml_xpath": "TaxDetail/TaxableAmount/Money",
+          "type": "string_max9",
+          "condition": "second TXI only"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "TaxDetail/@category",
+          "type": "string",
+          "condition": "second TXI only"
+        },
+        {
+          "position": 10,
+          "cxml_xpath": "Tax/Description (first TXI, max20) or empty (second TXI)",
+          "type": "text_max20"
+        }
+      ],
+      "condition": "Only when Tax/TaxDetail[@purpose='tax'] present on the Modification"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "IT1_line_item",
+      "description": "Service, Promotion, Allowance, or Charge — Invoice Line Discount",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "A",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "C310",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "InvoiceDetailDiscount/Money",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 6,
+          "value_constant": "3",
+          "type": "constant"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "InvoiceDetailDiscount/@percentageRate",
+          "type": "decimal"
+        }
+      ],
+      "condition": "When InvoiceDetailDiscount present on line item"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "IT1_line_item",
+      "description": "Service, Promotion, Allowance, or Charge — Line Shipping",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "C",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "G830",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "InvoiceDetailLineShipping/Money",
+          "type": "decimal_x100"
+        }
+      ],
+      "condition": "When InvoiceDetailLineShipping present",
+      "followed_by": "TXI for shippingTax if Tax/TaxDetail[@purpose='shippingTax'] present"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "IT1_line_item",
+      "description": "Service, Promotion, Allowance, or Charge — Line Special Handling",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "C",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "H090",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "InvoiceDetailLineSpecialHandling/Money",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "InvoiceDetailLineSpecialHandling/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "InvoiceDetailLineSpecialHandling/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "When InvoiceDetailLineSpecialHandling present",
+      "followed_by": "TXI for specialHandlingTax if Tax/TaxDetail[@purpose='specialHandlingTax'] present"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "IT1_line_item",
+      "description": "Service, Promotion, Allowance, or Charge — Distribution (Accounting)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "N",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "B840",
+          "type": "constant"
+        },
+        {
+          "position": 3,
+          "value_constant": "AB",
+          "type": "constant"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Distribution/Accounting/@name",
+          "type": "string_max10"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Distribution/Charge/Money",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 6,
+          "value_constant": "Z",
+          "type": "constant"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "Distribution/Accounting/AccountingSegment/@id",
+          "type": "string"
+        },
+        {
+          "position": 14,
+          "cxml_xpath": "Distribution/Accounting/AccountingSegment/Name",
+          "type": "string"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "Distribution/Accounting/AccountingSegment/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "Distribution/Accounting/AccountingSegment/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "When Distribution element present on line item"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "IT1_line_item",
+      "description": "Service, Promotion, Allowance, or Charge — Line Tax (H850)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "C",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "H850",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Tax/Money",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "Tax/Money/@alternateAmount",
+          "type": "decimal"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "Tax/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "Tax/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "When Tax present on line item",
+      "followed_by": "TXI for each TaxDetail[@purpose='tax' or not(@purpose)] in line item Tax"
+    },
+    {
+      "segment_id": "TXI",
+      "loop": "IT1_line_item_tax",
+      "description": "Tax Information — from _taxDetail() for line item Tax",
+      "notes": "Generated by _taxDetail(). May generate 1 or 2 TXI per TaxDetail. Second TXI only when TaxAmount/Money/@alternateAmount exists.",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "TaxDetail/@category",
+          "type": "lookup",
+          "lookup_table": "mapTXI963",
+          "fallback": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "TaxDetail/TaxAmount/Money",
+          "type": "decimal"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "TaxDetail/@percentageRate",
+          "type": "decimal"
+        },
+        {
+          "position": 4,
+          "value_constant": "VD",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "TaxDetail/TaxLocation",
+          "type": "string_max10"
+        },
+        {
+          "position": 6,
+          "type": "exemption_code",
+          "notes": "'2' if @exemptDetail=='exempt', '0' if @exemptDetail=='zeroRated'"
+        },
+        {
+          "position": 8,
+          "cxml_xpath": "TaxDetail/TaxableAmount/Money",
+          "type": "string_max9",
+          "condition": "Only when no alternateAmount; not set if alternateAmount present"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "TaxDetail/@category",
+          "type": "string"
+        },
+        {
+          "position": 10,
+          "cxml_xpath": "TaxDetail/@taxPointDate -> date string, or TaxDetail/Description text (max20) if no date",
+          "type": "date_or_text"
+        }
+      ],
+      "condition": "For each TaxDetail[@purpose='tax' or not(@purpose)]"
+    },
+    {
+      "segment_id": "TXI",
+      "loop": "IT1_line_item_tax_alternate",
+      "description": "Tax Information — alternate amount TXI (second TXI when alternateAmount present)",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "TaxDetail/@category",
+          "type": "lookup",
+          "lookup_table": "mapTXI963",
+          "fallback": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "TaxDetail/TaxAmount/Money/@alternateAmount",
+          "type": "decimal"
+        },
+        {
+          "position": 10,
+          "cxml_xpath": "TaxDetail/TaxableAmount/Money",
+          "type": "string"
+        }
+      ],
+      "condition": "Only when TaxDetail/TaxAmount/Money/@alternateAmount present"
+    },
+    {
+      "segment_id": "N1",
+      "loop": "IT1_line_item_shipping",
+      "description": "Party Identification — line-level shipping contacts",
+      "notes": "Same _GroupN1() logic for Contacts under InvoiceDetailLineShipping/InvoiceDetailShipping",
+      "condition": "Only for material items (not service items), when InvoiceDetailLineShipping/InvoiceDetailShipping has Contact children"
+    },
+    {
+      "segment_id": "TDS",
+      "loop": "summary",
+      "description": "Total Monetary Value Summary",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "GrossAmount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "SubtotalAmount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "NetAmount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "DueAmount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "AMT",
+      "loop": "summary",
+      "description": "Monetary Amount — multiple instances",
+      "instances": [
+        {
+          "qualifier": "3",
+          "cxml_xpath": "DepositAmount/Money"
+        },
+        {
+          "qualifier": "GW",
+          "cxml_xpath": "TotalCharges/Money"
+        },
+        {
+          "qualifier": "EC",
+          "cxml_xpath": "TotalAllowances/Money"
+        },
+        {
+          "qualifier": "N",
+          "cxml_xpath": "NetAmount/Money"
+        },
+        {
+          "qualifier": "1",
+          "cxml_xpath": "SubtotalAmount/Money"
+        },
+        {
+          "qualifier": "1",
+          "cxml_xpath": "SubtotalAmount/Money/@alternateAmount"
+        },
+        {
+          "qualifier": "BAP",
+          "cxml_xpath": "DueAmount/Money"
+        },
+        {
+          "qualifier": "BAP",
+          "cxml_xpath": "DueAmount/Money/@alternateAmount"
+        },
+        {
+          "qualifier": "ZZ",
+          "cxml_xpath": "TotalAmountWithoutTax/Money"
+        },
+        {
+          "qualifier": "ZZ",
+          "cxml_xpath": "TotalAmountWithoutTax/Money/@alternateAmount"
+        }
+      ],
+      "elements": [
+        {
+          "position": 1,
+          "type": "qualifier_from_instances"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "respective Money value",
+          "type": "decimal"
+        }
+      ],
+      "context": "InvoiceDetailSummary",
+      "condition": "Each only when value present (via _AMT_X12)"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "summary",
+      "description": "Service, Promotion, Allowance, or Charge — Header Modifications (InvoiceHeaderModifications)",
+      "complex_logic": true,
+      "notes": "For each Modification in InvoiceDetailSummary/InvoiceHeaderModifications: if AdditionalDeduction: SAC*A + mapSAC1300 code + amount + percent, pos12='13' when DeductionAmount used. If AdditionalCost: SAC*C + mapSAC1300 code + amount + percent. Followed by _TXI_mod_common().",
+      "elements": [
+        {
+          "position": 1,
+          "type": "A_or_C",
+          "notes": "'A' for deduction, 'C' for cost"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ModificationDetail/@name",
+          "type": "lookup",
+          "lookup_table": "mapSAC1300",
+          "fallback": "ZZZZ"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "AdditionalDeduction/DeductionAmount/Money or AdditionalDeduction/DeductedPrice/Money or AdditionalCost/Money",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 6,
+          "value_constant": "3",
+          "type": "constant"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "AdditionalDeduction/DeductionPercent/@percent or AdditionalCost/Percentage/@percent",
+          "type": "decimal"
+        },
+        {
+          "position": 12,
+          "value_constant": "13",
+          "type": "constant",
+          "condition": "Only when DeductionAmount used (not DeductedPrice)"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "OriginalPrice/Money",
+          "type": "decimal"
+        },
+        {
+          "position": 14,
+          "cxml_xpath": "OriginalPrice/@type",
+          "type": "string"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "ModificationDetail/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "ModificationDetail/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "For each Modification in InvoiceHeaderModifications"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "summary",
+      "description": "Service, Promotion, Allowance, or Charge — Summary Discount",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "A",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "C310",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "InvoiceDetailDiscount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 6,
+          "value_constant": "3",
+          "type": "constant"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "InvoiceDetailDiscount/@percentageRate",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal"
+        }
+      ],
+      "condition": "When InvoiceDetailDiscount present in InvoiceDetailSummary"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "summary",
+      "description": "Service, Promotion, Allowance, or Charge — Shipping (G830)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "C",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "G830",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "ShippingAmount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        }
+      ],
+      "condition": "When ShippingAmount present in InvoiceDetailSummary",
+      "followed_by": "TXI for shippingTax if Tax/TaxDetail[@purpose='shippingTax'] present in InvoiceDetailSummary"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "summary",
+      "description": "Service, Promotion, Allowance, or Charge — Special Handling (H090)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "C",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "H090",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "SpecialHandlingAmount/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "SpecialHandlingAmount/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "SpecialHandlingAmount/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "When SpecialHandlingAmount present",
+      "followed_by": "TXI for specialHandlingTax if Tax/TaxDetail[@purpose='specialHandlingTax'] present"
+    },
+    {
+      "segment_id": "SAC",
+      "loop": "summary",
+      "description": "Service, Promotion, Allowance, or Charge — Summary Tax (H850)",
+      "elements": [
+        {
+          "position": 1,
+          "value_constant": "C",
+          "type": "constant"
+        },
+        {
+          "position": 2,
+          "value_constant": "H850",
+          "type": "constant"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Tax/Money",
+          "context": "InvoiceDetailSummary",
+          "type": "decimal_x100"
+        },
+        {
+          "position": 13,
+          "cxml_xpath": "Tax/Money/@alternateAmount",
+          "type": "decimal"
+        },
+        {
+          "position": 15,
+          "cxml_xpath": "Tax/Description",
+          "type": "text_max80"
+        },
+        {
+          "position": 16,
+          "cxml_xpath": "Tax/Description/@xml:lang",
+          "type": "language_code"
+        }
+      ],
+      "condition": "When Tax present in InvoiceDetailSummary",
+      "followed_by": "TXI for each TaxDetail[@purpose='tax' or not(@purpose)] in summary Tax (same _taxDetail() logic)"
+    },
+    {
+      "segment_id": "CTT",
+      "loop": "summary",
+      "description": "Transaction Totals",
+      "elements": [
+        {
+          "position": 1,
+          "type": "computed_count",
+          "notes": "Count of all InvoiceDetailItem + InvoiceDetailServiceItem elements across all orders; 0 for header invoice"
+        }
+      ],
+      "condition": null
+    }
+  ],
+  "lookup_tables": {
+    "mapBIG353": {
+      "description": "BIG08 Transaction Set Purpose Code (X12 353)",
+      "source_class": "Fi",
+      "values": {
+        "new": "00",
+        "delete": "03"
+      }
+    },
+    "mapBIG640": {
+      "description": "BIG07 Invoice Type Code (X12 640) — for non-standard purpose",
+      "source_class": "Fi",
+      "values": {
+        "linelevelcreditmemo": "CN",
+        "creditmemo": "CR",
+        "lineleveldebitmemo": "DC",
+        "debitmemo": "DR"
+      }
+    },
+    "mapTXI963": {
+      "description": "TXI01 Tax Type Code (X12 963)",
+      "source_class": "Fi",
+      "values": {
+        "other": "AA",
+        "gst": "CG",
+        "usage": "FD",
+        "withholdingtax": "FI",
+        "sales": "ST",
+        "vat": "VA"
+      }
+    },
+    "mapITD107": {
+      "description": "ITD14 Payment Method Code",
+      "source_class": "Fi",
+      "values": {
+        "draft": "AA",
+        "cash": "AB",
+        "creditcard": "AC",
+        "directdeposit": "AD",
+        "check": "C",
+        "debitcard": "D",
+        "ach": "G",
+        "wire": "T",
+        "credittransfer": "Y"
+      }
+    },
+    "mapN1_98_InvoicePartner": {
+      "description": "N101 Entity Identifier Code for InvoicePartner roles",
+      "source_class": "Fi",
+      "values": {
+        "correspondent": "40",
+        "componentsupplier": "42",
+        "sales": "60",
+        "taxrepresentative": "7X",
+        "customerservice": "A9",
+        "buyermasteraccount": "AP",
+        "buyercorporate": "B4",
+        "billfrom": "BF",
+        "receivingcorrespondentbank": "BK",
+        "billto": "BT",
+        "buyer": "BY",
+        "carriercorporate": "CA",
+        "enduser": "EN",
+        "from": "FR",
+        "issuerofinvoice": "II",
+        "technicalsupport": "KY",
+        "subsequentbuyer": "MA",
+        "buyerplannercode": "MI",
+        "suppliermasteraccount": "MJ",
+        "administrator": "NG",
+        "originatingbank": "O1",
+        "buyeraccount": "OB",
+        "purchasingagent": "PD",
+        "payee": "PE",
+        "payer": "PR",
+        "requester": "R6",
+        "wirereceivingbank": "RB",
+        "remitto": "RI",
+        "supplieraccount": "SE",
+        "shipfrom": "SF",
+        "soldto": "SO",
+        "shipto": "ST",
+        "suppliercorporate": "SU",
+        "receipientparty": "TO",
+        "senderbusinesssystemid": "UK",
+        "_default": "ZZ"
+      }
+    },
+    "mapN1_98_InvoiceDetailShipping": {
+      "description": "Entity Identifier Code for InvoiceDetailShipping carrier domain",
+      "source_class": "Fi",
+      "values": {
+        "carriercorporate": "CA",
+        "shipfrom": "SF",
+        "shipto": "ST"
+      }
+    },
+    "mapN1_66": {
+      "description": "N103 Identification Code Qualifier",
+      "source_class": "Fi",
+      "values": {
+        "duns": "1",
+        "scac": "2",
+        "iata": "4",
+        "duns+4": "9",
+        "_default": "92"
+      }
+    },
+    "mapN1_REF128": {
+      "description": "REF qualifier for N1 loop IdReference domains (subset of X12 128)",
+      "source_class": "Fi",
+      "values": {
+        "abaroutingnumber": "01",
+        "swiftid": "02",
+        "chipsid": "03",
+        "accountid": "11",
+        "accountpayableid": "12",
+        "ibanid": "14",
+        "buyerplannercode": "72",
+        "bankbranchid": "3L",
+        "pstid": "3S",
+        "loadingpoint": "4B",
+        "storagelocation": "4C",
+        "provincialtaxid": "4G",
+        "supplierlocationid": "4L",
+        "qstid": "4O",
+        "banknationalid": "8W",
+        "transportationzone": "9S",
+        "accounttype": "9X",
+        "accountname": "ACT",
+        "governmentnumber": "AEC",
+        "accountreceivableid": "AP",
+        "suppliertaxid": "BAA",
+        "statetaxid": "BAD",
+        "contactdepartmentid": "BR",
+        "supplierreference": "D2",
+        "documentname": "DD",
+        "duns4": "DNS",
+        "departmentname": "DP",
+        "duns": "DUN",
+        "reference": "F8",
+        "gstid": "GT",
+        "creditorrefid": "J1",
+        "cradcrsdindicator": "KK",
+        "buyerlocationid": "LU",
+        "bankaccountid": "PB",
+        "bankroutingid": "RT",
+        "contactperson": "SA",
+        "federaltaxid": "TJ",
+        "taxexemptionid": "TX",
+        "partyadditionalid": "YD",
+        "partyadditionalid2": "ZA"
+      }
+    },
+    "mapSAC1300": {
+      "description": "SAC02 Allowance or Charge Code (X12 1300) — very large table, ~700+ entries",
+      "source_class": "Fi",
+      "note": "Full table included in source. Key examples: discount=C310, shippingandhandling=G830, specialhandling=H090, tax=H850. Default fallback: ZZZZ",
+      "selected_values": {
+        "discount": "C310",
+        "shippingandhandling": "G830",
+        "specialhandling": "H090",
+        "tax": "H850",
+        "_default": "ZZZZ"
+      },
+      "full_table_note": "Complete mapSAC1300 has ~700 entries covering all X12 allowance/charge codes. See source file Fi class for full listing."
+    },
+    "mapREF128": {
+      "description": "REF01 Reference Identification Qualifier (X12 128) — mapped from Extrinsic @name",
+      "source_class": "Fi",
+      "note": "Very large table (~500+ entries). Keys are Extrinsic @name values (lowercased). Full table in source. Used by _extrinsic_all() to assign REF qualifiers to cXML Extrinsic elements.",
+      "selected_values": {
+        "invoiceid": "I5",
+        "sellersinvoiceid": "IV",
+        "shipnoticeid": "MA",
+        "purchaseorderid": "PO",
+        "masteragreementid": "AH",
+        "supplierorderid": "VN",
+        "packinglistno": "PK",
+        "billofladingno": "BM",
+        "enduserspurchaseorderno": "EU",
+        "deliveryreference": "KK",
+        "customerreferenceno": "CR",
+        "receivingno": "RV",
+        "specialpaymentrefno": "4N",
+        "lineitemcontrolnumber": "FJ"
+      },
+      "full_table_note": "Complete mapREF128 has ~500+ entries. See source file Fi class."
+    },
+    "mapUOM355": {
+      "description": "Unit of Measure mapping (X12 355) — referenced as Ft.mapUOM355",
+      "source_class": "Ft",
+      "note": "Not defined in this file excerpt; defined in parent class Ft. Used for IT1-03 and CTP-5 UOM conversion."
+    },
+    "mapN4_156": {
+      "description": "State code mapping for US/CA (X12 156)",
+      "source_class": "Ft",
+      "note": "Not defined in this file excerpt; defined in parent class Ft. Used when State string length != 2 for US/CA addresses."
+    }
+  }
+}

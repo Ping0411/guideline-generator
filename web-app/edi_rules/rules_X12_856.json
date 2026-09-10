@@ -1,0 +1,1130 @@
+{
+  "transaction": "X12-856",
+  "direction": "cXML-to-X12",
+  "document_type": "ShipNoticeRequest",
+  "segments": [
+    {
+      "segment_id": "ISA",
+      "loop": "unknown",
+      "description": "",
+      "elements": [],
+      "condition": "fixed_envelope"
+    },
+    {
+      "segment_id": "GS",
+      "loop": "unknown",
+      "description": "this._GS(false, 'SH'). Functional group SH = Ship Notice/Manifest.",
+      "elements": [],
+      "condition": "fixed_envelope"
+    },
+    {
+      "segment_id": "ST",
+      "loop": "unknown",
+      "description": "this._ST('856'). Transaction set 856.",
+      "elements": [],
+      "condition": "fixed_envelope"
+    },
+    {
+      "segment_id": "BSN",
+      "loop": "unknown",
+      "description": "Beginning Segment for Ship Notice",
+      "elements": [
+        {
+          "position": 1,
+          "name": "Transaction Set Purpose Code",
+          "cxml_xpath": "@operation (on ShipNoticeHeader)",
+          "lookup": "mapBSN01",
+          "lookup_values": {
+            "new": "00",
+            "delete": "03",
+            "update": "05"
+          },
+          "note": "For delete ops, shipmentID trailing '_1' suffix is stripped from pos2"
+        },
+        {
+          "position": 2,
+          "name": "Shipment Identification",
+          "cxml_xpath": "@shipmentID (on ShipNoticeHeader)",
+          "transform": "If operation='delete' and value ends with '_1', strip last 2 chars"
+        },
+        {
+          "position": 3,
+          "name": "Date",
+          "cxml_xpath": "@noticeDate (on ShipNoticeHeader)",
+          "transform": "YYYYMMDD (parsed via parseToDateSTD2)"
+        },
+        {
+          "position": 4,
+          "name": "Time",
+          "cxml_xpath": "@noticeDate (on ShipNoticeHeader)",
+          "transform": "HHMMSS (parsed via parseToDateSTD2), timezone default 'Z'"
+        },
+        {
+          "position": 5,
+          "name": "Hierarchical Structure Code",
+          "value": "Computed after scanning all items/packaging: 0001=SSCC present, single-level; 0002=SSCC present, multi-level; 0004=no SSCC",
+          "logic": "complex_logic"
+        },
+        {
+          "position": 6,
+          "name": "Shipment Type Code",
+          "cxml_xpath": "@shipmentType (on ShipNoticeHeader)",
+          "lookup": "mapBSN06",
+          "lookup_values": {
+            "actual": "09",
+            "planned": "PL"
+          }
+        },
+        {
+          "position": 7,
+          "name": "Fulfillment Type Code",
+          "cxml_xpath": "@fulfillmentType (on ShipNoticeHeader)",
+          "lookup": "mapBSN07",
+          "lookup_values": {
+            "complete": "C20",
+            "partial": "B44"
+          }
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "unknown",
+      "description": "Date/Time Reference — header dates emitted at start of HL S loop (_Header_HL_S)",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "HL",
+      "loop": "unknown",
+      "description": "Hierarchical Level — Shipment (S)",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "1"
+        },
+        {
+          "position": 3,
+          "value_fixed": "S"
+        },
+        {
+          "position": 4,
+          "value_fixed": "1"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "PID",
+      "loop": "unknown",
+      "description": "Product/Item Description — from ShipNoticeHeader Comments (no type, no Attachment)",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "F"
+        },
+        {
+          "position": 2,
+          "value_fixed": "GEN"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Comments text (on ShipNoticeHeader)"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "Comments/@xml:lang (on ShipNoticeHeader)",
+          "default": "en",
+          "transform": "uppercase"
+        }
+      ],
+      "condition": "Comments element with no @type and no Attachment child"
+    },
+    {
+      "segment_id": "MEA",
+      "loop": "unknown",
+      "description": "Only types that map to G, VWT, or WT are included",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "PD"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Packaging/Dimension/@type (on ShipNoticeHeader)",
+          "lookup": "mapMEA_738"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Packaging/Dimension/@quantity"
+        },
+        {
+          "position": "401",
+          "cxml_xpath": "Packaging/Dimension/UnitOfMeasure",
+          "lookup": "mapUOM"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "TD1",
+      "loop": "unknown",
+      "description": "Carrier Details — package totals from Extrinsic elements",
+      "elements": [
+        {
+          "position": 1,
+          "description": "Packaging Form Code",
+          "lookup": "mapPackaginCode"
+        },
+        {
+          "position": 2,
+          "description": "Lading Quantity",
+          "cxml_xpath": "Extrinsic[@name='totalOfPackages*'] text"
+        }
+      ],
+      "condition": "complex_logic"
+    },
+    {
+      "segment_id": "TD1",
+      "loop": "unknown",
+      "description": "Carrier Details — from ShipNoticeHeader Packaging/Dimension (weight/volume/length fields)",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "TD5",
+      "loop": "unknown",
+      "description": "Carrier Details — Route/Carrier identification",
+      "elements": [],
+      "condition": "ShipControl/CarrierIdentifier[@domain!='companyName'] or ShipmentIdentifier[@domain='trackingNumber'] or CarrierIdentifier companyName present"
+    },
+    {
+      "segment_id": "TD3",
+      "loop": "unknown",
+      "description": "Carrier Details — Equipment",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "TermsOfTransport/EquipmentIdentificationCode",
+          "lookup": "mapTD3",
+          "note": "If not in map, pos1 left blank and pos2/3 used for ID value"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "TermsOfTransport/Extrinsic[@name='EquipmentID'] or EquipmentIdentificationCode",
+          "transform": "first 4 chars; only used if mapTD3 lookup fails",
+          "condition": "mapTD3 lookup fails"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "same as pos2, chars 4-14",
+          "condition": "mapTD3 lookup fails"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "TermsOfTransport/SealID"
+        }
+      ],
+      "condition": "TermsOfTransport/EquipmentIdentificationCode present on ShipNoticeHeader"
+    },
+    {
+      "segment_id": "TD4",
+      "loop": "unknown",
+      "description": "Carrier Details — hazmat and additional carrier IDs",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference Identification — header-level from IdReference, TermsOfDelivery, Comments, Extrinsics, tracking URL, bill of lading",
+      "elements": [],
+      "condition": "complex_logic"
+    },
+    {
+      "segment_id": "PER",
+      "loop": "unknown",
+      "description": "Administrative Communications Contact — from ShipNoticeHeader/LegalEntity/IdReference[@domain='CompanyCode']",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "LegalEntity/IdReference[@domain='CompanyCode']/@identifier"
+        },
+        {
+          "position": 9,
+          "value_fixed": "CompanyCode"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "unknown",
+      "description": "Date/Time Reference — additional header dates",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "FOB",
+      "loop": "unknown",
+      "description": "F.O.B. Related Instructions — from TermsOfDelivery",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "TermsOfDelivery/ShippingPaymentMethod/@value",
+          "lookup": "mapFOB01_146",
+          "note": "Large table; common: paidbybuyer→BP, collect→CC, prepaidonly→PO. Special values like Account/NotSpecified etc. → DF"
+        },
+        {
+          "position": 2,
+          "logic": "if TermsOfDeliveryCode/@value.toLowerCase()=='other' → 'ZZ'; else → 'ZN'"
+        },
+        {
+          "position": 3,
+          "logic": "if other → TermsOfDeliveryCode text; else → TermsOfDeliveryCode/@value"
+        },
+        {
+          "position": 4,
+          "value_fixed": "ZZ"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "TermsOfDelivery/TransportTerms/@value (non-Other)",
+          "lookup": "mapFOB_335",
+          "note": "If no non-Other TransportTerms: 'ZZZ'"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "TermsOfDelivery/ShippingPaymentMethod/@value",
+          "value_fixed": "ZZ",
+          "condition": "value in [Account, CashOnDeliveryServiceChargePaidByConsignee, ..., NotSpecified, PayableElsewhere, other]"
+        },
+        {
+          "position": 7,
+          "cxml_xpath": "TermsOfDelivery/ShippingPaymentMethod/@value text",
+          "condition": "value='other'"
+        }
+      ],
+      "condition": "TermsOfDelivery present on ShipNoticeHeader"
+    },
+    {
+      "segment_id": "N1",
+      "loop": "for each Contact in ShipNoticeHeader; then TermsOfDelivery/Address with fixed qualifier 'DA'",
+      "description": "Name group — Contacts on ShipNoticeHeader and TermsOfDelivery/Address",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "HL",
+      "loop": "unknown",
+      "description": "Hierarchical Level — Order (O), one per ShipNoticePortion",
+      "elements": [
+        {
+          "position": 1,
+          "value": "incrementing counter starting from 2"
+        },
+        {
+          "position": 2,
+          "value_fixed": "1",
+          "note": "parent = HL S level 1"
+        },
+        {
+          "position": 3,
+          "value_fixed": "O"
+        },
+        {
+          "position": 4,
+          "value_fixed": "1"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "PRF",
+      "loop": "unknown",
+      "description": "Purchase Order Reference — emitted only if MasterAgreementIDInfo present on ShipNoticePortion",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "OrderReference/@orderID (on ShipNoticePortion)"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "OrderReference/@orderDate (on ShipNoticePortion)",
+          "transform": "YYYYMMDD"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "MasterAgreementIDInfo/@agreementID (on ShipNoticePortion)",
+          "transform": "max 30 chars"
+        }
+      ],
+      "condition": "ShipNoticePortion/MasterAgreementIDInfo/@agreementID present"
+    },
+    {
+      "segment_id": "PID",
+      "loop": "unknown",
+      "description": "Product/Item Description — ShipNoticePortion Comments (no type, no Attachment, max 80 chars)",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "F"
+        },
+        {
+          "position": 2,
+          "value_fixed": "GEN"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "Comments text (on ShipNoticePortion)"
+        },
+        {
+          "position": 9,
+          "cxml_xpath": "Comments/@xml:lang",
+          "default": "en",
+          "transform": "lowercase kept"
+        }
+      ],
+      "condition": "ShipNoticePortion/Comments present without @type and without Attachment; text <= 80 chars"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference Identification — order and agreement references in HL O",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "unknown",
+      "description": "Date/Time Reference — in HL O",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "N1",
+      "loop": "for each Contact in ShipNoticePortion",
+      "description": "Name group — Contacts on ShipNoticePortion",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "HL",
+      "loop": "unknown",
+      "description": "Hierarchical Level — Tare/Pallet (T), for Packaging level 0001",
+      "elements": [
+        {
+          "position": 1,
+          "value": "incrementing counter"
+        },
+        {
+          "position": 2,
+          "value": "parent HL number"
+        },
+        {
+          "position": 3,
+          "value_fixed": "T"
+        },
+        {
+          "position": 4,
+          "value_fixed": "1"
+        }
+      ],
+      "condition": "BSN05='0001' and Packaging[@PackagingLevelCode='0001' or '1'] present"
+    },
+    {
+      "segment_id": "PO4",
+      "loop": "unknown",
+      "description": "Item Physical Details — in HL T",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "1",
+          "condition": "DispatchQuantity present"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Packaging/DispatchQuantity/@quantity"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Packaging/DispatchQuantity/UnitOfMeasure",
+          "lookup": "mapUOM"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Packaging/PackagingCode",
+          "lookup": "mapPackaginCode"
+        },
+        {
+          "position": "6-13",
+          "description": "Dimensions from _Package_Dimension",
+          "logic": "weight→pos6+7, volume→pos8+9, length→pos10+13, width→pos11, height→pos12"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "MEA",
+      "loop": "unknown",
+      "description": "Measurements — in HL T, filtering out HT/LN/VOL/WD/WT (those go in PO4)",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference — StoreCode in HL T/P",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "WS"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Packaging/StoreCode"
+        }
+      ],
+      "condition": "Packaging/StoreCode present"
+    },
+    {
+      "segment_id": "MAN",
+      "loop": "unknown",
+      "description": "Marks and Numbers — SSCC and package IDs in HL T/P",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "HL",
+      "loop": "unknown",
+      "description": "Hierarchical Level — Pack (P), for Packaging level 0002 or Material-type packaging",
+      "elements": [
+        {
+          "position": 1,
+          "value": "incrementing counter"
+        },
+        {
+          "position": 2,
+          "value": "parent HL number"
+        },
+        {
+          "position": 3,
+          "value_fixed": "P"
+        },
+        {
+          "position": 4,
+          "value": "BSN05='0002' → '0' (no children); else '1'"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "HL",
+      "loop": "unknown",
+      "description": "Hierarchical Level — Item (I)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "incrementing counter"
+        },
+        {
+          "position": 2,
+          "value": "parent HL number"
+        },
+        {
+          "position": 3,
+          "value_fixed": "I"
+        },
+        {
+          "position": 4,
+          "logic": "BSN05=0004: '1' if ComponentConsumptionDetails present else '0'; BSN05=0002: '1'; BSN05=0001: '1' if ComponentConsumptionDetails present else '0'"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "LIN",
+      "loop": "unknown",
+      "description": "Item Identification — in HL I",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "@shipNoticeLineNumber (on ShipNoticeItem)"
+        },
+        {
+          "position": "2+",
+          "description": "Qualifier/value pairs from _LIN_help",
+          "pairs": [
+            {
+              "qualifier": "PL",
+              "cxml_xpath": "@lineNumber (on ShipNoticeItem)"
+            },
+            {
+              "qualifier": "B8",
+              "cxml_xpath": "Batch/SupplierBatchID"
+            },
+            {
+              "qualifier": "BP",
+              "cxml_xpath": "ItemID/BuyerPartID"
+            },
+            {
+              "qualifier": "C3",
+              "cxml_xpath": "ShipNoticeItemDetail/Classification[@domain='UNSPSC']/@code or text"
+            },
+            {
+              "qualifier": "EN",
+              "cxml_xpath": "ShipNoticeItemDetail/ItemDetailIndustry/ItemDetailRetail/EANID"
+            },
+            {
+              "qualifier": "HD",
+              "cxml_xpath": "Extrinsic[@name='HarmonizedSystemID'] text"
+            },
+            {
+              "qualifier": "LT",
+              "cxml_xpath": "Batch/BuyerBatchID"
+            },
+            {
+              "qualifier": "MG",
+              "cxml_xpath": "ShipNoticeItemDetail/ManufacturerPartID"
+            },
+            {
+              "qualifier": "MF",
+              "cxml_xpath": "ShipNoticeItemDetail/ManufacturerName"
+            },
+            {
+              "qualifier": "UP",
+              "cxml_xpath": "ItemID/IdReference[@domain='UPCConsumerPackageCode']/@identifier"
+            },
+            {
+              "qualifier": "VP",
+              "cxml_xpath": "ItemID/SupplierPartID"
+            },
+            {
+              "qualifier": "VS",
+              "cxml_xpath": "ItemID/SupplierPartAuxiliaryID"
+            }
+          ],
+          "note": "Each value truncated/split at 48 chars"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "SN1",
+      "loop": "unknown",
+      "description": "Item Detail (Shipment) — in HL I",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "@lineNumber (on ShipNoticeItem)"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@quantity (on ShipNoticeItem)"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "UnitOfMeasure (on ShipNoticeItem)",
+          "lookup": "mapUOM"
+        },
+        {
+          "position": 5,
+          "cxml_xpath": "OrderedQuantity/@quantity (on ShipNoticeItem)",
+          "condition": "OrderedQuantity present; else blank"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "OrderedQuantity/UnitOfMeasure (on ShipNoticeItem)",
+          "lookup": "mapUOM",
+          "condition": "If OrderedQuantity present; else ShipNoticeItemDetail/UnitOfMeasure"
+        }
+      ],
+      "condition": "@quantity on ShipNoticeItem present"
+    },
+    {
+      "segment_id": "SLN",
+      "loop": "unknown",
+      "description": "Subline Item Detail — unit price from ShipNoticeItemDetail",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "@shipNoticeLineNumber (on ShipNoticeItem)"
+        },
+        {
+          "position": 3,
+          "value_fixed": "O"
+        },
+        {
+          "position": 6,
+          "cxml_xpath": "ShipNoticeItemDetail/UnitPrice/Money"
+        }
+      ],
+      "condition": "ShipNoticeItemDetail/UnitPrice/Money present"
+    },
+    {
+      "segment_id": "PO4",
+      "loop": "unknown",
+      "description": "Item Physical Details — in HL I (BSN05=0004 only)",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "1",
+          "condition": "DispatchQuantity present"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Packaging/DispatchQuantity/@quantity"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Packaging/DispatchQuantity/UnitOfMeasure",
+          "lookup": "mapUOM"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Packaging/PackagingCode",
+          "lookup": "mapPackaginCode (via _packagingCode)"
+        },
+        {
+          "position": "6-13",
+          "description": "Dimensions via _Package_Dimension",
+          "logic": "weight→pos6+7, volume→pos8+9, length→pos10+13, width→pos11, height→pos12"
+        }
+      ],
+      "condition": "Packaging element on ShipNoticeItem present AND BSN05='0004'"
+    },
+    {
+      "segment_id": "PID",
+      "loop": "unknown",
+      "description": "Product/Item Description — in HL I from ShipNoticeItemDetail",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "MEA",
+      "loop": "for each ShipNoticeItemDetail/Dimension",
+      "description": "Measurements — Dimensions from ShipNoticeItemDetail in HL I",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "PD"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Dimension/@type",
+          "lookup": "mapMEA_738"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Dimension/@quantity"
+        },
+        {
+          "position": "401",
+          "cxml_xpath": "Dimension/UnitOfMeasure",
+          "lookup": "mapUOM"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "TD4",
+      "loop": "for each Hazard on ShipNoticeItem",
+      "description": "Carrier Details — Hazard in HL I",
+      "elements": [
+        {
+          "position": 2,
+          "cxml_xpath": "Hazard/Classification/@domain",
+          "lookup": "mapTD4"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Hazard/Classification code value"
+        },
+        {
+          "position": 4,
+          "cxml_xpath": "Hazard/Description text"
+        }
+      ],
+      "condition": "Hazard/Classification/@domain present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference — item type/parent line number in HL I",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "FL"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@parentLineNumber (on ShipNoticeItem)",
+          "condition": "if present"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "@itemType (on ShipNoticeItem)"
+        },
+        {
+          "position": "401",
+          "value_fixed": "FL",
+          "condition": "@itemType='composite' AND @compositeItemType present"
+        },
+        {
+          "position": "402",
+          "cxml_xpath": "@compositeItemType (on ShipNoticeItem)",
+          "condition": "same"
+        }
+      ],
+      "condition": "@itemType or @parentLineNumber present on ShipNoticeItem"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference — Batch dates and properties in HL I",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference — Extrinsics in HL I via _REF_extrinsic",
+      "elements": [],
+      "condition": "complex_logic"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference — PromotionDealID in HL I",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "PD"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "ShipNoticeItemIndustry/ShipNoticeItemRetail/PromotionDealID"
+        }
+      ],
+      "condition": "ShipNoticeItemIndustry/ShipNoticeItemRetail/PromotionDealID present"
+    },
+    {
+      "segment_id": "MAN",
+      "loop": "for each AssetInfo on ShipNoticeItem",
+      "description": "Both SN and AT can appear in same MAN; segment size = number_of_pairs * 3",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "L",
+          "note": "repeated every 3 positions"
+        },
+        {
+          "qualifier_position": 2,
+          "cxml_xpath": "AssetInfo/@serialNumber → qualifier 'SN'; AssetInfo/@tagNumber → qualifier 'AT'"
+        },
+        {
+          "value_position": 3,
+          "cxml_xpath": "corresponding value"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "DTM",
+      "loop": "unknown",
+      "description": "Date/Time Reference — retail dates in HL I",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "CUR",
+      "loop": "unknown",
+      "description": "Currency — line level in HL I",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "BY"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "ShipNoticeItemDetail/UnitPrice/Money/@currency"
+        }
+      ],
+      "condition": "ShipNoticeItemDetail/UnitPrice/Money/@currency present"
+    },
+    {
+      "segment_id": "HL",
+      "loop": "for each ComponentConsumptionDetails on ShipNoticeItem",
+      "description": "Hierarchical Level — Component/Consumption (F)",
+      "elements": [
+        {
+          "position": 1,
+          "value": "incrementing counter"
+        },
+        {
+          "position": 2,
+          "value": "parent HL I number"
+        },
+        {
+          "position": 3,
+          "value_fixed": "F"
+        },
+        {
+          "position": 4,
+          "value_fixed": "0"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "LIN",
+      "loop": "unknown",
+      "description": "Item Identification — in HL F",
+      "elements": [
+        {
+          "position": 1,
+          "cxml_xpath": "@lineNumber (on ComponentConsumptionDetails)"
+        },
+        {
+          "position": "2+",
+          "description": "Qualifier/value pairs from _LIN_help_ConsumptionDetail",
+          "pairs": [
+            {
+              "qualifier": "B8",
+              "cxml_xpath": "SupplierBatchID"
+            },
+            {
+              "qualifier": "BP",
+              "cxml_xpath": "Product/BuyerPartID"
+            },
+            {
+              "qualifier": "LT",
+              "cxml_xpath": "BuyerBatchID"
+            },
+            {
+              "qualifier": "SN",
+              "cxml_xpath": "AssetInfo/@serialNumber"
+            },
+            {
+              "qualifier": "VP",
+              "cxml_xpath": "Product/SupplierPartID"
+            },
+            {
+              "qualifier": "VS",
+              "cxml_xpath": "Product/SupplierPartAuxiliaryID"
+            }
+          ]
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "SN1",
+      "loop": "unknown",
+      "description": "Item Detail (Shipment) — in HL F",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": ""
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "@quantity (on ComponentConsumptionDetails)"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "UnitOfMeasure (on ComponentConsumptionDetails)",
+          "lookup": "mapUOM"
+        }
+      ],
+      "condition": "@quantity on ComponentConsumptionDetails present"
+    },
+    {
+      "segment_id": "REF",
+      "loop": "unknown",
+      "description": "Reference — Extrinsics in HL F (ZZ only, excluding _arrREF_ZZ_exclude)",
+      "elements": [
+        {
+          "position": 1,
+          "value_fixed": "ZZ"
+        },
+        {
+          "position": 2,
+          "cxml_xpath": "Extrinsic/@name (on ComponentConsumptionDetails)"
+        },
+        {
+          "position": 3,
+          "cxml_xpath": "Extrinsic text"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "MAN",
+      "loop": "unknown",
+      "description": "Marks and Numbers — serial/tag numbers in HL F (same as HL I)",
+      "elements": [],
+      "condition": null
+    },
+    {
+      "segment_id": "CTT",
+      "loop": "unknown",
+      "description": "Transaction Totals",
+      "elements": [
+        {
+          "position": 1,
+          "value": "total count of all ShipNoticeItem elements across all ShipNoticePortions"
+        }
+      ],
+      "condition": null
+    },
+    {
+      "segment_id": "SE",
+      "loop": "unknown",
+      "description": "",
+      "elements": [],
+      "condition": "fixed_envelope"
+    },
+    {
+      "segment_id": "GE",
+      "loop": "unknown",
+      "description": "",
+      "elements": [],
+      "condition": "fixed_envelope"
+    },
+    {
+      "segment_id": "IEA",
+      "loop": "unknown",
+      "description": "",
+      "elements": [],
+      "condition": "fixed_envelope"
+    }
+  ],
+  "lookup_tables": {
+    "mapBSN01": {
+      "description": "Transaction Set Purpose Code (BSN01)",
+      "values": {
+        "new": "00",
+        "delete": "03",
+        "update": "05"
+      }
+    },
+    "mapBSN06": {
+      "description": "Shipment Type Code (BSN06)",
+      "values": {
+        "actual": "09",
+        "planned": "PL"
+      }
+    },
+    "mapBSN07": {
+      "description": "Fulfillment Type Code (BSN07)",
+      "values": {
+        "complete": "C20",
+        "partial": "B44"
+      }
+    },
+    "mapTD502": {
+      "description": "Identification Code Qualifier for TD5 carrier",
+      "values": {
+        "duns": "1",
+        "scac": "2",
+        "iata": "4"
+      }
+    },
+    "mapTD504_I": {
+      "description": "Transportation Method/Type Code from Route/@method",
+      "values": {
+        "air": "A",
+        "mail": "7",
+        "motor": "J",
+        "rail": "R",
+        "ship": "S",
+        "inlandwater": "W",
+        "multimodal": "X"
+      }
+    },
+    "mapTD504_II": {
+      "description": "Transportation Method/Type Code from Route text (for 'custom' method)",
+      "note": "Large table of carrier service names; examples: 'barge'→B, 'overnight'→ON, 'next day air'→ND, 'standard ground'→SG, 'other'→ZZ"
+    },
+    "mapTD512": {
+      "description": "Service Level Code for TD5 pos12-14",
+      "note": "Large table; examples: 'ground'→CG, 'overnight'→ON, 'next day air'→ND, 'other'→ZZ"
+    },
+    "mapTD4": {
+      "description": "Hazardous Classification qualifier",
+      "values": {
+        "nahg": "9",
+        "imdg": "I",
+        "undg": "U"
+      }
+    },
+    "mapTD3": {
+      "description": "Equipment Description Code for TD3",
+      "note": "Large table of container/vehicle types; examples: boxcar→BX, container→CN, flat bed trailer→FT, tank car→TN"
+    },
+    "mapFOB01_146": {
+      "description": "Shipment Method of Payment (FOB01) from ShippingPaymentMethod/@value",
+      "note": "Large table; examples: collect→CC, prepaidonly→PO, paidbybuyer→BP, collect→CC. Special/other values map to DF"
+    },
+    "mapFOB_335": {
+      "description": "Incoterms for FOB05 in 856",
+      "note": "Similar to 855 but with additional values: cfr→CFR, dom→DOM, dup→DUP, etc.; other→ZZZ"
+    },
+    "mapMEA_738": {
+      "description": "Measurement Qualifier (MEA02) from Dimension @type",
+      "note": "856 version has subset: grossweight→G, unitgrossweight→GW, unitnetweight→N, grossvolume→VWT (no height/length/width/weight entries vs 855 which has them)",
+      "values": {
+        "grossweight": "G",
+        "unitgrossweight": "GW",
+        "unitnetweight": "N",
+        "grossvolume": "VWT"
+      }
+    },
+    "mapPackaginCode": {
+      "description": "Packaging Form Code from cXML PackagingCode text",
+      "note": "Large table; examples: pallet→PLT, carton→CTN, case→CAS, box→BOX, drum→DRM, bag→BAG"
+    },
+    "mapN1_98": {
+      "description": "Entity Identifier Code (N101) from Contact @role — identical to 855 version"
+    },
+    "mapN1_66": {
+      "description": "Identification Code Qualifier (N103) — same keys as 855 but default '92' instead of '' when not found"
+    },
+    "mapN1_REF128": {
+      "description": "REF qualifier for N1 group IdReference — identical to 855 version"
+    },
+    "mapREF128_PartI_IDREF": {
+      "description": "REF qualifier for ShipNoticeHeader/IdReference @domain values",
+      "values": {
+        "governmentnumber": "AEC",
+        "customerreferenceid": "CR",
+        "ultimatecustomerreferenceid": "EU",
+        "supplierreference": "D2",
+        "documentname": "DD"
+      }
+    },
+    "mapREF128_PartI_Ext": {
+      "description": "REF qualifier for ShipNoticeHeader/ShipNoticeItem Extrinsic @name values (puts value in pos3 only)",
+      "values": {
+        "supplierorderid": "VN",
+        "invoiceid": "IN",
+        "shippingcontractnumber": "CT",
+        "deliverynoteid": "DJ"
+      }
+    },
+    "mapREF128_PartII": {
+      "description": "REF qualifier for Extrinsic @name values (puts value in pos2[0..30]+pos3[30+])",
+      "note": "Large table identical to mapREF128 in 855 except trimmed slightly"
+    },
+    "mapUOM": {
+      "description": "Unit of Measure mapping from UN/CEFACT to ANSI X12 — same large table as mapUOM355 in 855, with minor additions (LB, SCR, TN, PGL entries added/changed)",
+      "note": "~400 entries. Key examples: EA→EA, KGM→KG, MTR→MR, DAY→DA, HUR→HR, PAL→4S, LBR→LB"
+    }
+  }
+}

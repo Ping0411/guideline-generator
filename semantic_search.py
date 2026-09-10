@@ -106,6 +106,47 @@ def search(query: str, n: int = 5, scope: str = None) -> list:
     return top
 
 
+def match_rules(candidates: list, targets: list, threshold: float = 0.65) -> list:
+    """
+    Semantic rule matching for Guideline Generator.
+
+    candidates: list of strings (parsed rule texts from uploaded file, any language)
+    targets:    list of {"id": str, "text": str} (ruleRegistry englishText entries)
+    threshold:  minimum cosine similarity to count as a match
+
+    Returns: list of {"candidateIndex": int, "targetId": str, "score": float}
+             One entry per candidate that matched at least one target.
+             Each candidate is matched to its highest-scoring target only.
+    """
+    _load()
+    import numpy as np
+
+    if not candidates or not targets:
+        return []
+
+    cand_embeddings = _model.encode(candidates)
+    tgt_texts = [t["text"] for t in targets]
+    tgt_embeddings = _model.encode(tgt_texts)
+
+    # Cosine similarity matrix: (len(candidates), len(targets))
+    cand_norm = cand_embeddings / (np.linalg.norm(cand_embeddings, axis=1, keepdims=True) + 1e-9)
+    tgt_norm  = tgt_embeddings  / (np.linalg.norm(tgt_embeddings,  axis=1, keepdims=True) + 1e-9)
+    sim_matrix = cand_norm @ tgt_norm.T  # shape: (C, T)
+
+    results = []
+    for ci, row in enumerate(sim_matrix):
+        best_ti = int(np.argmax(row))
+        best_score = float(row[best_ti])
+        if best_score >= threshold:
+            results.append({
+                "candidateIndex": ci,
+                "targetId": targets[best_ti]["id"],
+                "score": round(best_score, 4),
+            })
+
+    return results
+
+
 def serve(port: int = 7655):
     """Run as a persistent HTTP service."""
     from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -115,19 +156,28 @@ def serve(port: int = 7655):
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
-            if self.path != "/search":
-                self.send_response(404)
-                self.end_headers()
-                return
             length = int(self.headers.get("Content-Length", 0))
             body = self.rfile.read(length)
             try:
                 req = json.loads(body)
-                results = search(
-                    req.get("query", ""),
-                    n=req.get("n", 5),
-                    scope=req.get("scope")
-                )
+
+                if self.path == "/search":
+                    results = search(
+                        req.get("query", ""),
+                        n=req.get("n", 5),
+                        scope=req.get("scope")
+                    )
+                elif self.path == "/match":
+                    results = match_rules(
+                        req.get("candidates", []),
+                        req.get("targets", []),
+                        req.get("threshold", 0.65),
+                    )
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+                    return
+
                 resp = json.dumps(results, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
