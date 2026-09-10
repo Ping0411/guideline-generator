@@ -1030,7 +1030,7 @@
 
     // Download button + EDI Strict Verification button (only when EDI was generated)
     if (data.generateToken) {
-      const hasEdi = data.results && Object.values(data.results).some(r => r.edi && !r.edi.error);
+      const hasEdi = data.hasEdi || (data.results && Object.values(data.results).some(r => r.edi && !r.edi.error));
       html += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e0e0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">`;
       html += `<button class="btn btn-primary" onclick="downloadExcel('${data.generateToken}')" style="background:#27ae60;">`;
       html += `&#8595; Download Integration Guideline (Excel)`;

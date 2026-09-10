@@ -142,10 +142,10 @@ app.post('/api/evaluate-rules',
         evalResults: resultsSummary,
         cxmlFileList,
         ediFormat: answers.q13 === 'Yes' ? answers.q13format : null,
-        expiresAt: Date.now() + 10 * 60 * 1000,  // 10 minutes
+        expiresAt: Date.now() + 30 * 60 * 1000,  // 30 minutes
       };
 
-      res.json({ success: true, inScope, results: resultsSummary, generateToken: token });
+      res.json({ success: true, inScope, results: resultsSummary, generateToken: token, hasEdi: cxmlFileList.some(f => f.edi && Array.isArray(f.edi.segments) && f.edi.segments.length > 0) });
 
     } catch (err) {
       console.error(err);
