@@ -20,7 +20,8 @@
  * Tabs are converted to spaces. Equivalent to Notepad++ XML Tools > Pretty print - indent attributes.
  */
 function prettifyXml(xml) {
-  const INDENT = '  ';
+  const INDENT = '    ';  // 4 spaces per level
+  const ATTR_EXTRA = '    '; // extra 4 spaces for attribute continuation lines
 
   // Normalise line endings and collapse all whitespace between tags
   const flat = xml
@@ -45,7 +46,8 @@ function prettifyXml(xml) {
   while (i < tokens.length) {
     const token = tokens[i];
 
-    if (token.startsWith('<?') || token.startsWith('<!--')) {
+    if (token.startsWith('<?') || token.startsWith('<!--') || token.startsWith('<!')) {
+      // XML declaration, comments, DOCTYPE — emit as-is without changing depth
       lines.push(INDENT.repeat(depth) + token);
       i++;
     } else if (token.startsWith('</')) {
@@ -55,40 +57,62 @@ function prettifyXml(xml) {
     } else if (token.startsWith('<') && !token.startsWith('</')) {
       const isSelfClosing = token.endsWith('/>');
       const baseIndent = INDENT.repeat(depth);
-      const attrIndent = baseIndent + INDENT;
 
       // Lookahead: if next is text node and the one after is the matching close tag → inline
       const tagNameMatch = token.match(/^<([^\s/>]+)/);
       const tagName = tagNameMatch ? tagNameMatch[1] : null;
+      // Fixed attribute indent: base level indent + extra 8 spaces
+      const attrIndent = baseIndent + ATTR_EXTRA;
       const nextIsText   = i + 1 < tokens.length && !tokens[i+1].startsWith('<');
       const nextIsClose  = i + 2 < tokens.length && tokens[i+2] === `</${tagName}>`;
-      const inlineOk     = !isSelfClosing && tagName && nextIsText && nextIsClose;
+      const nextIsEmptyClose = i + 1 < tokens.length && tokens[i+1] === `</${tagName}>`;
 
-      if (inlineOk) {
-        // Emit as single inline line: <Tag attr="v">text</Tag>
+      // Leaf nodes with text content always render inline regardless of attribute count.
+      const inlineOk = !isSelfClosing && tagName && nextIsText && nextIsClose;
+      const inlineEmpty  = !isSelfClosing && tagName && nextIsEmptyClose;
+
+      if (inlineEmpty && !nextIsText) {
+        // Empty element with attributes: <Tag attr="v"></Tag> — render inline
+        const tagMatch = token.match(/^<([^\s/>]+)([\s\S]*?)(\/?>)$/);
+        const attrPart = tagMatch ? tagMatch[2].trim() : '';
+        if (attrPart) {
+          lines.push(`${baseIndent}<${tagName} ${attrPart}></${tagName}>`);
+        } else {
+          lines.push(`${baseIndent}<${tagName}></${tagName}>`);
+        }
+        i += 2;
+        // depth unchanged
+      } else if (inlineOk) {
+        // Emit as inline line: <Tag attr="v">text</Tag>
+        // If single attr (or no attr): one line
+        // If multiple attrs: split attrs, last attr line includes >text</Tag>
         const textVal = tokens[i+1];
         const closeTag = tokens[i+2];
-        // Rebuild open tag with attrs on same line for inline case
         const tagMatch = token.match(/^<([^\s/>]+)([\s\S]*?)(\/?>)$/);
         if (tagMatch && tagMatch[2].trim()) {
-          // Has attributes — still put attrs on separate lines, text+close on last attr line
           const attrPart = tagMatch[2].trim();
           const attrs = [];
           const attrRe = /([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
           let am;
           while ((am = attrRe.exec(attrPart)) !== null) {
             const val = am[2] !== undefined ? am[2] : am[3];
-            const quote = attrPart.includes(`${tagMatch[1]}="${am[1]}"`) || attrPart.match(new RegExp(`${am[1]}="`) ) ? '"' : "'";
-            attrs.push(`${am[1]}="${val}"`);
+            const quote = attrPart.includes(`${am[1]}="`) ? '"' : "'";
+            attrs.push(`${am[1]}=${quote}${val}${quote}`);
           }
-          lines.push(`${baseIndent}<${tagName}`);
-          attrs.forEach((a, idx) => {
-            if (idx === attrs.length - 1) {
-              lines.push(`${attrIndent}${a}>${textVal}${closeTag}`);
-            } else {
-              lines.push(`${attrIndent}${a}`);
-            }
-          });
+          if (attrs.length <= 1) {
+            // Single or no attr: keep on one line
+            lines.push(`${baseIndent}<${tagName} ${attrPart}>${textVal}${closeTag}`);
+          } else {
+            // Multiple attrs: split, last attr gets >text</Tag> appended
+            lines.push(`${baseIndent}<${tagName}`);
+            attrs.forEach((a, idx) => {
+              if (idx === attrs.length - 1) {
+                lines.push(`${attrIndent}${a}>${textVal}${closeTag}`);
+              } else {
+                lines.push(`${attrIndent}${a}`);
+              }
+            });
+          }
         } else {
           lines.push(`${baseIndent}<${tagName}>${textVal}${closeTag}`);
         }
@@ -111,10 +135,20 @@ function prettifyXml(xml) {
               attrs.push(`${am[1]}=${quote}${val}${quote}`);
             }
             if (attrs.length > 0) {
-              lines.push(`${baseIndent}<${tagName}`);
-              attrs.forEach((a, idx) => {
-                lines.push(idx === attrs.length - 1 ? `${attrIndent}${a}${closing}` : `${attrIndent}${a}`);
-              });
+              if (attrs.length === 1) {
+                // Single-attribute: always keep on one line (matches template format)
+                lines.push(`${baseIndent}<${tagName} ${attrs[0]}${closing}`);
+              } else if (isSelfClosing && attrs.length === 2) {
+                // Two-attribute self-closing: keep on one line
+                // (e.g. <IdReference domain="x" identifier="y"/> <Extrinsic name="x"/>)
+                lines.push(`${baseIndent}<${tagName} ${attrs.join(' ')}${closing}`);
+              } else {
+                // Multi-attribute (3+ attrs, or non-self-closing with 2+): split
+                lines.push(`${baseIndent}<${tagName}`);
+                attrs.forEach((a, idx) => {
+                  lines.push(idx === attrs.length - 1 ? `${attrIndent}${a}${closing}` : `${attrIndent}${a}`);
+                });
+              }
             } else {
               lines.push(`${baseIndent}${token}`);
             }
@@ -145,7 +179,11 @@ function prettifyXml(xml) {
  * - elementName: extracted tag name for matching (opening tags only), e.g. "ShipmentDate"
  */
 function formatCxml(cxmlContent) {
-  const prettified = prettifyXml(cxmlContent);
+  const normalized = cxmlContent.replace(
+    /(<Extrinsic\s+name="invoiceSubmissionMethod">)[^<]*/,
+    '$1cXML'
+  );
+  const prettified = prettifyXml(normalized);
   const lines = prettified.split('\n');
 
   return lines.map(line => {
@@ -291,16 +329,35 @@ function buildDescriptionMap(descriptionTriggers) {
     const atIdx = lastSegment.indexOf('@');
     let elemName, attrConditions;
 
+    let attrTarget = null; // attribute name to write description to (no =value conditions)
+
     if (atIdx >= 0) {
       elemName = lastSegment.slice(0, atIdx).trim();
       const attrPart = lastSegment.slice(atIdx + 1);
-      // Parse all @attr=value pairs; skip attr parts without =
-      const conditions = attrPart.split('@').map(cond => {
+      // Parse all @attr=value pairs; collect attr-only names separately
+      const conditions = [];
+      const attrOnlyNames = [];
+      for (const cond of attrPart.split('@')) {
         const eq = cond.indexOf('=');
-        if (eq < 0) return null;
-        return { name: cond.slice(0, eq).trim(), value: cond.slice(eq + 1).trim() };
-      }).filter(Boolean);
+        if (eq < 0) {
+          const name = cond.trim();
+          if (name) attrOnlyNames.push(name);
+        } else {
+          conditions.push({ name: cond.slice(0, eq).trim(), value: cond.slice(eq + 1).trim() });
+        }
+      }
       attrConditions = conditions.length > 0 ? conditions : null;
+      // If hint is "Parent/@attr" (lastSegment starts with @, no elemName prefix),
+      // take the element name from the previous path segment
+      if (!elemName && slashParts.length >= 2) {
+        const prevSegment = slashParts[slashParts.length - 2].trim();
+        elemName = prevSegment.split('@')[0].trim();
+      }
+      // If the hint has exactly one attr-only name (no =value) and no =value conditions,
+      // record it as the target row for description placement
+      if (attrOnlyNames.length === 1 && conditions.length === 0) {
+        attrTarget = attrOnlyNames[0];
+      }
     } else {
       elemName = lastSegment.trim();
       attrConditions = null;
@@ -308,7 +365,7 @@ function buildDescriptionMap(descriptionTriggers) {
 
     if (!elemName) continue;
 
-    entries.push({ pathSegments, elemName, attrConditions, desc });
+    entries.push({ pathSegments, elemName, attrConditions, attrTarget, desc });
   }
 
   return entries;
@@ -397,14 +454,19 @@ function lookupDescriptionForBlock(block, entries) {
  *   - mergeEnd:   true if this row ends a vertical B-column merge group
  *   - mergeId:    shared id for rows in the same merge group (for docSheetWriter to merge)
  */
-function buildCxmlRows(cxmlContent, descriptionTriggers) {
+function buildCxmlRows(cxmlContent, descriptionTriggers, docType) {
   const lines = formatCxml(cxmlContent);
 
-  // Separate regular triggers from mergeGroup triggers
-  const regularTriggers = (descriptionTriggers || []).filter(t => !t.mergeGroup);
+  // Separate special triggers from regular/mergeGroup triggers
+  const containsRoleTriggers = (descriptionTriggers || []).filter(t =>
+    t.cxmlElement && t.cxmlElement.includes('@_containsRole=')
+  );
+  const normalTriggers = (descriptionTriggers || []).filter(t =>
+    !t.mergeGroup && !(t.cxmlElement && t.cxmlElement.includes('@_containsRole='))
+  );
   const mergeGroupTriggers = (descriptionTriggers || []).filter(t => t.mergeGroup && t.mergeGroup.length > 0);
 
-  const entries = buildDescriptionMap(regularTriggers);
+  const entries = buildDescriptionMap(normalTriggers);
 
   // Parse element blocks to get full attribute context and path
   const blocks = parseElementBlocks(lines);
@@ -413,10 +475,78 @@ function buildCxmlRows(cxmlContent, descriptionTriggers) {
   const lineDescMap = new Map();
 
   for (const block of blocks) {
-    const desc = lookupDescriptionForBlock(block, entries);
-    if (desc) {
-      const existing = lineDescMap.get(block.startLine);
-      lineDescMap.set(block.startLine, existing ? existing + '\n' + desc : desc);
+    // Process each entry individually to support per-attribute row targeting
+    const blockAttrs = parseAttributes(block.attrText);
+
+    for (const entry of entries) {
+      if (entry.elemName !== block.elementName) continue;
+      if (!pathMatches(block.pathSegments, entry.pathSegments)) continue;
+
+      // Check attribute conditions (=value constraints)
+      if (entry.attrConditions) {
+        const allMatch = entry.attrConditions.every(({ name, value }) => {
+          const actual = blockAttrs[name];
+          return actual !== undefined && actual.toLowerCase() === value.toLowerCase();
+        });
+        if (!allMatch) continue;
+      }
+
+      // Determine target line
+      let targetLine = block.startLine;
+
+      if (entry.attrTarget) {
+        // Find the line containing attrTarget= within the block's opening tag span.
+        // If the attribute doesn't exist in this block at all, skip — don't fall back
+        // to startLine, which would wrongly annotate every instance of the element.
+        const attrName = entry.attrTarget;
+        if (!(attrName in blockAttrs)) continue;
+        for (let li = block.startLine; li < lines.length; li++) {
+          const lineText = lines[li].text;
+          if (new RegExp(`\\b${attrName}\\s*=`).test(lineText)) {
+            targetLine = li;
+            break;
+          }
+          // Stop scanning once we pass the tag close
+          if (li > block.startLine) {
+            const stripped = lineText.replace(/"[^"]*"|'[^']*'/g, '""');
+            if (stripped.includes('>')) break;
+          }
+        }
+      }
+
+      const existing = lineDescMap.get(targetLine);
+      lineDescMap.set(targetLine, existing ? existing + '\n' + entry.desc : entry.desc);
+    }
+  }
+
+  // Handle InvoicePartner@_containsRole= triggers:
+  // For each trigger, find the InvoicePartner block whose subtree contains
+  // a Contact element with the matching role attribute, then write the
+  // description to that InvoicePartner's start line.
+  for (const trigger of containsRoleTriggers) {
+    const roleMatch = trigger.cxmlElement.match(/@_containsRole=(.+)$/);
+    if (!roleMatch) continue;
+    const targetRole = roleMatch[1].toLowerCase();
+
+    // Walk blocks to find Contact elements with matching role
+    for (const block of blocks) {
+      if (block.elementName !== 'Contact') continue;
+      const attrs = parseAttributes(block.attrText);
+      if ((attrs.role || '').toLowerCase() !== targetRole) continue;
+
+      // Found the Contact — now walk backwards in blocks to find the nearest
+      // InvoicePartner ancestor (its startLine < block.startLine and it's in the path)
+      let ipStartLine = null;
+      for (let bi = blocks.indexOf(block) - 1; bi >= 0; bi--) {
+        if (blocks[bi].elementName === 'InvoicePartner' && blocks[bi].startLine < block.startLine) {
+          ipStartLine = blocks[bi].startLine;
+          break;
+        }
+      }
+      if (ipStartLine === null) continue;
+
+      const existing = lineDescMap.get(ipStartLine);
+      lineDescMap.set(ipStartLine, existing ? existing + '\n' + trigger.description : trigger.description);
     }
   }
 
@@ -452,6 +582,8 @@ function buildCxmlRows(cxmlContent, descriptionTriggers) {
     });
   }
 
+  const blockMarks = computeBlockMarks(lines, descriptionTriggers, docType);
+
   return lines.map(({ text }, i) => {
     const merge = mergeInfo.get(i);
     return {
@@ -460,8 +592,289 @@ function buildCxmlRows(cxmlContent, descriptionTriggers) {
       mergeId: merge ? merge.mergeId : null,
       mergeStart: merge ? merge.isFirst : false,
       mergeEnd: merge ? merge.isLast : false,
+      blockMark: blockMarks[i] || null,
     };
   });
+}
+
+/**
+ * Compute per-line block marks for border-box rendering.
+ *
+ * Returns an array of marks, one per line. Each mark:
+ *   { boxes: Array<{ kind: 'outer'|'section'|'item', start: bool, end: bool }> }
+ *
+ * 'outer'   — level 0: whole cXML document (A + B columns)
+ * 'section' — level 1: major structural section (A + B columns)
+ * 'item'    — level 2: individual line item (B column only)
+ *
+ * Per-docType section elements (A+B box, one box per contiguous block):
+ *   PO / PO_CHANGE : Header, OrderRequestHeader, ItemOut (all as one group)
+ *   OC             : Header, ConfirmationHeader, ConfirmationItem (all as one group)
+ *   ASN            : Header, ShipNoticeHeader, ShipNoticePortion
+ *   Invoice        : Header, InvoiceDetailRequestHeader, InvoiceDetailOrder, InvoiceDetailSummary
+ *   GR             : Header, ReceiptRequestHeader, ReceiptOrder, Total
+ *
+ * Per-docType item elements (B column only, one box per element instance):
+ *   PO / PO_CHANGE : ItemOut
+ *   OC             : ConfirmationItem
+ *   ASN            : ShipNoticeItem
+ *   Invoice        : InvoiceDetailItem, InvoiceDetailServiceItem, InvoicePartner,
+ *                    InvoiceDetailShipping, + any element named in B descriptions as "XXX Element"
+ *   GR             : ReceiptItem
+ */
+
+const DOC_SECTION_ELEMENTS = {
+  PO:        ['Header', 'OrderRequestHeader', 'ItemOut'],
+  PO_CHANGE: ['Header', 'OrderRequestHeader', 'ItemOut'],
+  OC:        ['Header', 'ConfirmationHeader', 'ConfirmationItem'],
+  ASN:       ['Header', 'ShipNoticeHeader', 'ShipNoticePortion'],
+  Invoice:   ['Header', 'InvoiceDetailRequestHeader', 'InvoiceDetailOrder', 'InvoiceDetailSummary'],
+  GR:        ['Header', 'ReceiptRequestHeader', 'ReceiptOrder', 'Total'],
+};
+
+// For A column: these section elements are grouped — all instances share one box
+const DOC_GROUP_SECTIONS = {
+  PO:        ['ItemOut'],
+  PO_CHANGE: ['ItemOut'],
+  OC:        ['ConfirmationItem'],
+};
+
+// For B column: these elements each get their own individual box
+const DOC_ITEM_ELEMENTS = {
+  PO:        ['ItemOut'],
+  PO_CHANGE: ['ItemOut'],
+  OC:        ['ConfirmationItem'],
+  ASN:       ['ShipNoticeItem'],
+  Invoice:   ['InvoiceDetailItem', 'InvoiceDetailServiceItem', 'InvoicePartner', 'InvoiceDetailShipping'],
+  GR:        ['ReceiptItem'],
+};
+
+function computeBlockMarks(lines, descriptionTriggers, docType) {
+  const n = lines.length;
+  // Each entry: array of box specs applied to this line
+  const marks = Array.from({ length: n }, () => ({ boxes: [] }));
+  const texts = lines.map(l => l.text.trim());
+
+  // ── Level 0: outer box (entire document) ────────────────────────────────
+  let outerStart = 0;
+  let outerEnd   = n - 1;
+  while (outerStart < n && !texts[outerStart]) outerStart++;
+  while (outerEnd > outerStart && !texts[outerEnd]) outerEnd--;
+  applyBox(marks, outerStart, outerEnd, 'outer');
+
+  // Normalise docType (PO_CHANGE → PO_CHANGE, but fall back to PO for unknowns)
+  const dt = docType || '';
+
+  // ── Level 1: section boxes (A + B) ──────────────────────────────────────
+  const sectionElems  = DOC_SECTION_ELEMENTS[dt] || [];
+  const groupedElems  = DOC_GROUP_SECTIONS[dt]   || [];
+
+  // Find all first-open-tag positions for each section element
+  // For grouped elements (e.g. all ItemOut), find the range from first to last
+  // For non-grouped, each element instance gets its own section box
+  const sectionRanges = computeSectionRanges(texts, sectionElems, groupedElems, outerEnd);
+  for (const { start, end } of sectionRanges) {
+    applyBox(marks, start, end, 'section');
+  }
+
+  // ── Level 2: item boxes (B column only) ─────────────────────────────────
+  const itemElems = [...(DOC_ITEM_ELEMENTS[dt] || [])];
+
+  // For all doc types: also add elements mentioned as "XXX Element" in B descriptions
+  if (descriptionTriggers) {
+    const mentioned = extractMentionedElements(descriptionTriggers);
+    for (const e of mentioned) {
+      if (!itemElems.includes(e)) itemElems.push(e);
+    }
+  }
+
+  for (const elem of itemElems) {
+    const ranges = findElementRanges(texts, elem);
+    for (const { start, end } of ranges) {
+      applyBox(marks, start, end, 'item');
+    }
+  }
+
+  return marks;
+}
+
+/**
+ * Compute section ranges for A-column boxes.
+ * Non-grouped elements: each top-level instance is its own range.
+ * Grouped elements: all instances share one range (first open to last close).
+ */
+function computeSectionRanges(texts, sectionElems, groupedElems, outerEnd) {
+  if (!sectionElems.length) return [];
+
+  // Collect per-element first-occurrence open positions
+  // We want each TOP-LEVEL occurrence (depth=0 before open)
+  const ranges = [];
+
+  // For each section element, find all top-level instance ranges
+  const allInstances = []; // { elem, start, end }
+
+  for (const elem of sectionElems) {
+    const instances = findElementRanges(texts, elem);
+    for (const r of instances) {
+      allInstances.push({ elem, ...r });
+    }
+  }
+
+  // Sort by start position
+  allInstances.sort((a, b) => a.start - b.start);
+
+  // Build section ranges:
+  // - grouped elements: merge all instances of that element into one range
+  // - non-grouped: each instance is its own section, ending just before the next section starts
+  const grouped = new Map(); // elem → { start, end }
+
+  for (const inst of allInstances) {
+    if (groupedElems.includes(inst.elem)) {
+      if (!grouped.has(inst.elem)) {
+        grouped.set(inst.elem, { start: inst.start, end: inst.end });
+      } else {
+        grouped.get(inst.elem).end = inst.end;
+      }
+    }
+  }
+
+  // Build final list: non-grouped instances + merged grouped ranges
+  const finalList = [];
+  const seenGrouped = new Set();
+
+  for (const inst of allInstances) {
+    if (groupedElems.includes(inst.elem)) {
+      if (!seenGrouped.has(inst.elem)) {
+        seenGrouped.add(inst.elem);
+        finalList.push({ start: grouped.get(inst.elem).start, end: grouped.get(inst.elem).end });
+      }
+    } else {
+      finalList.push({ start: inst.start, end: inst.end });
+    }
+  }
+
+  // Sort and trim overlaps: use real close positions, do NOT extend beyond actual end
+  finalList.sort((a, b) => a.start - b.start);
+  // Cap at outerEnd only
+  for (let i = 0; i < finalList.length; i++) {
+    if (finalList[i].end > outerEnd) finalList[i].end = outerEnd;
+  }
+
+  return finalList;
+}
+
+/**
+ * Find all top-level (depth=0) open/close ranges for a given element name.
+ * Returns: Array of { start, end } line indices.
+ */
+function findElementRanges(texts, elem) {
+  const openRe     = new RegExp(`^<${elem}(?:[\\s>]|$)`);
+  const closeRe    = new RegExp(`^<\\/${elem}\\s*>`);
+  const selfCloseRe = new RegExp(`^<${elem}(?:[\\s]|$)[^>]*\\/>`);
+  const ranges  = [];
+  let depth = 0;
+  let rangeStart = null;
+
+  for (let i = 0; i < texts.length; i++) {
+    const t = texts[i];
+
+    // Single-line self-closing tag
+    if (selfCloseRe.test(t)) {
+      if (depth === 0) ranges.push({ start: i, end: i });
+      continue;
+    }
+
+    const isOpen  = openRe.test(t) && !t.endsWith('/>');
+    const isClose = closeRe.test(t);
+
+    if (isOpen) {
+      if (depth === 0) {
+        rangeStart = i;
+        // Check if this is a multi-line self-closing element
+        const closingIdx = findMultiLineSelfClose(texts, i);
+        if (closingIdx !== null) {
+          ranges.push({ start: i, end: closingIdx });
+          rangeStart = null;
+          i = closingIdx;
+          continue;
+        }
+      }
+      depth++;
+    }
+    if (isClose) {
+      depth = Math.max(0, depth - 1);
+      if (depth === 0 && rangeStart !== null) {
+        ranges.push({ start: rangeStart, end: i });
+        rangeStart = null;
+      }
+    }
+  }
+
+  return ranges;
+}
+
+/**
+ * Detect a multi-line self-closing element starting at lineIdx.
+ * A multi-line self-close looks like:
+ *   <Foo
+ *     attr="val"
+ *     attr2="val2"/>
+ * We scan forward from lineIdx+1. If we hit a line ending with '/>' before
+ * seeing any child open tag or close tag, it's a self-close and we return
+ * the index of the '/>'-line. Otherwise return null.
+ */
+function findMultiLineSelfClose(texts, lineIdx) {
+  // The first line must be an open tag without '>' (attribute-spread start)
+  const firstLine = texts[lineIdx];
+  if (firstLine.includes('>')) return null; // already closed on same line
+
+  for (let j = lineIdx + 1; j < texts.length && j < lineIdx + 30; j++) {
+    const t = texts[j];
+    if (t.endsWith('/>')) return j;  // self-close found
+    if (t.startsWith('<') && !t.startsWith('</')) return null; // child element — not self-close
+    if (t.startsWith('</')) return null; // close tag — not expected here
+    if (t.endsWith('>') && !t.endsWith('/>')) return null; // normal open close on this line
+  }
+  return null;
+}
+
+/**
+ * Extract element names mentioned as "XXX Element" in description trigger texts.
+ * e.g. "Tax Element: ..." → "Tax"
+ */
+function extractMentionedElements(descriptionTriggers) {
+  const elems = new Set();
+  const re = /\b([A-Z][A-Za-z0-9]+)\s+[Ee]lement\b/g;
+  for (const t of descriptionTriggers) {
+    const text = t.description || '';
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      elems.add(m[1]);
+    }
+  }
+  return [...elems];
+}
+
+/**
+ * Apply a box spec to a line range.
+ */
+function applyBox(marks, start, end, kind) {
+  for (let i = start; i <= end; i++) {
+    marks[i].boxes.push({
+      kind,
+      start: i === start,
+      end:   i === end,
+    });
+  }
+}
+
+function extractTagName(text) {
+  const m = text.match(/^<\/?([A-Za-z][A-Za-z0-9_:-]*)/);
+  return m ? m[1].replace(/^.*:/, '') : null;
+}
+
+function isOpenTag(text) {
+  return text.startsWith('<') && !text.startsWith('</') && !text.startsWith('<?') && !text.startsWith('<!--');
 }
 
 module.exports = { formatCxml, extractElementName, buildDescriptionMap, buildCxmlRows };

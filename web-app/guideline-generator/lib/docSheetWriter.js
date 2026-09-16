@@ -30,8 +30,8 @@ const DOC_META = {
   GR:        { fullName: 'Goods Receipt',         x12: '861', edifact: 'RECADV'  },
 };
 
-const B_HEADER = 'Buyer Specific Requirements Description';
-const E_HEADER = 'Buyer Specific Requirements Description';
+const B_HEADER = 'Buyer-Specific Requirements';
+const E_HEADER = 'Buyer-Specific Requirements';
 
 // Matches the light blue header fill in sample file
 const HEADER_FILL = {
@@ -87,7 +87,7 @@ function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ed
   }
 
   // ── Row 1: headers ─────────────────────────────────────────────────────────
-  const aHeader = `cXML ${meta.fullName}`;
+  const aHeader = `Buyer Specific ${meta.fullName}`;
   let dHeader = '';
   if (hasEdi) {
     dHeader = ediFormat === 'X12'
@@ -102,6 +102,7 @@ function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ed
     cell.value = value;
     cell.font = FONT_HEADER;
     cell.fill = HEADER_FILL;
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
   }
 
   setHeader(1, aHeader);
@@ -114,7 +115,7 @@ function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ed
 
   // ── Build data rows ────────────────────────────────────────────────────────
   const descTriggers = evalResult?.descriptionTriggers || [];
-  const cxmlRows = buildCxmlRows(cxmlContent, descTriggers);
+  const cxmlRows = buildCxmlRows(cxmlContent, descTriggers, docType);
   const ediRows = hasEdi ? buildEdiRows(ediResult) : [];
 
   const totalRows = Math.max(cxmlRows.length, ediRows.length);
@@ -177,7 +178,95 @@ function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ed
 
     row.commit();
   }
+
+  // ── Draw border boxes ──────────────────────────────────────────────────────
+  applyBorderBoxes(ws, cxmlRows);
+}
+
+/**
+ * Apply border boxes to A and B columns based on blockMark data.
+ *
+ * Each row's blockMark has a `boxes` array of { kind, start, end }.
+ *   kind='outer'   → A + B, medium border
+ *   kind='section' → A + B, thin border
+ *   kind='item'    → B only, thin border
+ *
+ * Row numbers in the worksheet = rowIndex + 2 (header is row 1, data starts row 2).
+ */
+function applyBorderBoxes(ws, cxmlRows) {
+  // Collect all box ranges from marks
+  // pending: Map<kind+startKey, { startRow, kind }>
+  // We track each box by its kind and the wsRow where it started
+
+  // Build list of { startRow, endRow, kind } by scanning marks
+  const pending = new Map(); // key = `${kind}:${startRow}` → startRow
+  // We need a different approach: for each kind, track open ranges by start row
+
+  // Simpler: collect (kind, startRow, endRow) triples
+  // For each kind, we may have multiple simultaneous open ranges
+  // Use a stack per kind
+  const stacks = { outer: [], section: [], item: [] };
+  const boxes  = [];
+
+  for (let i = 0; i < cxmlRows.length; i++) {
+    const mark = cxmlRows[i].blockMark;
+    if (!mark) continue;
+    const wsRow = i + 2;
+
+    for (const box of mark.boxes) {
+      if (box.start) {
+        stacks[box.kind].push(wsRow);
+      }
+      if (box.end) {
+        const startRow = stacks[box.kind].pop();
+        if (startRow !== undefined) {
+          boxes.push({ startRow, endRow: wsRow, kind: box.kind });
+        }
+      }
+    }
+  }
+
+  // Apply borders
+  for (const box of boxes) {
+    const style = 'thin';
+    const cols     = box.kind === 'item' ? [2] : [1, 2];
+
+    for (const col of cols) {
+      drawBox(ws, box.startRow, box.endRow, col, style);
+    }
+  }
+}
+
+/**
+ * Draw a rectangular border box around a single-column range of rows.
+ */
+function drawBox(ws, startRow, endRow, col, style) {
+  for (let r = startRow; r <= endRow; r++) {
+    const cell = ws.getCell(r, col);
+    const isTop    = r === startRow;
+    const isBottom = r === endRow;
+
+    cell.border = mergeBorder(cell.border, {
+      top:    isTop    ? { style } : undefined,
+      bottom: isBottom ? { style } : undefined,
+      left:   { style },
+      right:  { style },
+    });
+  }
+}
+
+/**
+ * Merge a new border spec onto an existing border object.
+ * Only sets sides that are defined in newBorder and not already set in existing.
+ */
+function mergeBorder(existing, newBorder) {
+  const result = existing ? { ...existing } : {};
+  for (const side of ['top', 'bottom', 'left', 'right']) {
+    if (newBorder[side] && !result[side]) {
+      result[side] = newBorder[side];
+    }
+  }
+  return result;
 }
 
 module.exports = { writeDocSheet, DOC_META };
-
