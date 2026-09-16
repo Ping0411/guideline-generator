@@ -11,6 +11,8 @@ const { evaluateRules } = require('./lib/descriptionEngine');
 const { convertToEdi, SPEC_NAMES } = require('./lib/ediConverter');
 const { buildCxmlRows } = require('./lib/cxmlFormatter');
 const { generateExcel } = require('./lib/excelGenerator');
+const { anonymizeCxml } = require('./lib/cxmlAnonymizer');
+const { detectSubtype } = require('./lib/cxmlSubtypeDetector');
 
 const app = express();
 const PORT = 5002;
@@ -40,23 +42,31 @@ app.get('/', (req, res) => {
  */
 app.post('/api/evaluate-rules',
   upload.fields([
-    { name: 'cxmlFiles', maxCount: 10 },
+    { name: 'cxmlFiles', maxCount: 50 },
     { name: 'rulesFile', maxCount: 1 },
+    { name: 'countryRulesFile', maxCount: 1 },
     { name: 'countryRulesFile', maxCount: 1 },
   ]),
   async (req, res) => {
     try {
       const answers = JSON.parse(req.body.answers || '{}');
+      console.log('[DEBUG] answers.q1=', answers.q1, 'answers.q9=', answers.q9);
       const rulesFile = req.files?.rulesFile?.[0];
       const cxmlFiles = req.files?.cxmlFiles || [];
       const countryRulesFileObj = req.files?.countryRulesFile?.[0] || null;
 
-      if (!rulesFile) {
+      const nonInvoiceTypes = ['PO', 'OC', 'ASN', 'GR'];
+      const onlyInvoiceScope = !nonInvoiceTypes.some(t =>
+        (answers.q2 || []).includes(t) || (answers.q3 || []).includes(t)
+      );
+      const txRulesOptional = onlyInvoiceScope && answers.q14 === 'Yes';
+
+      if (!rulesFile && !txRulesOptional) {
         return res.status(400).json({ error: 'Transaction Rules file is required.' });
       }
 
-      // Parse transaction rules
-      const parsedRules = await parseTransactionRules(rulesFile.path);
+      // Parse transaction rules (may be null when only-invoice + country rules apply)
+      const parsedRules = rulesFile ? await parseTransactionRules(rulesFile.path) : new Map();
 
       // Parse country/region rules if provided (Q14=Yes)
       let countryParsedRules = null;
@@ -87,7 +97,17 @@ app.post('/api/evaluate-rules',
           : parsedRules;
 
         const evaluation = await evaluateRules(docType, activeRules, cxmlContent, answers);
-        fileEntries.push({ fileName: originalName, docType, content: cxmlContent, evaluation });
+        const subtypeInfo = detectSubtype(docType, cxmlContent);
+        fileEntries.push({ fileName: originalName, docType, subType: subtypeInfo.subType, content: cxmlContent, evaluation });
+      }
+
+      // Anonymize sensitive supplier data in each file before EDI conversion and Excel generation
+      const anonymizationWarnings = [];
+      const language = answers.q1 || 'en';
+      for (const entry of fileEntries) {
+        const { anonymized, warnings } = anonymizeCxml(entry.content, entry.docType, language);
+        entry.content = anonymized;
+        if (warnings.length > 0) anonymizationWarnings.push(...warnings);
       }
 
       // EDI conversions run in parallel (each calls /chat_edi independently)
@@ -112,6 +132,7 @@ app.post('/api/evaluate-rules',
         const fileEntry = {
           fileName: entry.fileName,
           docType:  entry.docType,
+          subType:  entry.subType,
           content:  entry.content,
           ...entry.evaluation,
           edi: entry.edi || null,
@@ -145,7 +166,7 @@ app.post('/api/evaluate-rules',
         expiresAt: Date.now() + 30 * 60 * 1000,  // 30 minutes
       };
 
-      res.json({ success: true, inScope, results: resultsSummary, generateToken: token, hasEdi: cxmlFileList.some(f => f.edi && Array.isArray(f.edi.segments) && f.edi.segments.length > 0) });
+      res.json({ success: true, inScope, results: resultsSummary, generateToken: token, hasEdi: cxmlFileList.some(f => f.edi && Array.isArray(f.edi.segments) && f.edi.segments.length > 0), unresolvedSheets: cxmlFileList.filter(f => !f.docType).map(f => f.fileName), anonymizationWarnings });
 
     } catch (err) {
       console.error(err);

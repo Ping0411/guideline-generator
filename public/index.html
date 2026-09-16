@@ -519,19 +519,14 @@
 
         <!-- Q10 -->
         <div class="q-block">
-          <div class="q-label"><span class="q-num">Q11</span> Supported Invoice Types</div>
+          <div class="q-label"><span class="q-num">Q11</span> Supported Invoice Types <span style="font-weight:400;font-size:13px;color:#888;">(Pre-selected based on your PO types — adjust as needed)</span></div>
           <div class="options" data-q="q10" data-type="multi">
-            <div class="option-btn" data-value="Catalog PO Invoice">Catalog PO Invoice</div>
-            <div class="option-btn" data-value="Non-Catalog Invoice">Non-Catalog Invoice</div>
-            <div class="option-btn" data-value="Contract Invoice">Contract Invoice</div>
-            <div class="option-btn" data-value="Blanket PO Invoice">Blanket PO Invoice</div>
-            <div class="option-btn" data-value="Non-PO Invoice">Non-PO Invoice</div>
-            <div class="option-btn" data-value="Service Invoice">Service Invoice</div>
-            <div class="option-btn" data-value="Credit – Header Level">Credit – Header Level</div>
-            <div class="option-btn" data-value="Credit – Line Level">Credit – Line Level</div>
-            <div class="option-btn" data-value="Debit – Header Level">Debit – Header Level</div>
-            <div class="option-btn" data-value="Debit – Line Level">Debit – Line Level</div>
+            <div class="option-btn hidden" id="q10-catalog-po" data-value="Catalog PO Invoice">Catalog PO Invoice</div>
+            <div class="option-btn hidden" id="q10-non-catalog" data-value="Non-Catalog Invoice">Non-Catalog Invoice</div>
+            <div class="option-btn hidden" id="q10-blanket-po" data-value="Blanket PO Invoice">Blanket PO Invoice</div>
+            <div class="option-btn hidden" id="q10-service-po" data-value="Service PO Invoice">Service PO Invoice</div>
           </div>
+          <div class="q-note" style="margin-top:8px;color:#666;font-size:13px;">Other supported invoice types (e.g. Contract Invoice, Non-PO Invoice, Service Invoice, Credit Memo, Debit Memo) are determined by buyer-specific transaction rules and will be automatically included in the generated guideline.</div>
         </div>
 
         <!-- Q11 -->
@@ -630,7 +625,7 @@
       </div>
 
       <!-- Transaction Rules upload -->
-      <div class="q-block">
+      <div class="q-block" id="tx-rules-upload-block">
         <div class="q-label">Upload Transaction Rules (Excel)</div>
         <div class="upload-area" id="rules-upload-area" onclick="document.getElementById('rules-input').click()">
           <input type="file" id="rules-input" accept=".xlsx,.xls" onchange="handleFileUpload('rules')" />
@@ -744,8 +739,20 @@
     // Q14 country rules upload
     toggle('country-rules-upload-block', state.q14 === 'Yes');
 
+    // Transaction Rules upload: hide when scope is Invoice-only + country rules apply
+    const nonInvoiceTypes = ['PO', 'OC', 'ASN', 'GR'];
+    const onlyInvoiceScope = !nonInvoiceTypes.some(t => state.q2.includes(t) || state.q3.includes(t));
+    const txRulesOptional = onlyInvoiceScope && state.q14 === 'Yes';
+    toggle('tx-rules-upload-block', !txRulesOptional);
+
     // Q8 (Non-Catalog PO selected in Q4)
     toggle('q8-block', state.q4.includes('Non-Catalog PO'));
+
+    // Q11 invoice type buttons — show/auto-select based on Q4 (Supported PO Types)
+    syncQ10InvoiceType('q10-catalog-po', 'Catalog PO Invoice',  state.q4.includes('Catalog PO'));
+    syncQ10InvoiceType('q10-non-catalog', 'Non-Catalog Invoice', state.q4.includes('Non-Catalog PO'));
+    syncQ10InvoiceType('q10-blanket-po',  'Blanket PO Invoice',  state.q4.includes('Blanket Order'));
+    syncQ10InvoiceType('q10-service-po',  'Service PO Invoice',  state.q4.includes('Service PO (Service structure)'));
 
     // Q8 Other text
     toggle('q8-other-wrap', state.q8 === 'Other');
@@ -762,6 +769,24 @@
     const el = document.getElementById(id);
     if (!el) return;
     el.classList.toggle('hidden', !show);
+  }
+
+  // Show/hide a Q11 invoice type button and keep state.q10 in sync.
+  // If the PO type is selected → show button + add value to q10.
+  // If the PO type is deselected → hide button + remove value from q10.
+  function syncQ10InvoiceType(btnId, value, shouldShow) {
+    const el = document.getElementById(btnId);
+    if (!el) return;
+    el.classList.toggle('hidden', !shouldShow);
+    if (shouldShow) {
+      if (!state.q10.includes(value)) {
+        state.q10.push(value);
+        el.classList.add('selected');
+      }
+    } else {
+      state.q10 = state.q10.filter(v => v !== value);
+      el.classList.remove('selected');
+    }
   }
 
   // ─── Step navigation ─────────────────────────────────────────────────────
@@ -888,8 +913,13 @@
       return;
     }
     if (!rulesInput.files.length) {
-      alert('Please upload the Transaction Rules Excel file.');
-      return;
+      const nonInvoiceTypes = ['PO', 'OC', 'ASN', 'GR'];
+      const onlyInvoiceScope = !nonInvoiceTypes.some(t => state.q2.includes(t) || state.q3.includes(t));
+      const txRulesOptional = onlyInvoiceScope && state.q14 === 'Yes';
+      if (!txRulesOptional) {
+        alert('Please upload the Transaction Rules Excel file.');
+        return;
+      }
     }
 
     const btn = document.querySelector('#step-3 .btn-primary');
@@ -1031,6 +1061,35 @@
     // Download button + EDI Strict Verification button (only when EDI was generated)
     if (data.generateToken) {
       const hasEdi = data.hasEdi || (data.results && Object.values(data.results).some(r => r.edi && !r.edi.error));
+
+      // Anonymization warnings (e.g. DeliverTo that may contain non-name content)
+      if (data.anonymizationWarnings && data.anonymizationWarnings.length > 0) {
+        html += `<div style="margin-top:16px;padding:12px 16px;border:1px solid #e6a817;border-radius:6px;background:#fffbf0;">`;
+        html += `<div style="font-size:13px;font-weight:600;color:#b8860b;margin-bottom:6px;">`;
+        html += `⚠️ 以下字段可能含有非人名信息，已跳过自动脱敏，请在下载 Excel 后手动处理：`;
+        html += `</div>`;
+        html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;margin:0;">`;
+        for (const w of data.anonymizationWarnings) {
+          html += `<li style="margin-bottom:4px;">${w}</li>`;
+        }
+        html += `</ul>`;
+        html += `</div>`;
+      }
+
+      // Unresolved sheet name warning
+      if (data.unresolvedSheets && data.unresolvedSheets.length > 0) {
+        html += `<div style="margin-top:16px;padding:12px 16px;border:1px solid #e6a817;border-radius:6px;background:#fffbf0;">`;
+        html += `<div style="font-size:13px;font-weight:600;color:#b8860b;margin-bottom:6px;">`;
+        html += `⚠️ The following uploaded files could not be identified as a known document type. Their sheet names have been kept as the original file name — please rename them manually in Excel if needed:`;
+        html += `</div>`;
+        html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;margin:0;">`;
+        for (const name of data.unresolvedSheets) {
+          html += `<li style="margin-bottom:4px;">${name}</li>`;
+        }
+        html += `</ul>`;
+        html += `</div>`;
+      }
+
       html += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e0e0e0;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">`;
       html += `<button class="btn btn-primary" onclick="downloadExcel('${data.generateToken}')" style="background:#27ae60;">`;
       html += `&#8595; Download Integration Guideline (Excel)`;
