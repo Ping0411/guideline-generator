@@ -364,6 +364,12 @@
     <div class="card">
       <h2>Basic Setup</h2>
 
+      <!-- Buyer Name -->
+      <div class="q-block">
+        <div class="q-label">Buyer Name:</div>
+        <input type="text" class="text-input" id="buyer-name" placeholder="e.g. FUJIFILM" style="max-width:320px;" />
+      </div>
+
       <!-- Q1: Language -->
       <div class="q-block">
         <div class="q-label"><span class="q-num">Q1</span> Language for Integration Guideline</div>
@@ -947,6 +953,7 @@
     try {
       const formData = new FormData();
       formData.append('answers', JSON.stringify({
+        buyerName: document.getElementById('buyer-name').value.trim(),
         q1: state.q1,
         q2: state.q2,
         q3: state.q3,
