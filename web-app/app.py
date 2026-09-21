@@ -1243,9 +1243,9 @@ def launch_generator():
         stderr=subprocess.STDOUT,
     )
 
-    # Wait up to 10 seconds for Generator to become available
-    for _ in range(10):
-        time.sleep(1)
+    # Wait up to 20 seconds for Generator to become available (cold start can be slow)
+    for _ in range(40):
+        time.sleep(0.5)
         try:
             r = requests.get(f"http://localhost:{GENERATOR_PORT}", timeout=1)
             if r.status_code < 500:
@@ -1345,7 +1345,7 @@ def chat_edi():
         while True:
             payload = {
                 "model": "anthropic--claude-sonnet-latest",
-                "max_tokens": 16000,
+                "max_tokens": 32000,
                 "system": SYSTEM_PROMPT,
                 "tools": TOOLS,
                 "messages": current_messages,
@@ -2255,7 +2255,7 @@ def chat():
                         ) if rules_summary else ""
 
                         verify_prompt = (
-                            "You have already read the EDI spec above in this conversation. "
+                            "The EDI spec is already pre-loaded in this conversation — do NOT call get_sap_page. "
                             "Using that spec knowledge, verify the EDI segments below for:\n"
                             "1. Every mapped cXML element is present (cross-check against the Excluded Elements list above)\n"
                             "2. Segment syntax: correct element count, M fields all filled, correct delimiters\n"
@@ -2272,7 +2272,7 @@ def chat():
                             "followed by a numbered list. Each item: segment identifier + specific problem + correct value.\n"
                             "Do NOT write any explanation, status update, or 'Running checks' text before the verdict line."
                         )
-                        result, t = call_nonstream(edi_context, verify_prompt, max_tokens=2048)
+                        result, t = call_nonstream(edi_context, verify_prompt, max_tokens=16000)
                         yield from wait_with_heartbeat(result, t)
                         verify_reply = result[0] or ""
                         _log["verify_round_0"] = verify_reply
@@ -2309,7 +2309,7 @@ def chat():
                                 "all segments in order, no explanation before or after the EDI. "
                                 "Do not change any correctly-mapped segments."
                             )
-                            result, t = call_nonstream(fix_context, fix_prompt, max_tokens=8192)
+                            result, t = call_nonstream(fix_context, fix_prompt, max_tokens=16000)
                             yield from wait_with_heartbeat(result, t)
                             fix_reply = result[0] or ""
 
@@ -2381,7 +2381,7 @@ def chat():
                             "include the description. All others use empty string."
                         )
                         # Use edi_context directly (spec content already present)
-                        result, t = call_nonstream(edi_context, excel_prompt, max_tokens=8192)
+                        result, t = call_nonstream(edi_context, excel_prompt, max_tokens=16000)
                         yield from wait_with_heartbeat(result, t)
                         excel_reply = result[0] or ""
 
