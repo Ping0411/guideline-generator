@@ -84,6 +84,11 @@ npm install --loglevel=error
 echo "  Done."
 echo ""
 
+echo "  Installing Guideline Generator dependencies..."
+(cd web-app/guideline-generator && npm install --loglevel=error)
+echo "  Done."
+echo ""
+
 # ── Python dependencies ───────────────────────────────────────────────────────
 
 echo "[3/4] Installing Python dependencies (flask, chromadb, sentence-transformers, and file parsers)..."

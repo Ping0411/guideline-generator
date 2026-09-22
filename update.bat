@@ -75,6 +75,12 @@ if defined PUPPETEER_SKIP_DOWNLOAD set PUPPETEER_SKIP_DOWNLOAD=true
 if errorlevel 1 (
     echo   WARNING: pip install failed. Some features may not work.
 )
+cd web-app\guideline-generator
+call npm install --loglevel=error
+if errorlevel 1 (
+    echo   WARNING: Guideline Generator npm install failed.
+)
+cd ..\..
 echo.
 
 :: ── Check if cache.json changed ───────────────────────────────────────────────

@@ -117,6 +117,18 @@ if errorlevel 1 (
 echo   Done.
 echo.
 
+echo   Installing Guideline Generator dependencies...
+cd web-app\guideline-generator
+call npm install --loglevel=error
+if errorlevel 1 (
+    echo   ERROR: Guideline Generator npm install failed.
+    pause
+    exit /b 1
+)
+cd ..\..
+echo   Done.
+echo.
+
 :: ── Python dependencies ───────────────────────────────────────────────────────
 
 echo [3/4] Installing Python dependencies (flask, chromadb, sentence-transformers, and file parsers)...

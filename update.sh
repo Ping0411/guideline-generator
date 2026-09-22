@@ -26,6 +26,7 @@ xattr -cr "Launch SAP Help Assistant.app" 2>/dev/null || true
 
 echo "[2/4] Installing / updating dependencies..."
 pip3 install -r web-app/requirements.txt --quiet || pip install -r web-app/requirements.txt --quiet || true
+(cd web-app/guideline-generator && npm install --loglevel=error)
 echo ""
 
 # ── Check if cache.json changed ───────────────────────────────────────────────
