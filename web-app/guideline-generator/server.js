@@ -60,9 +60,8 @@ app.post('/api/evaluate-rules',
         (answers.q2 || []).includes(t) || (answers.q3 || []).includes(t)
       );
       const txRulesOptional = onlyInvoiceScope && answers.q14 === 'Yes';
-      const onlyPaymentRemittance = [...(answers.q2 || []), ...(answers.q3 || [])].every(t => t === 'PaymentRemittance' || t === 'None');
 
-      if (!rulesFile && !txRulesOptional && !onlyPaymentRemittance) {
+      if (!rulesFile && !txRulesOptional) {
         return res.status(400).json({ error: 'Transaction Rules file is required.' });
       }
 
@@ -97,10 +96,7 @@ app.post('/api/evaluate-rules',
           ? countryParsedRules
           : parsedRules;
 
-        // PaymentRemittance has no Transaction Rules — output cXML directly without evaluation
-        const evaluation = (docType === 'PaymentRemittance')
-          ? { descriptionTriggers: [], unmatchedTriggers: [], projectReqTriggers: [] }
-          : await evaluateRules(docType, activeRules, cxmlContent, answers);
+        const evaluation = await evaluateRules(docType, activeRules, cxmlContent, answers);
         const subtypeInfo = detectSubtype(docType, cxmlContent);
         fileEntries.push({ fileName: originalName, docType, subType: subtypeInfo.subType, content: cxmlContent, evaluation });
       }
@@ -193,12 +189,11 @@ function detectDocType(filename, content, inScope) {
   if (requestMatch) {
     const requestElement = requestMatch[1];
     const elementToType = {
-      'OrderRequest':              () => resolvePOType(content),
-      'ConfirmationRequest':       () => 'OC',
-      'ShipNoticeRequest':         () => 'ASN',
-      'InvoiceDetailRequest':      () => 'Invoice',
-      'ReceiptRequest':            () => 'GR',
-      'PaymentRemittanceRequest':  () => 'PaymentRemittance',
+      'OrderRequest':         () => resolvePOType(content),
+      'ConfirmationRequest':  () => 'OC',
+      'ShipNoticeRequest':    () => 'ASN',
+      'InvoiceDetailRequest': () => 'Invoice',
+      'ReceiptRequest':       () => 'GR',
     };
     const resolver = elementToType[requestElement];
     if (resolver) {

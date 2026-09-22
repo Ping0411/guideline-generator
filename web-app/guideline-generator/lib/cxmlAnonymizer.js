@@ -17,10 +17,7 @@
  *  4. Supplier Contact blocks identified by role attribute:
  *       sales, customerService, technicalSupport, supplierCorporate,
  *       SupplierAccount, supplierMasterAccount,
- *       billFrom, from, issuerOfInvoice, remitTo, shipFrom, wireReceivingBank,
- *       payer, payee, originatingBank, receivingBank,
- *       originatingCorrespondentBank, receivingCorrespondentBank,
- *       intermediaryBank, payeeContact
+ *       billFrom, from, issuerOfInvoice, remitTo, shipFrom, wireReceivingBank
  *     → anonymize: Name, Street, City, State, PostalCode, Phone, Fax, Email, DeliverTo
  *     → Country is NOT anonymized.
  *  5. DeliverTo (zh/ja only): if first line length > 17, contains digits, or contains
@@ -38,14 +35,10 @@ const SUPPLIER_ROLES = new Set([
   'sales', 'customerService', 'technicalSupport', 'supplierCorporate',
   'SupplierAccount', 'supplierMasterAccount',
   'billFrom', 'from', 'issuerOfInvoice', 'remitTo', 'shipFrom', 'wireReceivingBank',
-  // PaymentPartner roles (PaymentRemittanceRequest)
-  'payer', 'payee', 'originatingBank', 'receivingBank',
-  'originatingCorrespondentBank', 'receivingCorrespondentBank',
-  'intermediaryBank', 'payeeContact',
 ]);
 
 // Doc types that anonymize <Header><To>; all others anonymize <Header><From>
-const ANONYMIZE_TO_TYPES = new Set(['PO', 'PO_CHANGE', 'GR', 'RA', 'PaymentRemittance']);
+const ANONYMIZE_TO_TYPES = new Set(['PO', 'PO_CHANGE', 'GR', 'RA']);
 
 // Fields to anonymize inside a supplier Contact block (tag names, case-sensitive)
 // Email and DeliverTo are handled globally so excluded here

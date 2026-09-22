@@ -389,7 +389,6 @@
           <div class="option-btn" data-value="ASN">ASN</div>
           <div class="option-btn" data-value="Invoice">Invoice</div>
           <div class="option-btn" data-value="GR">GR</div>
-          <div class="option-btn" data-value="PaymentRemittance">Payment Remittance</div>
         </div>
       </div>
 
@@ -402,7 +401,6 @@
           <div class="option-btn" data-value="ASN">ASN</div>
           <div class="option-btn" data-value="Invoice">Invoice</div>
           <div class="option-btn" data-value="GR">GR</div>
-          <div class="option-btn" data-value="PaymentRemittance">Payment Remittance</div>
           <div class="option-btn" data-value="None">None</div>
         </div>
       </div>
@@ -747,12 +745,11 @@
     // Q14 country rules upload
     toggle('country-rules-upload-block', state.q14 === 'Yes');
 
-    // Transaction Rules upload: hide when scope is Invoice-only + country rules apply, or PaymentRemittance-only
+    // Transaction Rules upload: hide when scope is Invoice-only + country rules apply
     const nonInvoiceTypes = ['PO', 'OC', 'ASN', 'GR'];
     const onlyInvoiceScope = !nonInvoiceTypes.some(t => state.q2.includes(t) || state.q3.includes(t));
     const txRulesOptional = onlyInvoiceScope && state.q14 === 'Yes';
-    const onlyPaymentRemittance = [...state.q2, ...state.q3].every(t => t === 'PaymentRemittance' || t === 'None');
-    toggle('tx-rules-upload-block', !txRulesOptional && !onlyPaymentRemittance);
+    toggle('tx-rules-upload-block', !txRulesOptional);
 
     // Q8 (Non-Catalog PO selected in Q4)
     toggle('q8-block', state.q4.includes('Non-Catalog PO'));
@@ -925,8 +922,7 @@
       const nonInvoiceTypes = ['PO', 'OC', 'ASN', 'GR'];
       const onlyInvoiceScope = !nonInvoiceTypes.some(t => state.q2.includes(t) || state.q3.includes(t));
       const txRulesOptional = onlyInvoiceScope && state.q14 === 'Yes';
-      const onlyPaymentRemittance = [...state.q2, ...state.q3].every(t => t === 'PaymentRemittance' || t === 'None');
-      if (!txRulesOptional && !onlyPaymentRemittance) {
+      if (!txRulesOptional) {
         alert('Please upload the Transaction Rules Excel file.');
         return;
       }

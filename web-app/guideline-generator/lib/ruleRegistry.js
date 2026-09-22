@@ -84,7 +84,7 @@ const RULES = [
     docType: 'OC',
     effect: 'description',
     englishText: 'Do not allow suppliers to reject entire purchase orders',
-    cxmlHint: 'ConfirmationHeader@type',
+    cxmlHint: 'ConfirmationHeader/@type',
   },
   {
     id: 'OC_REQUIRE_REJECT_REASON_HEADER',
@@ -109,6 +109,43 @@ const RULES = [
   },
 
   // ─── ASN — Project Requirements only ────────────────────────────────────
+  {
+    id: 'ASN_ALLOW_NON_PO',
+    docType: 'ASN',
+    effect: 'projectReq',
+    triggerOnNo: true,
+    englishText: 'Allow suppliers to send non-PO ship notices through cXML',
+    projectReqTextNo: 'Non-PO ship notices via cXML are not allowed.',
+    zh: '不允许通过cXML发送Non-PO发货通知。',
+    ja: '注文書なし出荷通知の作成は許可されない。',
+    cxmlHint: null,
+  },
+  {
+    id: 'ASN_ALLOW_CANCEL',
+    docType: 'ASN',
+    effect: 'projectReq',
+    englishText: 'Allow suppliers to cancel ship notices that they create',
+    projectReqText: 'Suppliers are allowed to cancel ship notices.',
+    cxmlHint: null,
+  },
+  {
+    id: 'ASN_ALLOW_UPDATE',
+    docType: 'ASN',
+    effect: 'projectReq',
+    englishText: 'Allow suppliers to edit existing ship notices',
+    projectReqText: 'Suppliers are allowed to update ship notices.',
+    cxmlHint: null,
+  },
+  {
+    id: 'ASN_NO_MULTIPLE_DELIVERY_DATES',
+    docType: 'ASN',
+    effect: 'projectReq',
+    englishText: 'Do not allow multiple delivery dates in ship notice creation',
+    projectReqText: 'All items in the same ship notice must have the same delivery date.',
+    zh: '同一发货通知中的所有行项目的希望交货期（requestedDeliveryDate）必须相同。',
+    ja: '配達日時が同じ品目のみを出荷通知に含めることが許可される。',
+    cxmlHint: null,
+  },
   {
     id: 'ASN_NO_MULTIPLE_SHIPTO',
     docType: 'ASN',
@@ -166,7 +203,7 @@ const RULES = [
     docType: 'Invoice',
     effect: 'projectReq',
     englishText: 'Allow suppliers to cancel invoices they create',
-    projectReqText: 'Suppliers are allowed to cancel invoices.',
+    projectReqText: "Suppliers are allowed to cancel invoices that do not have an invoice status of 'reconciled', 'paying', or 'paid'.",
     projectReqTextNo: 'Suppliers are not allowed to cancel invoices.',
     triggerOnBoth: true,
     cxmlHint: null,
@@ -288,6 +325,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require a Bill To address on invoices',
     cxmlHint: 'InvoicePartner/Contact@role=billTo',
+    extraHint: { type: 'invoicePartnerFor', role: 'billTo', label: 'Bill To' },
   },
   {
     id: 'INV_REQUIRE_SOLD_TO',
@@ -295,6 +333,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require a Sold To address on invoices',
     cxmlHint: 'InvoicePartner/Contact@role=soldTo',
+    extraHint: { type: 'invoicePartnerFor', role: 'soldTo', label: 'Sold To' },
   },
   {
     id: 'INV_REQUIRE_FROM',
@@ -302,6 +341,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require a From address on invoices',
     cxmlHint: 'InvoicePartner/Contact@role=from',
+    extraHint: { type: 'invoicePartnerFor', role: 'from', label: 'From' },
   },
   {
     id: 'INV_REQUIRE_REMIT_TO',
@@ -309,6 +349,15 @@ const RULES = [
     effect: 'description',
     englishText: 'Require a Remit To address on invoices',
     cxmlHint: 'InvoicePartner/Contact@role=remitTo',
+    extraHint: { type: 'invoicePartnerFor', role: 'remitTo', label: 'Remit To' },
+  },
+  {
+    id: 'INV_REQUIRE_BILL_FROM',
+    docType: 'Invoice',
+    effect: 'description',
+    englishText: 'Require a Bill From address on invoices (Japan only)',
+    cxmlHint: 'InvoicePartner/Contact@role=billFrom',
+    extraHint: { type: 'invoicePartnerFor', role: 'billFrom', label: 'Bill From' },
   },
   {
     id: 'INV_REQUIRE_SHIP_ADDRESSES',
@@ -316,6 +365,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require Ship From and Ship To addresses on invoices',
     cxmlHint: ['Contact@role=shipFrom', 'Contact@role=shipTo'],
+    extraHint: { type: 'element', name: 'InvoiceDetailShipping', label: 'InvoiceDetailShipping element for ship from and ship to is mandatory' },
   },
   {
     id: 'INV_REQUIRE_PENALTY_TERMS',
@@ -447,11 +497,18 @@ const RULES = [
 
   // ─── ASN — B column description ─────────────────────────────────────────
   {
+    id: 'ASN_REQUIRE_DELIVERY_DATE',
+    docType: 'ASN',
+    effect: 'description',
+    englishText: 'Require delivery dates for order confirmations and ship notices',
+    cxmlHint: '@deliveryDate',
+  },
+  {
     id: 'ASN_REQUIRE_SHIP_DATE',
     docType: 'ASN',
     effect: 'description',
     englishText: 'Require an actual or estimated shipping date on ship notices',
-    cxmlHint: 'ShipNoticeHeader@shipmentDate',
+    cxmlHint: '@shipmentDate',
   },
   {
     id: 'ASN_REQUIRE_SHIP_NOTICE_TYPE',

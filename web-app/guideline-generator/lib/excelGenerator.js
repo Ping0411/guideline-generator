@@ -154,13 +154,12 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
 
   // ── 4. Doc type sheets (one per uploaded cXML) ────────────────────────────
   const DOC_TYPE_LABELS = {
-    PO:                null,   // uses subType directly
-    PO_CHANGE:         null,   // uses subType directly
-    OC:                null,   // uses subType directly
-    ASN:               null,   // uses subType directly
-    Invoice:           null,   // uses subType directly
-    GR:                'GR',
-    PaymentRemittance: 'Payment Remittance',
+    PO:        null,   // uses subType directly
+    PO_CHANGE: null,   // uses subType directly
+    OC:        null,   // uses subType directly
+    ASN:       null,   // uses subType directly
+    Invoice:   null,   // uses subType directly
+    GR:        'GR',
   };
 
   // Resolve the display label for each file: subType when available, fallback to fixed label

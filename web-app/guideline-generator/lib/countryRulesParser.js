@@ -230,6 +230,15 @@ function parsePdf(filePath) {
     const ruleText = m[1].trim();
     const appliedVal = m[2].trim();
     if (ruleText.toLowerCase() === 'general invoice rules' || ruleText.toLowerCase() === 'rule') continue;
+    // Skip continuation lines: lines starting with a lowercase letter or '(' are
+    // the tail of a wrapped rule from the previous line, not a new rule.
+    if (/^[a-z(]/.test(ruleText)) continue;
+    // Skip lines that are clearly not rule sentences: a valid rule starts with a
+    // recognised action verb, a digit (e.g. tax rate "8% Consumption Tax"), or
+    // a known noun phrase ("Default Bill To Address", "W. L. Gore…" etc).
+    // Reject lines that start with a preposition/article/conjunction or a
+    // mid-sentence fragment (e.g. "To information if available", "Business Network").
+    if (/^(To|In|Or|And|For|Of|With|From|On|At|By|As|If|The|A |An )\b/.test(ruleText)) continue;
     pairs.push([ruleText, appliedVal]);
   }
 
