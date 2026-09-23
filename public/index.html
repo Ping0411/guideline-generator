@@ -415,7 +415,7 @@
       </div>
 
       <!-- Q13: EDI Required -->
-      <div class="q-block">
+      <div class="q-block" id="q13-block">
         <div class="q-label"><span class="q-num">Q5</span> EDI Required?</div>
         <div class="options" data-q="q13" data-type="single">
           <div class="option-btn" data-value="Yes">Yes</div>
@@ -667,6 +667,17 @@
 </div><!-- /container -->
 
 <script>
+  // ─── Config (loaded from server) ─────────────────────────────────────────
+  let ediEnabled = true;
+  fetch('/api/config').then(r => r.json()).then(cfg => {
+    ediEnabled = cfg.ediEnabled !== false;
+    if (!ediEnabled) {
+      const q13block = document.getElementById('q13-block');
+      if (q13block) q13block.style.display = 'none';
+      state.q13 = 'No';
+    }
+  }).catch(() => {});
+
   // ─── State ───────────────────────────────────────────────────────────────
   const state = {
     q1: null,
@@ -979,7 +990,20 @@
         freeText: document.getElementById('free-text').value,
       }));
 
-      for (const f of cxmlFileList) formData.append('cxmlFiles', f);
+      // Browser-side anonymization: strip sensitive data before sending to server
+      const language = state.q1 || 'en';
+      const anonymizedFiles = await Promise.all(cxmlFileList.map(async (file) => {
+        try {
+          const text = await file.text();
+          // Pass empty docType — server will detect it; anonymizer still processes
+          // Header/Contact/Email/DeliverTo blocks regardless of docType
+          const { anonymized } = CxmlAnonymizer.anonymizeCxml(text, '', language);
+          return new File([anonymized], file.name, { type: file.type });
+        } catch (_) {
+          return file; // on error, fall through to server-side anonymization
+        }
+      }));
+      for (const f of anonymizedFiles) formData.append('cxmlFiles', f);
       formData.append('rulesFile', rulesInput.files[0]);
 
       const countryRulesInput = document.getElementById('country-rules-input');
@@ -1101,7 +1125,7 @@
       html += `<button class="btn btn-primary" onclick="downloadExcel('${data.generateToken}')" style="background:#27ae60;">`;
       html += `&#8595; Download Integration Guideline (Excel)`;
       html += `</button>`;
-      if (hasEdi) {
+      if (hasEdi && ediEnabled) {
         html += `<button class="btn btn-secondary" id="btn-edi-verify" onclick="runEdiVerify('${data.generateToken}')">`;
         html += `&#10003; EDI Strict Verification`;
         html += `</button>`;
@@ -1253,5 +1277,6 @@
   </div>
 </div>
 
+<script src="/cxmlAnonymizer.bundle.js"></script>
 </body>
 </html>
