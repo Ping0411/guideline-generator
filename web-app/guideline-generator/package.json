@@ -4,7 +4,8 @@
   "description": "Integration Guideline Generator Tool",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "esbuild lib/cxmlAnonymizer.js --bundle --format=iife --global-name=CxmlAnonymizer --outfile=public/cxmlAnonymizer.bundle.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
@@ -15,6 +16,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "form-data": "^4.0.6"
   }
 }

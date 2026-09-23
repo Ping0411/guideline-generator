@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: guideline-generator
+    runtime: node
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: EDI_ENABLED
+        value: "false"
+      - key: NODE_ENV
+        value: production

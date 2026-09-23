@@ -8,16 +8,22 @@ const http = require('http');
 const { parseTransactionRules } = require('./lib/rulesParser');
 const { parseCountryRules } = require('./lib/countryRulesParser');
 const { evaluateRules } = require('./lib/descriptionEngine');
-const { convertToEdi, SPEC_NAMES } = require('./lib/ediConverter');
 const { buildCxmlRows } = require('./lib/cxmlFormatter');
 const { generateExcel } = require('./lib/excelGenerator');
 const { anonymizeCxml } = require('./lib/cxmlAnonymizer');
 const { detectSubtype } = require('./lib/cxmlSubtypeDetector');
 
-const app = express();
-const PORT = 5002;
+const EDI_ENABLED = process.env.EDI_ENABLED !== 'false';
 
-// SAP Help MCP address (same as ediConverter uses)
+let convertToEdi;
+if (EDI_ENABLED) {
+  ({ convertToEdi } = require('./lib/ediConverter'));
+}
+
+const app = express();
+const PORT = process.env.PORT || 5002;
+
+// SAP Help MCP address (used by ediConverter)
 const SAP_HELP_HOST = '127.0.0.1';
 const SAP_HELP_PORT = 5001;
 
@@ -33,6 +39,10 @@ const upload = multer({ dest: os.tmpdir() });
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/api/config', (req, res) => {
+  res.json({ ediEnabled: EDI_ENABLED });
 });
 
 /**
@@ -111,7 +121,7 @@ app.post('/api/evaluate-rules',
       }
 
       // EDI conversions run in parallel (each calls /chat_edi independently)
-      if (answers.q13 === 'Yes' && answers.q13format) {
+      if (EDI_ENABLED && answers.q13 === 'Yes' && answers.q13format) {
         await Promise.all(fileEntries.map(async (entry) => {
           try {
             // Build annotated cXML: inject <!-- B: description --> comments for lines that have descriptions
@@ -166,7 +176,7 @@ app.post('/api/evaluate-rules',
         expiresAt: Date.now() + 30 * 60 * 1000,  // 30 minutes
       };
 
-      res.json({ success: true, inScope, results: resultsSummary, generateToken: token, hasEdi: cxmlFileList.some(f => f.edi && Array.isArray(f.edi.segments) && f.edi.segments.length > 0), unresolvedSheets: cxmlFileList.filter(f => !f.docType).map(f => f.fileName), anonymizationWarnings });
+      res.json({ success: true, inScope, results: resultsSummary, generateToken: token, hasEdi: EDI_ENABLED && cxmlFileList.some(f => f.edi && Array.isArray(f.edi.segments) && f.edi.segments.length > 0), unresolvedSheets: cxmlFileList.filter(f => !f.docType).map(f => f.fileName), anonymizationWarnings });
 
     } catch (err) {
       console.error(err);
@@ -252,13 +262,11 @@ app.get('/api/generate', async (req, res) => {
 });
 
 /**
- * POST /api/edi_verify?token=xxx
- * Runs strict EDI verification on all EDI-containing sheets for the given token.
- * Calls /chat_edi_check on app.py for each doc type that has EDI segments.
- * Returns: { verified: [{ docType, fileName, issueCount, issues, corrected }] }
- * Also stores corrected segments back into pendingGenerations for later Excel rebuild.
+ * POST /api/edi_verify, POST /api/edi_retry_correct, GET /api/edi_verified_excel
+ * Only registered when EDI_ENABLED=true.
  */
-app.post('/api/edi_verify', async (req, res) => {
+if (EDI_ENABLED) {
+  app.post('/api/edi_verify', async (req, res) => {
   const token = req.query.token;
   const pending = pendingGenerations[token];
   if (!pending) {
@@ -336,14 +344,9 @@ app.post('/api/edi_verify', async (req, res) => {
   pending.expiresAt = Date.now() + 10 * 60 * 1000;
 
   res.json({ verified });
-});
+  });
 
-/**
- * POST /api/edi_retry_correct?token=xxx
- * For files where corrected_failed=true: sends confirmed issues back to AI
- * to obtain only the corrections JSON, then stores results.
- */
-app.post('/api/edi_retry_correct', async (req, res) => {
+  app.post('/api/edi_retry_correct', async (req, res) => {
   const token = req.query.token;
   const pending = pendingGenerations[token];
   if (!pending) {
@@ -410,16 +413,9 @@ app.post('/api/edi_retry_correct', async (req, res) => {
 
   pending.expiresAt = Date.now() + 10 * 60 * 1000;
   res.json({ retried });
-});
+  });
 
-
-/**
- * GET /api/edi_verified_excel?token=xxx
- * Generates the corrected Excel using the same structure as the original,
- * but with EDI segments replaced by the verified/corrected versions.
- * All other content (README, Project Requirements, cXML, Extrinsics) is unchanged.
- */
-app.get('/api/edi_verified_excel', async (req, res) => {
+  app.get('/api/edi_verified_excel', async (req, res) => {
   const token = req.query.token;
   const pending = pendingGenerations[token];
   if (!pending) {
@@ -437,7 +433,6 @@ app.get('/api/edi_verified_excel', async (req, res) => {
       return fileObj;
     });
 
-    // generateExcel uses the same template, layout, fonts — only EDI data differs
     const buffer = await generateExcel(answers, evalResults, correctedFileList, ediFormat);
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -447,7 +442,8 @@ app.get('/api/edi_verified_excel', async (req, res) => {
     console.error('Verified Excel generation error:', err);
     res.status(500).json({ error: err.message });
   }
-});
+  });
+} // end if (EDI_ENABLED)
 
 const server = app.listen(PORT, () => {
   console.log(`Guideline Generator running at http://localhost:${PORT}`);
