@@ -157,7 +157,17 @@
   - Part2: ANSI UoM code table continuation (AMPERE/VLT/OHM/FAR/JOU — electrical/physical units, pages 11–20)
   - Part3: ANSI UoM code table tail (WA–Z8 — miscellaneous units: YARD/WEEK/YEAR/LUG/CHEST, page 21)
 
-- **X12 / EDIFACT EDI Guides** (each transaction type is a separate document, e.g. `SAP Business Network X12 PO850 4010 Outbound`)
+- **X12 EDI Guides (SBN)** `file://SBN/split/X12/SAP Business Network X12 {Code} {Version} {Direction}_Part{N}.pdf`
+  - URL format: `file://SBN/split/X12/SAP Business Network X12 PO850 4010 Outbound_Part1.pdf` (use exact filename)
+  - Complete document list: PO850 4010 Outbound, PR855 4010 Inbound, SH856 4010 Inbound, SH856 4010 Outbound, IN810 4010 Inbound, AG824 4010 Inbound, AG824 4010 Outbound, PC860 4010 Outbound, FA997 4010 Inbound, FA997 4010 Outbound, CA865 4010 Inbound, NC842 4010 Inbound, NC842 4010 Outbound, IB846 4010 Inbound, IB846 Consignment 4010 Outbound, IB846 SMI 4010 Outbound, IB846 MO PO 4010 Inbound, PS830 4010 Inbound, PS830 Order 4010 Outbound, PS830 ProductActivity 4010 Outbound, RC861 4010 Inbound, RC861 4010 Outbound, RE944 4010 Inbound, RE944 4010 Outbound, RT863 QualityInspectionDecision 4010 Outbound, RT863 QualityInspectionRequest 4010 Outbound, RT863 QualityInspectionResult 4010 Inbound, RA820 4010 Outbound, AR943 4010 Inbound, AR943 4010 Outbound, AW947 4010 Inbound, OW940 4010 Outbound, QM214 4010 Inbound, SC832 4010 Inbound, SQ866 4010 Inbound, SS862 4010 Outbound, SW945 4010 Inbound, SW945 4010 Outbound, SM204 4010 Outbound, SM204 Multi-Consignment 4010 Outbound, TX864 4010 Outbound, PO850 Salesorder 4010 Inbound
+  - Part1: document header, revision history, TOC
+  - Part2 onward: **DETAILED SEGMENT DESCRIPTIONS** (continuous, no chapter breaks between slices)
+  - Note: all slices from Part2 onward contain segment-level detail — there is no "summary-only" slice to skip
+
+- **EDIFACT EDI Guides (SBN)** `file://SBN/split/EDIFACT/SAP Business Network EDIFACT {Message} {Version} {Direction}_Part{N}.pdf`
+  - URL format: `file://SBN/split/EDIFACT/SAP Business Network EDIFACT ORDERS D96A Outbound_Part1.pdf` (use exact filename)
+  - Complete document list (standard naming): ORDERS D96A Outbound → `SAP_EDIFACT ORDERS_D96A Out`, ORDCHG D96A Outbound → `SAP_EDIFACT ORDCHG_D96A Out`, ORDRSP D96A Inbound, DESADV D96A Inbound, INVOIC D96A Inbound, INVOIC D01B Inbound, IFTMIN D96A Outbound, IFTSTA D96A Inbound, DELFOR Order based D96A Outbound, DELFOR ProductActivity based D96A Outbound, DELJIT D96A Order based Outbound, CONTRL D3 Inbound, CONTRL D3 Outbound, REMADV D96A Outbound
+  - Note: ORDERS and ORDCHG use shortened filenames: `file://SBN/split/EDIFACT/SAP_EDIFACT ORDERS_D96A Out_Part{N}.pdf` and `file://SBN/split/EDIFACT/SAP_EDIFACT ORDCHG_D96A Out_Part{N}.pdf`
   - Part1: document header, revision history, TOC
   - Part2 onward: **DETAILED SEGMENT DESCRIPTIONS** (continuous, no chapter breaks between slices)
   - Note: all slices from Part2 onward contain segment-level detail — there is no "summary-only" slice to skip

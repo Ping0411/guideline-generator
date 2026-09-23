@@ -290,7 +290,13 @@ def extract_system_prompt():
         end = text.find("\n`\n});", start)
         if end == -1:
             return ""
-        return text[start:end].strip()
+        prompt = text[start:end].strip()
+        # Expand ${chapterMapContent} — index.js injects this at runtime but
+        # plain text extraction misses it; read chapter-map.md directly here.
+        chapter_map_path = BASE_DIR / "chapter-map.md"
+        chapter_map = chapter_map_path.read_text(encoding="utf-8").strip() if chapter_map_path.exists() else "(chapter-map.md not found)"
+        prompt = prompt.replace("${chapterMapContent}", chapter_map)
+        return prompt
     except Exception:
         return ""
 
