@@ -490,6 +490,18 @@ function anonymizeCxml(xmlContent, docType, language) {
     if (declMatch) result = declMatch[0] + '\n' + result;
   }
 
+  // Preserve the original DOCTYPE declaration if present (fast-xml-parser drops it on parse/build)
+  const doctypeMatch = xmlContent.match(/<!DOCTYPE[^>]*>/);
+  if (doctypeMatch && !result.includes('<!DOCTYPE')) {
+    // Insert after <?xml line if present, otherwise at the start
+    const xmlDeclEnd = result.indexOf('?>');
+    if (xmlDeclEnd !== -1) {
+      result = result.slice(0, xmlDeclEnd + 2) + '\n' + doctypeMatch[0] + result.slice(xmlDeclEnd + 2);
+    } else {
+      result = doctypeMatch[0] + '\n' + result;
+    }
+  }
+
   return { anonymized: result, warnings };
 }
 
