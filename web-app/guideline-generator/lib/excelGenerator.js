@@ -204,6 +204,7 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
       evalResult,
       fileObj.edi || null,
       ediFormat,
+      fileObj.subType || null,
     );
   }
 
