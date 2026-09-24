@@ -1774,21 +1774,6 @@ var CxmlAnonymizer = (() => {
   var require_cxmlAnonymizer = __commonJS({
     "lib/cxmlAnonymizer.js"(exports, module) {
       var { XMLParser, XMLBuilder } = require_fxp();
-      var SUPPLIER_ROLES = /* @__PURE__ */ new Set([
-        "sales",
-        "customerService",
-        "technicalSupport",
-        "supplierCorporate",
-        "SupplierAccount",
-        "supplierMasterAccount",
-        "billFrom",
-        "from",
-        "issuerOfInvoice",
-        "remitTo",
-        "shipFrom",
-        "wireReceivingBank"
-      ]);
-      var ANONYMIZE_TO_TYPES = /* @__PURE__ */ new Set(["PO", "PO_CHANGE", "GR", "RA"]);
       var CONTACT_ANON_FIELDS = /* @__PURE__ */ new Set([
         "Name",
         "Street",
@@ -1804,7 +1789,7 @@ var CxmlAnonymizer = (() => {
       function anonymizeString(value) {
         if (!value || value.trim() === "") return value;
         let digitCounter = 0;
-        return value.replace(/[a-zA-Z0-9]/g, (ch) => {
+        return value.replace(/[a-zA-Z0-9぀-ゟ゠-ヿ一-鿿㐀-䶿豈-﫿]/g, (ch) => {
           if (/\d/.test(ch)) {
             const val = (digitCounter % 10 + 1) % 10;
             digitCounter++;
@@ -1939,13 +1924,61 @@ var CxmlAnonymizer = (() => {
           anonymizeDeliverTo(node[tag], language, warnings);
         });
       }
-      function anonymizeSupplierContacts(nodes, language, warnings) {
+      function anonymizeAllContacts(nodes, language, warnings) {
         walk(nodes, (node, tag) => {
           if (tag !== "Contact") return;
-          const attrs = node[":@"] || {};
-          const role = attrs["@_role"] || "";
-          if (!SUPPLIER_ROLES.has(role)) return;
           anonymizeContactChildren(node[tag], language, warnings);
+        });
+      }
+      var PARTY_CONTAINER_TAGS = /* @__PURE__ */ new Set(["ShipTo", "BillTo", "BusinessPartner"]);
+      function anonymizePartyContainers(nodes, language, warnings) {
+        walk(nodes, (node, tag) => {
+          if (!PARTY_CONTAINER_TAGS.has(tag)) return;
+          walk(node[tag], (inner, innerTag) => {
+            if (innerTag === "Country") return;
+            if (CONTACT_ANON_FIELDS.has(innerTag)) {
+              if (innerTag === "Phone" || innerTag === "Fax") {
+                anonymizePhoneOrFax(inner[innerTag]);
+                return;
+              }
+              const text = getText(inner[innerTag]);
+              if (text && text.trim()) setText(inner[innerTag], anonymizeString(text));
+              return;
+            }
+            if (innerTag === "Email") {
+              const text = getText(inner[innerTag]);
+              if (text && text.trim()) setText(inner[innerTag], ANONYMIZED_EMAIL);
+              return;
+            }
+            if (innerTag === "DeliverTo") {
+              anonymizeDeliverTo(inner[innerTag], language, warnings);
+            }
+          });
+        });
+      }
+      var SENSITIVE_EXTRINSIC_NAMES = /* @__PURE__ */ new Set([
+        "buyerVatID",
+        "supplierVatID",
+        "supplierCommercialIdentifier"
+      ]);
+      function anonymizeSensitiveExtrinsicsAndIds(nodes) {
+        walk(nodes, (node, tag) => {
+          if (tag === "Extrinsic") {
+            const attrs = node[":@"] || {};
+            const name = attrs["@_name"] || "";
+            if (!SENSITIVE_EXTRINSIC_NAMES.has(name)) return;
+            const text = getText(node[tag]);
+            if (text && text.trim()) setText(node[tag], anonymizeString(text));
+            return;
+          }
+          if (tag === "IdReference") {
+            const attrs = node[":@"] || {};
+            if ((attrs["@_domain"] || "").toLowerCase() !== "taxid") return;
+            const identifier = attrs["@_identifier"];
+            if (identifier && identifier.trim()) {
+              node[":@"]["@_identifier"] = anonymizeString(identifier);
+            }
+          }
         });
       }
       function anonymizePartIds(nodes) {
@@ -1976,11 +2009,8 @@ var CxmlAnonymizer = (() => {
           }
         }
       }
-      function anonymizeHeaderBlock(headerChildren, docType) {
-        if (!Array.isArray(headerChildren)) return;
-        const blockTag = ANONYMIZE_TO_TYPES.has(docType) ? "To" : "From";
-        const blockNode = findChild(headerChildren, blockTag);
-        if (!blockNode) return;
+      var HEADER_CONTACT_TEXT_TAGS = /* @__PURE__ */ new Set(["Name", "Street", "City", "State", "PostalCode"]);
+      function anonymizeHeaderSide(blockNode, blockTag, preserveAnid) {
         walk(blockNode[blockTag], (node, tag) => {
           if (tag !== "Credential") return;
           const attrs = node[":@"] || {};
@@ -1990,6 +2020,7 @@ var CxmlAnonymizer = (() => {
           const text = getText(identityNode["Identity"]);
           if (!text || !text.trim()) return;
           if (domain.toLowerCase() === "networkid") {
+            if (preserveAnid) return;
             const match = text.match(/^(AN)(\d+)(-T)?$/i);
             if (match) {
               const prefix = match[1].toUpperCase();
@@ -2004,20 +2035,13 @@ var CxmlAnonymizer = (() => {
             } else {
               setText(identityNode["Identity"], anonymizeString(text));
             }
-          } else {
-            setText(identityNode["Identity"], anonymizeString(text));
+            return;
           }
+          setText(identityNode["Identity"], anonymizeString(text));
         });
-        const CONTACT_TEXT_TAGS = /* @__PURE__ */ new Set([
-          "Name",
-          "Street",
-          "City",
-          "State",
-          "PostalCode"
-        ]);
         walk(blockNode[blockTag], (node, tag) => {
-          if (tag === "Country") return;
-          if (CONTACT_TEXT_TAGS.has(tag)) {
+          if (tag === "Credential" || tag === "Country") return;
+          if (HEADER_CONTACT_TEXT_TAGS.has(tag)) {
             const text = getText(node[tag]);
             if (text && text.trim()) setText(node[tag], anonymizeString(text));
             return;
@@ -2032,6 +2056,16 @@ var CxmlAnonymizer = (() => {
             return;
           }
         });
+      }
+      var SUPPLIER_IS_TO_TYPES = /* @__PURE__ */ new Set(["PO", "PO_CHANGE", "GR", "RA"]);
+      function anonymizeHeaderBlock(headerChildren, docType) {
+        if (!Array.isArray(headerChildren)) return;
+        const supplierSide = SUPPLIER_IS_TO_TYPES.has(docType) ? "To" : "From";
+        const buyerSide = supplierSide === "To" ? "From" : "To";
+        const supplierNode = findChild(headerChildren, supplierSide);
+        if (supplierNode) anonymizeHeaderSide(supplierNode, supplierSide, false);
+        const buyerNode = findChild(headerChildren, buyerSide);
+        if (buyerNode) anonymizeHeaderSide(buyerNode, buyerSide, true);
       }
       function truncateLongTextFields(nodes) {
         walk(nodes, (node, tag) => {
@@ -2066,8 +2100,10 @@ var CxmlAnonymizer = (() => {
         }
         anonymizeAllEmails(parsed);
         anonymizeAllDeliverTo(parsed, language, warnings);
-        anonymizeSupplierContacts(parsed, language, warnings);
+        anonymizeAllContacts(parsed, language, warnings);
+        anonymizePartyContainers(parsed, language, warnings);
         anonymizePartIds(parsed);
+        anonymizeSensitiveExtrinsicsAndIds(parsed);
         anonymizeDescriptions(parsed);
         truncateLongTextFields(parsed);
         let result;
@@ -2080,6 +2116,15 @@ var CxmlAnonymizer = (() => {
         if (xmlContent.trimStart().startsWith("<?xml") && !result.trimStart().startsWith("<?xml")) {
           const declMatch = xmlContent.match(/^<\?xml[^?]*\?>/);
           if (declMatch) result = declMatch[0] + "\n" + result;
+        }
+        const doctypeMatch = xmlContent.match(/<!DOCTYPE[^>]*>/);
+        if (doctypeMatch && !result.includes("<!DOCTYPE")) {
+          const xmlDeclEnd = result.indexOf("?>");
+          if (xmlDeclEnd !== -1) {
+            result = result.slice(0, xmlDeclEnd + 2) + "\n" + doctypeMatch[0] + result.slice(xmlDeclEnd + 2);
+          } else {
+            result = doctypeMatch[0] + "\n" + result;
+          }
         }
         return { anonymized: result, warnings };
       }
