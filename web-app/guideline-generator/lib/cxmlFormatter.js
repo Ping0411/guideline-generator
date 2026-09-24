@@ -16,6 +16,65 @@
  */
 
 /**
+ * Elements whose attributes are semantically paired (e.g. domain+identifier, startDate+endDate).
+ * These stay on one line even with 2+ attributes.
+ * Elements NOT in this set with 2+ attributes get each attribute on its own line.
+ */
+const INLINE_PAIR_ELEMENTS = new Set([
+  // domain + identifier/value pairs (缺少其中一个属性则另一个失去意义)
+  'IdReference',        // domain + identifier — 分类系统名 + 该系统内的标识
+  'Characteristic',     // domain + value      — 特征类型 + 值
+  'ItemIndicator',      // domain + value      — 指示器类型 + 值
+  'InternalID',         // domain + text value — 分类系统名 + 内部ID值
+  'Classification',     // domain + code       — 分类系统名 + 分类码
+
+  // name + value pairs
+  'SearchDataElement',  // name + value        — 字段名 + 字段值，典型 key=value
+  'SearchAttribute',    // name + type         — 属性名 + 类型，配对语义
+  // Note: Extrinsic has text content (not empty), handled by inlineOk path
+
+  // tolerance pairs (数值+单位缺一则意义不完整)
+  'TimeTolerance',      // limit + type        — 数值 + 单位（如"3 days"）
+
+  // reference pairs
+  'DocumentReference',  // payloadID (single attr)
+  'OriginalDocument',   // payloadID (single attr)
+  'PaymentProposalIDInfo', // paymentProposalID (single attr)
+  'TermReference',      // termName + term     — 属性名 + 属性值，配对指向外部条款
+
+  // role/owner pairs
+  'OwnerInfo',          // owner + role        — 用户ID + 角色，合起来描述一个责任人
+
+  // code description pairs
+  'QNCode',             // domain + code       — 代码域 + 代码值，配对才能定位一个质量通知代码
+  'Segment',            // type + id           — 会计段类型 + 该类型下的ID，配对才能定位
+
+  // leaf text-content elements (文本是值，属性是修饰，保持一行)
+  'Email',              // text=email address, name/preferredLang are modifiers
+
+  // single-attribute elements (always inline)
+  'AccountCurrency',
+  'BestBeforeDate',
+  'ExpiryDate',
+  'TemporaryPrice',
+  'DiscountPercent',
+  'DeductionPercent',
+  'Percentage',
+  'BatchInfo',
+  'Routing',
+  'TripType',
+  'URLPost',
+  'AutoPublish',
+  'SubscriptionVersion',
+  'PersonRole',
+  'OrganizationRole',
+  'PaymentInformation',
+  'ShipNoticeLineItemReference',
+  'ReceiptLineItemReference',
+  'TimeCardIDInfo',
+]);
+
+/**
  * Prettify XML: re-indent with 2-space indent, each attribute on its own line.
  * Tabs are converted to spaces. Equivalent to Notepad++ XML Tools > Pretty print - indent attributes.
  */
@@ -72,11 +131,33 @@ function prettifyXml(xml) {
       const inlineEmpty  = !isSelfClosing && tagName && nextIsEmptyClose;
 
       if (inlineEmpty && !nextIsText) {
-        // Empty element with attributes: <Tag attr="v"></Tag> — render inline
+        // Empty element with attributes: decide inline vs split based on element type
         const tagMatch = token.match(/^<([^\s/>]+)([\s\S]*?)(\/?>)$/);
         const attrPart = tagMatch ? tagMatch[2].trim() : '';
         if (attrPart) {
-          lines.push(`${baseIndent}<${tagName} ${attrPart}></${tagName}>`);
+          // Count attributes
+          const attrRe2 = /([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+          let attrCount = 0;
+          while (attrRe2.exec(attrPart) !== null) attrCount++;
+
+          if (attrCount >= 2 && !INLINE_PAIR_ELEMENTS.has(tagName)) {
+            // Split: each attribute on its own line
+            const attrs = [];
+            const attrRe3 = /([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+            let am;
+            while ((am = attrRe3.exec(attrPart)) !== null) {
+              const val = am[2] !== undefined ? am[2] : am[3];
+              const quote = attrPart.includes(`${am[1]}="`) ? '"' : "'";
+              attrs.push(`${am[1]}=${quote}${val}${quote}`);
+            }
+            lines.push(`${baseIndent}<${tagName}`);
+            attrs.forEach((a, idx) => {
+              lines.push(idx === attrs.length - 1 ? `${attrIndent}${a}></${tagName}>` : `${attrIndent}${a}`);
+            });
+          } else {
+            // Inline: keep on one line (paired attrs or single attr)
+            lines.push(`${baseIndent}<${tagName} ${attrPart}></${tagName}>`);
+          }
         } else {
           lines.push(`${baseIndent}<${tagName}></${tagName}>`);
         }
@@ -99,8 +180,8 @@ function prettifyXml(xml) {
             const quote = attrPart.includes(`${am[1]}="`) ? '"' : "'";
             attrs.push(`${am[1]}=${quote}${val}${quote}`);
           }
-          if (attrs.length <= 1) {
-            // Single or no attr: keep on one line
+          if (attrs.length <= 1 || INLINE_PAIR_ELEMENTS.has(tagName)) {
+            // Single attr, no attr, or whitelisted element: keep on one line
             lines.push(`${baseIndent}<${tagName} ${attrPart}>${textVal}${closeTag}`);
           } else {
             // Multiple attrs: split, last attr gets >text</Tag> appended
@@ -138,8 +219,8 @@ function prettifyXml(xml) {
               if (attrs.length === 1) {
                 // Single-attribute: always keep on one line (matches template format)
                 lines.push(`${baseIndent}<${tagName} ${attrs[0]}${closing}`);
-              } else if (isSelfClosing && attrs.length === 2) {
-                // Two-attribute self-closing: keep on one line
+              } else if (isSelfClosing && attrs.length === 2 && INLINE_PAIR_ELEMENTS.has(tagName)) {
+                // Two-attribute self-closing paired element: keep on one line
                 // (e.g. <IdReference domain="x" identifier="y"/> <Extrinsic name="x"/>)
                 lines.push(`${baseIndent}<${tagName} ${attrs.join(' ')}${closing}`);
               } else {

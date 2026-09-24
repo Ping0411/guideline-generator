@@ -31,16 +31,7 @@ const { XMLParser, XMLBuilder } = require('fast-xml-parser');
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const SUPPLIER_ROLES = new Set([
-  'sales', 'customerService', 'technicalSupport', 'supplierCorporate',
-  'SupplierAccount', 'supplierMasterAccount',
-  'billFrom', 'from', 'issuerOfInvoice', 'remitTo', 'shipFrom', 'wireReceivingBank',
-]);
-
-// Doc types that anonymize <Header><To>; all others anonymize <Header><From>
-const ANONYMIZE_TO_TYPES = new Set(['PO', 'PO_CHANGE', 'GR', 'RA']);
-
-// Fields to anonymize inside a supplier Contact block (tag names, case-sensitive)
+// Fields to anonymize inside a Contact block (tag names, case-sensitive)
 // Email and DeliverTo are handled globally so excluded here
 const CONTACT_ANON_FIELDS = new Set([
   'Name', 'Street', 'City', 'State', 'PostalCode',
@@ -71,7 +62,9 @@ const DELIVERTO_MAX_LEN = 17;
 function anonymizeString(value) {
   if (!value || value.trim() === '') return value;
   let digitCounter = 0;
-  return value.replace(/[a-zA-Z0-9]/g, (ch) => {
+  // Matches: ASCII letters/digits, CJK Unified Ideographs, Hiragana, Katakana,
+  // CJK Extension A/B, CJK Compatibility Ideographs
+  return value.replace(/[a-zA-Z0-9぀-ゟ゠-ヿ一-鿿㐀-䶿豈-﫿]/g, (ch) => {
     if (/\d/.test(ch)) {
       // counter 0→'1', 1→'2', ..., 8→'9', 9→'0', 10→'1', ...
       const val = ((digitCounter % 10) + 1) % 10;
@@ -278,15 +271,84 @@ function anonymizeAllDeliverTo(nodes, language, warnings) {
 }
 
 /**
- * Anonymize all Contact blocks whose role is in SUPPLIER_ROLES.
+ * Anonymize all Contact blocks regardless of role.
  */
-function anonymizeSupplierContacts(nodes, language, warnings) {
+function anonymizeAllContacts(nodes, language, warnings) {
   walk(nodes, (node, tag) => {
     if (tag !== 'Contact') return;
-    const attrs = node[':@'] || {};
-    const role = attrs['@_role'] || '';
-    if (!SUPPLIER_ROLES.has(role)) return;
     anonymizeContactChildren(node[tag], language, warnings);
+  });
+}
+
+// Elements whose entire subtree should be anonymized like a Contact block
+const PARTY_CONTAINER_TAGS = new Set(['ShipTo', 'BillTo', 'BusinessPartner']);
+
+/**
+ * Anonymize <ShipTo>, <BillTo>, <BusinessPartner> subtrees.
+ * Walks all descendant nodes and anonymizes the same fields as Contact:
+ * Name, Street, City, State, PostalCode, Phone, Fax, DeliverTo, Email.
+ * Country is skipped. DeliverTo applies zh/ja person-name check.
+ */
+function anonymizePartyContainers(nodes, language, warnings) {
+  walk(nodes, (node, tag) => {
+    if (!PARTY_CONTAINER_TAGS.has(tag)) return;
+    // Walk all descendants of this container
+    walk(node[tag], (inner, innerTag) => {
+      if (innerTag === 'Country') return;
+
+      if (CONTACT_ANON_FIELDS.has(innerTag)) {
+        if (innerTag === 'Phone' || innerTag === 'Fax') {
+          anonymizePhoneOrFax(inner[innerTag]);
+          return;
+        }
+        const text = getText(inner[innerTag]);
+        if (text && text.trim()) setText(inner[innerTag], anonymizeString(text));
+        return;
+      }
+
+      if (innerTag === 'Email') {
+        const text = getText(inner[innerTag]);
+        if (text && text.trim()) setText(inner[innerTag], ANONYMIZED_EMAIL);
+        return;
+      }
+
+      if (innerTag === 'DeliverTo') {
+        anonymizeDeliverTo(inner[innerTag], language, warnings);
+      }
+    });
+  });
+}
+
+// Extrinsic name values that should be anonymized
+const SENSITIVE_EXTRINSIC_NAMES = new Set([
+  'buyerVatID',
+  'supplierVatID',
+  'supplierCommercialIdentifier',
+]);
+
+/**
+ * Anonymize specific <Extrinsic> values by name attribute.
+ * Anonymize <IdReference> identifier attribute when domain="taxID".
+ */
+function anonymizeSensitiveExtrinsicsAndIds(nodes) {
+  walk(nodes, (node, tag) => {
+    if (tag === 'Extrinsic') {
+      const attrs = node[':@'] || {};
+      const name = attrs['@_name'] || '';
+      if (!SENSITIVE_EXTRINSIC_NAMES.has(name)) return;
+      const text = getText(node[tag]);
+      if (text && text.trim()) setText(node[tag], anonymizeString(text));
+      return;
+    }
+
+    if (tag === 'IdReference') {
+      const attrs = node[':@'] || {};
+      if ((attrs['@_domain'] || '').toLowerCase() !== 'taxid') return;
+      const identifier = attrs['@_identifier'];
+      if (identifier && identifier.trim()) {
+        node[':@']['@_identifier'] = anonymizeString(identifier);
+      }
+    }
   });
 }
 
@@ -328,20 +390,18 @@ function anonymizeDescriptions(nodes, parentTags = []) {
   }
 }
 
-/**
- * Anonymize the cXML Header <To> or <From> block depending on doc type.
- * NetworkId Identity: preserve "AN" prefix and "-T" suffix, anonymize numeric middle.
- * All other Credential Identity values: anonymize fully with anonymizeString.
- * All text content inside the block (Name, Street, City, State, PostalCode, Phone,
- * Fax, Email, Contact info, etc.) is also anonymized regardless of Contact role.
- */
-function anonymizeHeaderBlock(headerChildren, docType) {
-  if (!Array.isArray(headerChildren)) return;
-  const blockTag = ANONYMIZE_TO_TYPES.has(docType) ? 'To' : 'From';
-  const blockNode = findChild(headerChildren, blockTag);
-  if (!blockNode) return;
+const HEADER_CONTACT_TEXT_TAGS = new Set(['Name', 'Street', 'City', 'State', 'PostalCode']);
 
-  // Walk Credential nodes directly to handle NetworkId specially
+/**
+ * Anonymize a single Header side (From or To).
+ *
+ * preserveAnid=true  → NetworkID Identity is left completely untouched (buyer side).
+ * preserveAnid=false → NetworkID Identity has its numeric portion replaced while
+ *                      the AN prefix and -T suffix are kept (supplier side, original behaviour).
+ * All other Credential Identity values are always anonymized.
+ * Non-Credential content (Contact/Name/Address/Email/Phone/Fax) is always anonymized.
+ */
+function anonymizeHeaderSide(blockNode, blockTag, preserveAnid) {
   walk(blockNode[blockTag], (node, tag) => {
     if (tag !== 'Credential') return;
     const attrs = node[':@'] || {};
@@ -352,8 +412,8 @@ function anonymizeHeaderBlock(headerChildren, docType) {
     if (!text || !text.trim()) return;
 
     if (domain.toLowerCase() === 'networkid') {
-      // Preserve "AN" prefix and optional "-T" suffix; anonymize digits only
-      // e.g. AN01650043859-T → AN12345678901-T
+      if (preserveAnid) return; // buyer side — ANID completely untouched
+      // supplier side — replace digits only, keep AN prefix and -T suffix
       const match = text.match(/^(AN)(\d+)(-T)?$/i);
       if (match) {
         const prefix = match[1].toUpperCase();
@@ -366,41 +426,52 @@ function anonymizeHeaderBlock(headerChildren, docType) {
         });
         setText(identityNode['Identity'], prefix + anonDigits + suffix);
       } else {
-        // Doesn't match expected AN pattern — anonymize fully
         setText(identityNode['Identity'], anonymizeString(text));
       }
-    } else {
-      // All other credential types (AribaNetworkUserId, VendorID, etc.)
-      setText(identityNode['Identity'], anonymizeString(text));
+      return;
     }
+    setText(identityNode['Identity'], anonymizeString(text));
   });
 
-  // Anonymize all contact info inside this block regardless of Contact role.
-  // This covers Correspondent/Contact elements (e.g. role="correspondent") that
-  // contain real company names, addresses, and phone numbers.
-  const CONTACT_TEXT_TAGS = new Set([
-    'Name', 'Street', 'City', 'State', 'PostalCode',
-  ]);
+  // Non-Credential content (Correspondent/Contact, Name, Address, Email, Phone, Fax)
   walk(blockNode[blockTag], (node, tag) => {
-    if (tag === 'Country') return; // Country is never anonymized
+    if (tag === 'Credential' || tag === 'Country') return;
 
-    if (CONTACT_TEXT_TAGS.has(tag)) {
+    if (HEADER_CONTACT_TEXT_TAGS.has(tag)) {
       const text = getText(node[tag]);
       if (text && text.trim()) setText(node[tag], anonymizeString(text));
       return;
     }
-
     if (tag === 'Email') {
       const text = getText(node[tag]);
       if (text && text.trim()) setText(node[tag], ANONYMIZED_EMAIL);
       return;
     }
-
     if (tag === 'Phone' || tag === 'Fax') {
       anonymizePhoneOrFax(node[tag]);
       return;
     }
   });
+}
+
+// Doc types where <To> is the supplier side; all others have <From> as the supplier side.
+const SUPPLIER_IS_TO_TYPES = new Set(['PO', 'PO_CHANGE', 'GR', 'RA']);
+
+/**
+ * Anonymize cXML Header <From> and <To>.
+ * Supplier side: NetworkID digits replaced (original behaviour).
+ * Buyer side: NetworkID completely untouched; all other content anonymized.
+ */
+function anonymizeHeaderBlock(headerChildren, docType) {
+  if (!Array.isArray(headerChildren)) return;
+  const supplierSide = SUPPLIER_IS_TO_TYPES.has(docType) ? 'To' : 'From';
+  const buyerSide    = supplierSide === 'To' ? 'From' : 'To';
+
+  const supplierNode = findChild(headerChildren, supplierSide);
+  if (supplierNode) anonymizeHeaderSide(supplierNode, supplierSide, false);
+
+  const buyerNode = findChild(headerChildren, buyerSide);
+  if (buyerNode) anonymizeHeaderSide(buyerNode, buyerSide, true);
 }
 
 /**
@@ -464,13 +535,19 @@ function anonymizeCxml(xmlContent, docType, language) {
   // 3. Anonymize all <DeliverTo> elements globally (applies zh/ja person-name check)
   anonymizeAllDeliverTo(parsed, language, warnings);
 
-  // 4. Anonymize supplier Contact blocks (role-based)
-  anonymizeSupplierContacts(parsed, language, warnings);
+  // 4. Anonymize all Contact blocks (all roles: buyer, supplier, etc.)
+  anonymizeAllContacts(parsed, language, warnings);
+
+  // 4b. Anonymize <ShipTo>, <BillTo>, <BusinessPartner> subtrees directly
+  anonymizePartyContainers(parsed, language, warnings);
 
   // 5. Anonymize SupplierPartID / BuyerPartID
   anonymizePartIds(parsed);
 
-  // 5. Anonymize Description (except under TaxDetail/TaxHeader)
+  // 6. Anonymize specific Extrinsic values and IdReference domain=taxID
+  anonymizeSensitiveExtrinsicsAndIds(parsed);
+
+  // 7. Anonymize Description (except under TaxDetail/TaxHeader)
   anonymizeDescriptions(parsed);
 
   // 6. Truncate <Comments> and <Description> text to 40 characters

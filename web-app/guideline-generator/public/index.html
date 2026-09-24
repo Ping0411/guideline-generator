@@ -995,9 +995,19 @@
       const anonymizedFiles = await Promise.all(cxmlFileList.map(async (file) => {
         try {
           const text = await file.text();
-          // Pass empty docType — server will detect it; anonymizer still processes
-          // Header/Contact/Email/DeliverTo blocks regardless of docType
-          const { anonymized } = CxmlAnonymizer.anonymizeCxml(text, '', language);
+          // Detect docType client-side so Header buyer/supplier sides are correctly identified
+          const requestMatch = text.match(/<Request[^>]*>\s*<(\w+)/);
+          let browserDocType = '';
+          if (requestMatch) {
+            const el = requestMatch[1];
+            if (el === 'OrderRequest') {
+              browserDocType = /OrderRequest[^>]*\soperation\s*=\s*["']update["']/i.test(text) ? 'PO_CHANGE' : 'PO';
+            } else if (el === 'ConfirmationRequest')  browserDocType = 'OC';
+            else if (el === 'ShipNoticeRequest')      browserDocType = 'ASN';
+            else if (el === 'InvoiceDetailRequest')   browserDocType = 'Invoice';
+            else if (el === 'ReceiptRequest')         browserDocType = 'GR';
+          }
+          const { anonymized } = CxmlAnonymizer.anonymizeCxml(text, browserDocType, language);
           return new File([anonymized], file.name, { type: file.type });
         } catch (_) {
           return file; // on error, fall through to server-side anonymization

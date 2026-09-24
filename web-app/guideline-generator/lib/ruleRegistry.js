@@ -501,14 +501,14 @@ const RULES = [
     docType: 'ASN',
     effect: 'description',
     englishText: 'Require delivery dates for order confirmations and ship notices',
-    cxmlHint: '@deliveryDate',
+    cxmlHint: 'ShipNoticeHeader@deliveryDate',
   },
   {
     id: 'ASN_REQUIRE_SHIP_DATE',
     docType: 'ASN',
     effect: 'description',
     englishText: 'Require an actual or estimated shipping date on ship notices',
-    cxmlHint: '@shipmentDate',
+    cxmlHint: 'ShipNoticeHeader@shipmentDate',
   },
   {
     id: 'ASN_REQUIRE_SHIP_NOTICE_TYPE',

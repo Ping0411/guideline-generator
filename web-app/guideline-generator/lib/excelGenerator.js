@@ -168,9 +168,38 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
     return DOC_TYPE_LABELS[fileObj.docType] ?? fileObj.docType ?? null;
   }
 
+  // Sort cxmlFiles in canonical sheet order:
+  //   PO-New → PO-Change → OC → ASN → Invoice → Credit Memo → Debit Memo → GR → RA
+  //
+  // Note: "Changed PO" (docType=PO, subType='Changed PO') and "PO Change" (docType=PO_CHANGE)
+  // are both treated as PO-change and sorted after all PO-new variants.
+  const DOC_TYPE_ORDER = { PO: 0, PO_CHANGE: 2, OC: 3, ASN: 4, Invoice: 5, GR: 6, RA: 7 };
+  // Within PO: non-change subtypes get order 0, change subtypes get order 1
+  const PO_CHANGE_SUBTYPES = new Set(['Changed PO']);
+  const SUBTYPE_INVOICE_ORDER = (subType) => {
+    if (!subType) return 0;
+    const s = subType.toLowerCase();
+    if (s.includes('credit')) return 1;
+    if (s.includes('debit'))  return 2;
+    return 0;
+  };
+  const sortedCxmlFiles = [...cxmlFiles].sort((a, b) => {
+    // Effective order: treat PO+ChangedPO as slot 1 (between normal PO=0 and PO_CHANGE=2)
+    const effectiveOrderA = (a.docType === 'PO' && PO_CHANGE_SUBTYPES.has(a.subType)) ? 1 : (DOC_TYPE_ORDER[a.docType] ?? 99);
+    const effectiveOrderB = (b.docType === 'PO' && PO_CHANGE_SUBTYPES.has(b.subType)) ? 1 : (DOC_TYPE_ORDER[b.docType] ?? 99);
+    if (effectiveOrderA !== effectiveOrderB) return effectiveOrderA - effectiveOrderB;
+    // Within Invoice: standard → credit memo → debit memo
+    if (a.docType === 'Invoice') {
+      const subOrderA = SUBTYPE_INVOICE_ORDER(a.subType);
+      const subOrderB = SUBTYPE_INVOICE_ORDER(b.subType);
+      if (subOrderA !== subOrderB) return subOrderA - subOrderB;
+    }
+    return 0; // preserve original relative order within same group
+  });
+
   // Count how many times each label appears to determine if numbering is needed
   const docTypeCounts = {};
-  for (const fileObj of cxmlFiles) {
+  for (const fileObj of sortedCxmlFiles) {
     const label = resolveLabel(fileObj);
     if (label) docTypeCounts[label] = (docTypeCounts[label] || 0) + 1;
   }
@@ -179,7 +208,7 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
   const docTypeSeq = {};
   const unresolvedSheets = []; // file names where docType could not be determined
 
-  for (const fileObj of cxmlFiles) {
+  for (const fileObj of sortedCxmlFiles) {
     const label = resolveLabel(fileObj);
     let sheetName;
     if (label) {
