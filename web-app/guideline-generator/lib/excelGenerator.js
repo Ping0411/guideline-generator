@@ -224,7 +224,7 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
       unresolvedSheets.push(fileObj.fileName);
     }
 
-    const evalResult = evalResults[fileObj.docType] || {};
+    const evalResult = (fileObj.descriptionTriggers !== undefined) ? fileObj : (evalResults[fileObj.docType] || {});
     writeDocSheet(
       output,
       sheetName,
@@ -234,6 +234,7 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
       fileObj.edi || null,
       ediFormat,
       fileObj.subType || null,
+      language,
     );
   }
 
@@ -314,21 +315,23 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
   for (const ws of output.worksheets) {
     // Set worksheet-level default font so empty/unstyled cells also get Arial
     ws.properties = ws.properties || {};
-    ws.properties.defaultFont = { name: 'Arial', size: 11, family: 2, scheme: 'minor' };
+    ws.properties.defaultFont = { name: 'Arial', size: 11, family: 2 };
 
     ws.eachRow({ includeEmpty: false }, (row) => {
       row.eachCell({ includeEmpty: true }, (cell) => {
         const existing = cell.font || {};
+        // Skip cells that already have Meiryo set intentionally (ja content)
+        const origName = (existing.name || '').toLowerCase();
+        if (origName === 'meiryo') return;
         // Some SAP template fonts (e.g. "72 Brand Black") visually appear bold
         // via the font name rather than the bold attribute. When replacing with
         // Arial, preserve the visual weight by setting bold:true for those fonts.
-        const origName = (existing.name || '').toLowerCase();
         const impliedBold = /black|heavy|bold/.test(origName);
         cell.font = {
           ...existing,
           name: 'Arial',
           family: 2,
-          scheme: 'minor',
+          scheme: undefined,
           size: existing.size || 11,
           bold: existing.bold ?? (impliedBold ? true : undefined),
         };
@@ -343,22 +346,31 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
   // ExcelJS copies the template's theme1.xml which has Hans=宋体, Hant=新細明體, Jpan=ＭＳ Ｐゴシック.
   // When scheme="minor" cells contain CJK text, Excel uses these script-specific fallbacks
   // rather than the named font. Replace them all with Arial so the output stays consistent.
-  const buffer = await fixThemeFonts(rawBuffer);
+  const buffer = await fixThemeFonts(rawBuffer, language);
   return buffer;
 }
 
 /**
- * Post-process xlsx buffer: replace CJK script fallback fonts in theme1.xml with Arial.
- * This prevents Excel from substituting 宋体/新細明體/ＭＳ Ｐゴシック for CJK characters.
+ * Post-process xlsx buffer: replace CJK script fallback fonts in theme1.xml.
+ * ja → Jpan=Meiryo, Hans/Hant=Microsoft YaHei
+ * zh → Hans/Hant=Microsoft YaHei, Jpan=Arial
+ * en → all CJK fallbacks=Arial
  */
-async function fixThemeFonts(buffer) {
+async function fixThemeFonts(buffer, language) {
   const zip = await JSZip.loadAsync(buffer);
   const themeFile = zip.file('xl/theme/theme1.xml');
   if (!themeFile) return buffer;
 
   let xml = await themeFile.async('string');
-  // Replace CJK script typeface values with Arial
-  xml = xml.replace(/(<a:font\s+script="(?:Hans|Hant|Jpan|Hang|Kore)"\s+typeface=")[^"]*(")/g, '$1Arial$2');
+  xml = xml.replace(/(<a:font\s+script="(Hans|Hant|Jpan|Hang|Kore)"\s+typeface=")[^"]*(")/g, (match, pre, script, post) => {
+    if (script === 'Jpan') {
+      return pre + (language === 'ja' ? 'Meiryo' : 'Arial') + post;
+    }
+    if (script === 'Hans' || script === 'Hant') {
+      return pre + (language === 'zh' || language === 'ja' ? 'Microsoft YaHei' : 'Arial') + post;
+    }
+    return pre + 'Arial' + post;
+  });
   zip.file('xl/theme/theme1.xml', xml);
 
   return zip.generateAsync({

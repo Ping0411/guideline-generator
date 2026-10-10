@@ -68,8 +68,9 @@ function buildEdiRows(ediResult) {
  * @param {object|null} ediResult   - { segments: [{segment, description}] } or null
  * @param {string}   ediFormat      - 'X12' | 'EDIFACT' | null
  * @param {string}   [subType]      - e.g. 'Price Adjustment Credit Memo'; overrides meta.fullName in header
+ * @param {string}   [language]     - 'en' | 'zh' | 'ja'
  */
-function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ediResult, ediFormat, subType) {
+function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ediResult, ediFormat, subType, language) {
   const meta = DOC_META[docType] || { fullName: docType, x12: '', edifact: '' };
   const displayName = subType || meta.fullName;
   const hasEdi = !!ediFormat && !!ediResult && !ediResult.error;
@@ -117,7 +118,7 @@ function writeDocSheet(workbook, sheetName, docType, cxmlContent, evalResult, ed
 
   // ── Build data rows ────────────────────────────────────────────────────────
   const descTriggers = evalResult?.descriptionTriggers || [];
-  const cxmlRows = buildCxmlRows(cxmlContent, descTriggers, docType);
+  const cxmlRows = buildCxmlRows(cxmlContent, descTriggers, docType, language);
   const ediRows = hasEdi ? buildEdiRows(ediResult) : [];
 
   const totalRows = Math.max(cxmlRows.length, ediRows.length);

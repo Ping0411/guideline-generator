@@ -79,7 +79,9 @@ const DOC_SECTION_KEYWORDS = {
 
 const EXTRINSICS_KEYWORD = 'Extrinsics';
 const TITLE_MERGE_END_COL = 'I';  // merge title row A:I
-const DATA_FONT = { name: 'Arial', size: 11, family: 2, bold: false };
+const DATA_FONT_EN = { name: 'Arial',  size: 11, family: 2, bold: false };
+const DATA_FONT_JA = { name: 'Meiryo', size: 11, family: 2, bold: false, charset: 128 };
+const DATA_FONT_ZH = { name: 'Microsoft YaHei', size: 11, family: 2, bold: false, charset: 134 };
 
 /**
  * Get plain text from a cell value (handles string, richText, null).
@@ -239,6 +241,7 @@ function extractBuyerAnid(cxmlFileList) {
 function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) {
   const lang = (answers.q1 === 'zh' || answers.q1 === 'ja') ? answers.q1 : 'en';
   const t = (key) => I18N[key][lang];
+  const DATA_FONT = lang === 'ja' ? DATA_FONT_JA : lang === 'zh' ? DATA_FONT_ZH : DATA_FONT_EN;
 
   // ── 0a. Replace <BUYER> placeholder with buyer name throughout the sheet ──
   const buyerName = (answers.buyerName || '').trim();
@@ -284,25 +287,31 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
   // ── 0b. Region (default: APJ) ────────────────────────────────────────────
   const regionValueRow = findValueRowAfter(worksheet, 'Region');
   if (regionValueRow > 0) {
-    const cell = worksheet.getRow(regionValueRow).getCell(1);
+    const row = worksheet.getRow(regionValueRow);
+    const cell = row.getCell(1);
     cell.value = 'APJ';
     cell.font = DATA_FONT;
+    row.height = undefined;
   }
 
   // ── 1. In Scope Transactions ─────────────────────────────────────────────
   const inScopeValueRow = findValueRowAfter(worksheet, 'In Scope Transactions');
   if (inScopeValueRow > 0) {
-    const cell = worksheet.getRow(inScopeValueRow).getCell(1);
+    const row = worksheet.getRow(inScopeValueRow);
+    const cell = row.getCell(1);
     cell.value = required.length > 0 ? required.join(', ') : 'None';
     cell.font = DATA_FONT;
+    row.height = undefined;
   }
 
   // ── 2. Optional Transactions ─────────────────────────────────────────────
   const optionalValueRow = findValueRowAfter(worksheet, 'Optional Transactions');
   if (optionalValueRow > 0) {
-    const cell = worksheet.getRow(optionalValueRow).getCell(1);
+    const row = worksheet.getRow(optionalValueRow);
+    const cell = row.getCell(1);
     cell.value = optional.length > 0 ? optional.join(', ') : 'None';
     cell.font = DATA_FONT;
+    row.height = undefined;
   }
 
   // ── 3. Delete template fixed lines that are language-conditional
@@ -350,11 +359,26 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
         const q8val = answers.q8 === 'Other' && answers.q8other
           ? answers.q8other
           : answers.q8;
-        const q8text = q8val === 'isAdHoc="yes"'
-          ? 'Non-Catalog POs are identified by the attribute isAdHoc="yes" on the ItemOut element.'
-          : q8val === 'SupplierPartID is "NotAvailable"'
-          ? 'Non-Catalog POs are identified when SupplierPartID is set to "NotAvailable".'
-          : `Non-Catalog PO identification: ${q8val}`;
+        const nonCatalogI18N = {
+          isAdHoc: {
+            en: 'Non-Catalog POs are identified by the attribute isAdHoc="yes" on the ItemOut element.',
+            zh: '当 ItemOut 元素的 isAdHoc 属性为"yes"时，该采购订单被定义为 Non-Catalog PO。',
+            ja: 'Non-Catalog POとは、ItemOut要素のisAdHoc属性が「yes」に設定されているPOを指します。',
+          },
+          notAvailable: {
+            en: 'Non-Catalog POs are identified when SupplierPartID is set to "NotAvailable".',
+            zh: 'SupplierPartID为"NotAvailable"的采购订单被视为 Non-Catalog PO。',
+            ja: 'Non-Catalog POは、SupplierPartIDが「NotAvailable」に設定されているものを指します。',
+          },
+        };
+        let q8text;
+        if (q8val === 'isAdHoc="yes"') {
+          q8text = nonCatalogI18N.isAdHoc[lang] || nonCatalogI18N.isAdHoc.en;
+        } else if (q8val === 'SupplierPartID is "NotAvailable"') {
+          q8text = nonCatalogI18N.notAvailable[lang] || nonCatalogI18N.notAvailable.en;
+        } else {
+          q8text = `Non-Catalog PO identification: ${q8val}`;
+        }
         triggers.push({ ruleText: q8text });
       }
 
@@ -420,7 +444,10 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
   const updatedSectionMap = buildSectionMap(worksheet);
 
   // ── 7. Write requirements and merge+center title rows ────────────────────
-  for (const [docType, section] of Object.entries(updatedSectionMap)) {
+  const docTypeOrder = ['PO', 'OC', 'ASN', 'Invoice', 'GR'];
+  for (const docType of docTypeOrder) {
+    const section = updatedSectionMap[docType];
+    if (!section) continue;
     if (!inScope.has(docType)) continue;
     const triggers = triggersMap[docType] || [];
     if (triggers.length === 0) continue;
@@ -433,14 +460,26 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
       if (currentRow > section.endRow) {
         worksheet.spliceRows(currentRow, 0, []);
         section.endRow++;
+        // Shift all subsequent sections down by 1
+        for (const laterType of docTypeOrder) {
+          const later = updatedSectionMap[laterType];
+          if (!later) continue;
+          if (later.titleRow > section.titleRow) {
+            later.titleRow++;
+            later.startRow++;
+            later.endRow++;
+          }
+        }
       }
       const row = worksheet.getRow(currentRow);
       const cell = row.getCell(1);
       const text = (lang !== 'en' && trigger[lang]) ? trigger[lang] : trigger.ruleText;
       cell.value = text;
       cell.font = DATA_FONT;
-      cell.alignment = { horizontal: 'left', vertical: 'top', wrapText: true };
       try { worksheet.mergeCells(`A${currentRow}:${TITLE_MERGE_END_COL}${currentRow}`); } catch (_) {}
+      // Re-fetch the master cell after merge to ensure alignment applies correctly
+      const masterCell = worksheet.getCell(`A${currentRow}`);
+      masterCell.alignment = { horizontal: 'left', vertical: 'top', wrapText: true };
       // Estimate row height based on text length (merged width ≈ 100 chars, line height ≈ 15pt)
       const charsPerLine = 100;
       const lineCount = Math.max(1, Math.ceil((text || '').length / charsPerLine));
@@ -453,6 +492,20 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
   const extrinsicsRow = findRowByKeyword(worksheet, EXTRINSICS_KEYWORD);
   if (extrinsicsRow > 0) {
     mergeTitleRow(worksheet, extrinsicsRow);
+    // Update the description row below Extrinsics title to match selected language
+    const extrinsicsDescRow = extrinsicsRow + 1;
+    const extrinsicsDesc = {
+      en: 'Refer Transactions Samples file for list of PO extrinsic fields and descriptions that are required.',
+      zh: '请通过"Extrinsic fields"工作表参照订单及发票中的cXML附加项目一览及映射需求。',
+      ja: '「Extrinsic fields」というシートにて、注文書・請求書における cXML 追加項目一覧及びマッピング要件をご参照ください。',
+    };
+    const descText = extrinsicsDesc[lang] || extrinsicsDesc.en;
+    const descCell = worksheet.getRow(extrinsicsDescRow).getCell(1);
+    if (descCell.value && typeof descCell.value === 'string' &&
+        descCell.value.toLowerCase().includes('extrinsic')) {
+      descCell.value = descText;
+      descCell.font = DATA_FONT;
+    }
   }
 
   // ── 9. Add thin borders around each section (title row + content rows) ────

@@ -526,6 +526,88 @@ function lookupDescriptionForBlock(block, entries) {
 }
 
 /**
+ * Inject ANID and SharedSecret descriptions into lineDescMap for zh/ja languages.
+ *
+ * PO / GR / RA:
+ *   Header > From > Credential[domain=networkid] > Identity  → "Buyer's ANID"
+ *   Header > To   > Credential[domain=networkid] > Identity  → "Supplier's ANID"
+ *
+ * Other doc types (OC / ASN / Invoice / etc.):
+ *   Header > From > Credential[domain=networkid] > Identity  → "Supplier's ANID"
+ *   Header > To   > Credential[domain=networkid] > Identity  → "Buyer's ANID"
+ *   Header > Sender > Credential[domain=networkid] > SharedSecret
+ *     → "Shared secret is required for suppliers who are using shared secret as authentication method."
+ */
+const SUPPLIER_IS_TO_DOC_TYPES = new Set(['PO', 'PO_CHANGE', 'GR', 'RA']);
+
+function injectAnidDescriptions(lines, blocks, lineDescMap, docType) {
+  const isPoGrRa = SUPPLIER_IS_TO_DOC_TYPES.has(docType);
+
+  for (const block of blocks) {
+    const path = block.pathSegments;
+
+    // Match Identity inside Header > From|To > Credential[domain=networkid]
+    if (block.elementName === 'Identity') {
+      const inHeader = path.includes('Header');
+      if (!inHeader) continue;
+
+      const inFrom   = path.includes('From');
+      const inTo     = path.includes('To');
+      if (!inFrom && !inTo) continue;
+
+      // Find the nearest preceding Credential that is the direct parent of this Identity.
+      // "Direct parent" means its pathSegments === this block's pathSegments minus the last element.
+      const parentCredPath = path.slice(0, -1);
+      let nearestCred = null;
+      for (let bi = blocks.indexOf(block) - 1; bi >= 0; bi--) {
+        const b = blocks[bi];
+        if (b.elementName !== 'Credential') continue;
+        if (b.pathSegments.length !== parentCredPath.length) continue;
+        if (!b.pathSegments.every((seg, i) => seg === parentCredPath[i])) continue;
+        nearestCred = b;
+        break; // nearest one found
+      }
+      if (!nearestCred) continue;
+      if (parseAttributes(nearestCred.attrText).domain?.toLowerCase() !== 'networkid') continue;
+
+      let desc;
+      if (isPoGrRa) {
+        desc = inFrom ? "Buyer's ANID" : "Supplier's ANID";
+      } else {
+        desc = inFrom ? "Supplier's ANID" : "Buyer's ANID";
+      }
+
+      const existing = lineDescMap.get(block.startLine);
+      lineDescMap.set(block.startLine, existing ? existing + '\n' + desc : desc);
+    }
+
+    // Match SharedSecret inside Header > Sender > Credential[domain=networkid] (non-PO/GR/RA only)
+    if (!isPoGrRa && block.elementName === 'SharedSecret') {
+      const inHeader = path.includes('Header');
+      const inSender = path.includes('Sender');
+      if (!inHeader || !inSender) continue;
+
+      const parentCredPath = path.slice(0, -1);
+      let nearestCred = null;
+      for (let bi = blocks.indexOf(block) - 1; bi >= 0; bi--) {
+        const b = blocks[bi];
+        if (b.elementName !== 'Credential') continue;
+        if (b.pathSegments.length !== parentCredPath.length) continue;
+        if (!b.pathSegments.every((seg, i) => seg === parentCredPath[i])) continue;
+        nearestCred = b;
+        break;
+      }
+      if (!nearestCred) continue;
+      if (parseAttributes(nearestCred.attrText).domain?.toLowerCase() !== 'networkid') continue;
+
+      const desc = "Shared secret is required for suppliers who are using shared secret as authentication method.";
+      const existing = lineDescMap.get(block.startLine);
+      lineDescMap.set(block.startLine, existing ? existing + '\n' + desc : desc);
+    }
+  }
+}
+
+/**
  * Produce the final row data for A and B columns.
  *
  * Returns: Array of { aText: string, bText: string|null, mergeStart: bool, mergeEnd: bool, mergeId: string|null }
@@ -535,7 +617,7 @@ function lookupDescriptionForBlock(block, entries) {
  *   - mergeEnd:   true if this row ends a vertical B-column merge group
  *   - mergeId:    shared id for rows in the same merge group (for docSheetWriter to merge)
  */
-function buildCxmlRows(cxmlContent, descriptionTriggers, docType) {
+function buildCxmlRows(cxmlContent, descriptionTriggers, docType, language) {
   const lines = formatCxml(cxmlContent);
 
   // Separate special triggers from regular/mergeGroup triggers
@@ -664,6 +746,11 @@ function buildCxmlRows(cxmlContent, descriptionTriggers, docType) {
   }
 
   const blockMarks = computeBlockMarks(lines, descriptionTriggers, docType);
+
+  // Inject ANID and SharedSecret descriptions for zh/ja languages
+  if (language === 'zh' || language === 'ja') {
+    injectAnidDescriptions(lines, blocks, lineDescMap, docType);
+  }
 
   return lines.map(({ text }, i) => {
     const merge = mergeInfo.get(i);

@@ -290,11 +290,11 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
   ]);
   const triggeredDescRules = [];
   for (const ruleDef of rules) {
-    const ruleEntry = matchedMap.get(ruleDef.id);
-    if (!ruleEntry) continue;
-
-    // Japanese + Invoice: force-trigger address rules regardless of Yes/No
+    // Japanese + Invoice: force-trigger address rules regardless of whether vectorMatcher matched them
     const jaForced = language === 'ja' && docType === 'Invoice' && JA_FORCED_ADDRESS_RULES.has(ruleDef.id);
+
+    const ruleEntry = matchedMap.get(ruleDef.id);
+    if (!ruleEntry && !jaForced) continue;
 
     const shouldTrigger = jaForced ? true
       : ruleDef.triggerOnBoth ? true
@@ -359,7 +359,7 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
     const subTypeInfo = detectSubtype(docType, cxmlContent);
     const rulesForHint = triggeredDescRules.map(({ ruleDef, ruleEntry }) => ({
       ruleId: ruleDef.id,
-      ruleText: ruleEntry.rule,
+      ruleText: ruleEntry ? ruleEntry.rule : ruleDef.englishText,
     }));
     resolvedHints = await resolveHints(subTypeInfo, rulesForHint, cxmlContent, language);
   }
@@ -409,7 +409,7 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
 
       descriptionTriggers.push({
         ruleId: ruleDef.id,
-        ruleText: ruleEntry.rule,
+        ruleText: ruleEntry ? ruleEntry.rule : ruleDef.englishText,
         cxmlElement: hint,
         description,
       });
@@ -419,17 +419,18 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
     // Extra hint: write an additional description to a parent/sibling element (once per rule, not per hint)
     if (anyMatched && ruleDef.extraHint) {
       const eh = ruleDef.extraHint;
+      const ruleText = ruleEntry ? ruleEntry.rule : ruleDef.englishText;
       if (eh.type === 'invoicePartnerFor') {
         descriptionTriggers.push({
           ruleId: ruleDef.id + '_EXTRA',
-          ruleText: ruleEntry.rule,
+          ruleText,
           cxmlElement: `InvoicePartner@_containsRole=${eh.role}`,
           description: `InvoicePartner element for ${eh.label} is mandatory`,
         });
       } else if (eh.type === 'element') {
         descriptionTriggers.push({
           ruleId: ruleDef.id + '_EXTRA',
-          ruleText: ruleEntry.rule,
+          ruleText,
           cxmlElement: eh.name,
           description: eh.label,
         });
@@ -440,7 +441,7 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
     if (!anyMatched) {
       unmatchedTriggers.push({
         ruleId: ruleDef.id,
-        ruleText: ruleEntry.rule,
+        ruleText: ruleEntry ? ruleEntry.rule : ruleDef.englishText,
       });
     }
   }
@@ -454,7 +455,7 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
   // Invoice-specific: INV_ALLOW_CANCEL (triggerOnBoth → handle YES/NO manually)
   // INV_DATE rules: merge rules 4/5/6 into one PR line
   if (docType === 'Invoice') {
-    buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers);
+    buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language);
   }
 
   // OC-specific descriptions from question answers
@@ -473,16 +474,16 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
       if (val === 'partially' || val === 'partial') {
         projectReqTriggers.push({
           ruleId: 'OC_ALLOW_PARTIAL_REJECT_PR',
-          ruleText: 'Allow suppliers to partially reject material orders at the line-item level',
-          zh: '允许供应商在订单确认中对物料订单行项目进行部分拒绝。',
-          ja: 'サプライヤはオーダー確認で物品注文明細の数量を部分的に拒否できます。',
+          ruleText: 'Allows suppliers to reject partial quantities at the line-item level.',
+          zh: '允许供应商拒绝行项目级的部分数量。',
+          ja: 'サプライヤは明細レベルで一部の数量を却下することができる。',
         });
       } else if (val === 'fully' || val === 'full') {
         projectReqTriggers.push({
           ruleId: 'OC_ALLOW_FULL_REJECT_PR',
-          ruleText: 'Allow suppliers to fully reject material orders at the line-item level',
-          zh: '允许供应商在订单确认中对物料订单行项目进行完全拒绝。',
-          ja: 'サプライヤはオーダー確認で物品注文明細の数量を完全に拒否できます。',
+          ruleText: "Allows suppliers to fully reject the line item. Partial rejections aren't allowed.",
+          zh: '允许供应商完全拒绝行项目。不允许部分拒绝。',
+          ja: 'サプライヤは明細を完全に却下することができます。一部却下は許可されない。',
         });
       }
     }
@@ -866,16 +867,37 @@ function checkRuleIsNo(parsedRules, canonicalText) {
  * Build Invoice Date merged PR line from rules 4/5/6,
  * and handle INV_ALLOW_CANCEL YES/NO PR output.
  */
-function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers) {
+function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language) {
   // Rule 1: INV_ALLOW_CANCEL — handled via triggerOnBoth in main loop already
   // (projectReqText / projectReqTextNo picked up by standard logic)
 
   // Rules 4/5/6: merge into one "Invoice Date: ..." line
   const parts = [];
 
+  // Language-specific phrase helpers
+  const phrases = {
+    ja: {
+      notBeforeOrder: '請求日はオーダー日以降の日付とする必要がある',
+      noBackdating: '過去にさかのぼらせることは許可しない',
+      backdatingAllowed: (n) => `指定した日数（${n}日）分、請求書を過去にさかのぼらせることを許可する`,
+      noFuturedating: '将来の日付にすることは許可しない',
+      futuredatingAllowed: (n) => `指定した日数（${n}日）分、請求書を将来の日付にすることを許可する`,
+      label: '請求書日付：',
+    },
+    zh: {
+      notBeforeOrder: '要求发票日期不早于订单日期。',
+      noBackdating: '不允许将发票倒填日期。',
+      backdatingAllowed: (n) => `允许将发票倒填最多 ${n} 天。`,
+      noFuturedating: '不允许在发票上填写未来日期。',
+      futuredatingAllowed: (n) => `允许发票填写最多 ${n} 天的未来日期。`,
+      label: '发票日期：',
+    },
+  };
+  const p = phrases[language] || null;
+
   const rule4 = matchedMap.get('INV_DATE_NOT_BEFORE_ORDER');
   if (rule4 && rule4.isYes) {
-    parts.push('Invoice date must not be before the order date.');
+    parts.push(p ? p.notBeforeOrder : 'Invoice date must not be before the order date.');
   }
 
   const rule5 = matchedMap.get('INV_ALLOW_BACKDATING');
@@ -883,9 +905,9 @@ function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers) {
     const val = (rule5.value || '').trim();
     const num = parseDaysValue(val);
     if (num === 0 || val === '' || rule5.isNo) {
-      parts.push('Back-dating is not allowed.');
+      parts.push(p ? p.noBackdating : 'Back-dating is not allowed.');
     } else if (num > 0) {
-      parts.push(`Back-dating is allowed up to ${num} days.`);
+      parts.push(p ? p.backdatingAllowed(num) : `Back-dating is allowed up to ${num} days.`);
     }
   }
 
@@ -894,16 +916,17 @@ function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers) {
     const val = (rule6.value || '').trim();
     const num = parseDaysValue(val);
     if (num === 0 || rule6.isNo) {
-      parts.push('Future-dating is not allowed.');
+      parts.push(p ? p.noFuturedating : 'Future-dating is not allowed.');
     } else if (num > 0) {
-      parts.push(`Future-dating is allowed up to ${num} days.`);
+      parts.push(p ? p.futuredatingAllowed(num) : `Future-dating is allowed up to ${num} days.`);
     }
   }
 
   if (parts.length > 0) {
+    const label = p ? p.label : 'Invoice Date: ';
     projectReqTriggers.push({
       ruleId: 'INV_DATE_COMBINED',
-      ruleText: 'Invoice Date: ' + parts.join(' '),
+      ruleText: label + parts.join(' '),
     });
   }
 }

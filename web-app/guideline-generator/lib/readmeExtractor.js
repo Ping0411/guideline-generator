@@ -46,7 +46,7 @@ function isEdiSupplementalStart(text) {
 
 // Returns true if this row is the "Legend" anchor (stop-before when removing EDI supplemental block)
 function isLegendAnchor(text) {
-  return /^Legend\b/.test(text);
+  return /^Legend\b/.test(text) || /^凡例/.test(text) || /^图例/.test(text);
 }
 
 // Strip EDI reference from the title row (first row of each language section)
@@ -89,7 +89,7 @@ function extractReadmeRows(worksheet, language, options = {}) {
   let japaneseIdx = -1;
 
   for (let i = 0; i < allRows.length; i++) {
-    const text = allRows[i].row.getCell(1).text || '';
+    const text = cellText(allRows[i].row);
     if (chineseIdx < 0 && text.includes('(Chinese)')) chineseIdx = i;
     if (japaneseIdx < 0 && text.includes('(Japanese)')) japaneseIdx = i;
   }
@@ -199,6 +199,15 @@ function extractReadmeRows(worksheet, language, options = {}) {
       const hasBorder = cell.style && cell.style.border && Object.keys(cell.style.border).length > 0;
       if (!cell.value && !hasBorder) return;
       let value = cell.value;
+      // Normalize hyperlink objects: { text: { richText }, hyperlink } → { richText, hyperlink }
+      // ExcelJS cannot write nested { text: richTextObj, hyperlink } form
+      if (value && typeof value === 'object' && value.hyperlink && value.text && typeof value.text === 'object') {
+        if (value.text.richText) {
+          value = { richText: value.text.richText, hyperlink: value.hyperlink };
+        } else if (typeof value.text === 'string') {
+          value = { text: value.text, hyperlink: value.hyperlink };
+        }
+      }
       if (idx === 0 && colNum === 1 && markerToStrip && typeof value === 'string') {
         value = value.replace(markerToStrip, '').trim();
       } else if (idx === 0 && colNum === 1 && markerToStrip && value?.richText) {

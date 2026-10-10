@@ -258,15 +258,21 @@ function anonymizeAllEmails(nodes) {
  * is left untouched.
  * Applies zh/ja person-name check when language is 'zh' or 'ja'.
  */
-function anonymizeAllDeliverTo(nodes, language, warnings) {
+function anonymizeAllDeliverTo(nodes, language, warnings, docType) {
+  const isPO = docType === 'PO' || docType === 'PO_CHANGE';
   walk(nodes, (node, tag, index, array) => {
     if (tag !== 'DeliverTo') return;
-    // Skip if a previous sibling in the same parent array is also a DeliverTo
     const hasPriorSibling = array.slice(0, index).some(
       sibling => Object.prototype.hasOwnProperty.call(sibling, 'DeliverTo')
     );
-    if (hasPriorSibling) return;
-    anonymizeDeliverTo(node[tag], language, warnings);
+    if (hasPriorSibling) {
+      // Second+ DeliverTo: always anonymize unconditionally, all doc types
+      const text = getText(node[tag]);
+      if (text && text.trim()) setText(node[tag], anonymizeString(text));
+    } else if (isPO) {
+      // First DeliverTo: PO only, apply zh/ja person-name check
+      anonymizeDeliverTo(node[tag], language, warnings);
+    }
   });
 }
 
@@ -289,11 +295,12 @@ const PARTY_CONTAINER_TAGS = new Set(['ShipTo', 'BillTo', 'BusinessPartner']);
  * Name, Street, City, State, PostalCode, Phone, Fax, DeliverTo, Email.
  * Country is skipped. DeliverTo applies zh/ja person-name check.
  */
-function anonymizePartyContainers(nodes, language, warnings) {
+function anonymizePartyContainers(nodes, language, warnings, docType) {
+  const isPO = docType === 'PO' || docType === 'PO_CHANGE';
   walk(nodes, (node, tag) => {
     if (!PARTY_CONTAINER_TAGS.has(tag)) return;
     // Walk all descendants of this container
-    walk(node[tag], (inner, innerTag) => {
+    walk(node[tag], (inner, innerTag, index, array) => {
       if (innerTag === 'Country') return;
 
       if (CONTACT_ANON_FIELDS.has(innerTag)) {
@@ -313,7 +320,17 @@ function anonymizePartyContainers(nodes, language, warnings) {
       }
 
       if (innerTag === 'DeliverTo') {
-        anonymizeDeliverTo(inner[innerTag], language, warnings);
+        const hasPriorSibling = array.slice(0, index).some(
+          sibling => Object.prototype.hasOwnProperty.call(sibling, 'DeliverTo')
+        );
+        if (hasPriorSibling) {
+          // Second+ DeliverTo: always anonymize unconditionally, all doc types
+          const text = getText(inner[innerTag]);
+          if (text && text.trim()) setText(inner[innerTag], anonymizeString(text));
+        } else if (isPO) {
+          // First DeliverTo: PO only, apply zh/ja person-name check
+          anonymizeDeliverTo(inner[innerTag], language, warnings);
+        }
       }
     });
   });
@@ -476,6 +493,55 @@ function anonymizeHeaderBlock(headerChildren, docType) {
 }
 
 /**
+ * Insert <SharedSecret>***</SharedSecret> after <Identity> inside the <Sender>
+ * Credential where domain="NetworkID" (case-insensitive), for non-PO/GR/RA doc types.
+ * Skipped if <SharedSecret> already exists in that Credential.
+ */
+function insertSenderSharedSecret(cxmlChildren, docType) {
+  if (SUPPLIER_IS_TO_TYPES.has(docType)) return;
+
+  const headerNode = findChild(cxmlChildren, 'Header');
+  if (!headerNode) return;
+
+  const senderNode = findChild(headerNode['Header'], 'Sender');
+  if (!senderNode) return;
+
+  for (const node of senderNode['Sender']) {
+    if (!Object.prototype.hasOwnProperty.call(node, 'Credential')) continue;
+    const attrs = node[':@'] || {};
+    const domain = attrs['@_domain'] || '';
+    if (domain.toLowerCase() !== 'networkid') continue;
+
+    const credChildren = node['Credential'];
+    // Skip if SharedSecret already present
+    if (findChild(credChildren, 'SharedSecret')) return;
+
+    // Find the index of <Identity> and insert <SharedSecret> right after it
+    const identityIdx = credChildren.findIndex(
+      n => Object.prototype.hasOwnProperty.call(n, 'Identity')
+    );
+
+    // Detect the indentation used before <Identity> (the preceding whitespace text node)
+    let indent = '\n        ';
+    if (identityIdx > 0) {
+      const preceding = credChildren[identityIdx - 1];
+      const precText = preceding['#text'];
+      if (typeof precText === 'string' && /^\n[ \t]*$/.test(precText)) {
+        indent = precText;
+      }
+    }
+
+    const sharedSecretNode = { SharedSecret: [{ '#text': '***' }] };
+    if (identityIdx !== -1) {
+      credChildren.splice(identityIdx + 1, 0, { '#text': indent }, sharedSecretNode);
+    } else {
+      credChildren.push({ '#text': indent }, sharedSecretNode);
+    }
+    break; // only one NetworkID Credential expected
+  }
+}
+
+/**
  * Truncate text content of <Comments> and <Description> elements to 40 characters.
  * Structure is not modified — only the text value is trimmed.
  */
@@ -533,14 +599,16 @@ function anonymizeCxml(xmlContent, docType, language) {
   // 2. Anonymize all <Email> elements globally (not limited to supplier context)
   anonymizeAllEmails(parsed);
 
-  // 3. Anonymize all <DeliverTo> elements globally (applies zh/ja person-name check)
-  anonymizeAllDeliverTo(parsed, language, warnings);
+  // 3. Anonymize <DeliverTo> elements:
+  //    - First DeliverTo: PO only, applies zh/ja person-name check
+  //    - Second+ DeliverTo: all doc types, always anonymize unconditionally
+  anonymizeAllDeliverTo(parsed, language, warnings, docType);
 
   // 4. Anonymize all Contact blocks (all roles: buyer, supplier, etc.)
   anonymizeAllContacts(parsed, language, warnings);
 
-  // 4b. Anonymize <ShipTo>, <BillTo>, <BusinessPartner> subtrees directly
-  anonymizePartyContainers(parsed, language, warnings);
+  // 4b. Anonymize <ShipTo>, <BillTo>, <BusinessPartner> subtrees directly — PO only for DeliverTo
+  anonymizePartyContainers(parsed, language, warnings, docType);
 
   // 5. Anonymize SupplierPartID / BuyerPartID
   anonymizePartIds(parsed);
@@ -550,6 +618,9 @@ function anonymizeCxml(xmlContent, docType, language) {
 
   // 7. Anonymize Description (except under TaxDetail/TaxHeader)
   anonymizeDescriptions(parsed);
+
+  // 8. Insert <SharedSecret>***</SharedSecret> in Sender Credential (non-PO/GR/RA only)
+  insertSenderSharedSecret(cxmlChildren, docType);
 
   // 6. Truncate <Comments> and <Description> text to 40 characters
   truncateLongTextFields(parsed);

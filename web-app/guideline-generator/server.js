@@ -15,6 +15,39 @@ const { detectSubtype } = require('./lib/cxmlSubtypeDetector');
 
 const EDI_ENABLED = process.env.EDI_ENABLED !== 'false';
 
+// ── Auto-start semantic_search.py if not already running ──────────────────────
+(function ensureSemanticSearch() {
+  const { spawn, execSync } = require('child_process');
+  const candidates = [
+    path.join(__dirname, '..', '..', 'semantic_search.py'),
+    path.join(os.homedir(), 'mcp-servers', 'sap-help', 'semantic_search.py'),
+  ];
+  const scriptPath = candidates.find(p => fs.existsSync(p));
+  if (!scriptPath) {
+    console.warn('[semantic_search] semantic_search.py not found — vector matching will be unavailable');
+    return;
+  }
+
+  // Check if already running by looking for the process
+  try {
+    const result = execSync('pgrep -f "semantic_search.py"', { encoding: 'utf8' }).trim();
+    if (result) {
+      console.log('[semantic_search] Already running');
+      return;
+    }
+  } catch (_) {
+    // pgrep returns exit code 1 when no match — that's fine, means not running
+  }
+
+  const proc = spawn('python3', [scriptPath, '--serve'], {
+    detached: true,
+    stdio: ['ignore', fs.openSync('/tmp/semantic_search.log', 'a'), fs.openSync('/tmp/semantic_search.log', 'a')],
+    cwd: path.dirname(scriptPath),
+  });
+  proc.unref();
+  console.log(`[semantic_search] Started semantic_search.py (pid ${proc.pid}), log: /tmp/semantic_search.log`);
+})();
+
 let convertToEdi;
 if (EDI_ENABLED) {
   ({ convertToEdi } = require('./lib/ediConverter'));
