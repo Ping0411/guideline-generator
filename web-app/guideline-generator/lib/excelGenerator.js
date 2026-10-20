@@ -423,8 +423,17 @@ function extractExtrinsicA1(richText, language) {
     segments = richText.slice(japaneseIdx);
     markerToStrip = '(Japanese)';
   } else {
-    // English: everything before the Chinese marker
-    const end = chineseIdx >= 0 ? chineseIdx : richText.length;
+    // English: everything before the first segment containing Chinese characters.
+    // Using chineseIdx (the (Chinese) marker segment) is not sufficient because the
+    // Chinese title may span several segments before the marker — find the first CJK segment.
+    let firstCjkIdx = chineseIdx; // fallback to marker position
+    for (let i = 0; i < richText.length; i++) {
+      if (/[一-鿿぀-ヿ]/.test(richText[i].text || '')) {
+        firstCjkIdx = i;
+        break;
+      }
+    }
+    const end = firstCjkIdx >= 0 ? firstCjkIdx : richText.length;
     segments = richText.slice(0, end);
     markerToStrip = null;
   }

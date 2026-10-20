@@ -128,7 +128,7 @@ function buildDescription(ruleId, hint, language) {
       ja: '請求書のサプライヤー税務IDは必須です。',
     },
     'INV_REQUIRE_TAX_AT_LINE': {
-      en: 'Tax Element: Tax details are required at line item level.',
+      en: 'Tax Element: Tax information at line level is required on invoice.',
       zh: 'Tax Element: 行项目级别的税务详情为必填项。',
       ja: 'Tax Element: 明細レベルの税情報は必須です。',
     },
@@ -367,6 +367,19 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
   // Second pass: build description triggers using resolved hints
   const firedMergeGroups = new Set();
   for (const { ruleDef, ruleEntry } of triggeredDescRules) {
+    // OC_REQUIRE_DELIVERY_DATE: description is built in buildOcDescriptions (includes tolerance).
+    // Here we only decide whether to surface an unmatched warning: skip if deliveryDate is present.
+    if (ruleDef.id === 'OC_REQUIRE_DELIVERY_DATE') {
+      const isRejectOnly = isOcRejectOnly(cxmlContent);
+      if (!cxmlContent.includes('deliveryDate="') && !isRejectOnly) {
+        unmatchedTriggers.push({
+          ruleId: ruleDef.id,
+          ruleText: ruleEntry ? ruleEntry.rule : ruleDef.englishText,
+        });
+      }
+      continue;
+    }
+
     // Problem 2: credit memo reason — only apply to credit memo samples
     if (ruleDef.id === 'INV_REQUIRE_CREDIT_MEMO_REASON') {
       const isCreditMemo = cxmlContent.includes('purpose="creditMemo"') ||
@@ -397,8 +410,34 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
     const hintRaw = ruleDef.cxmlHint || resolvedHints.get(ruleDef.id);
     if (!hintRaw) continue;
 
+    // INV_REQUIRE_TAX_AT_LINE: dynamically pick the most specific hint based on cXML content
+    // Priority: InvoiceDetailItem/Tax and/or InvoiceDetailServiceItem/Tax if present,
+    //           otherwise fall back to Tax@_notUnder=InvoiceDetailSummary
+    let effectiveHintRaw = hintRaw;
+    if (ruleDef.id === 'INV_REQUIRE_TAX_AT_LINE') {
+      const hasItem    = cxmlContent.includes('<InvoiceDetailItem') || cxmlContent.includes('</InvoiceDetailItem>');
+      const hasService = cxmlContent.includes('<InvoiceDetailServiceItem') || cxmlContent.includes('</InvoiceDetailServiceItem>');
+      if (hasItem && hasService) {
+        effectiveHintRaw = ['InvoiceDetailItem/Tax', 'InvoiceDetailServiceItem/Tax'];
+      } else if (hasItem) {
+        effectiveHintRaw = 'InvoiceDetailItem/Tax';
+      } else if (hasService) {
+        effectiveHintRaw = 'InvoiceDetailServiceItem/Tax';
+      }
+      // else: keep Tax@_notUnder=InvoiceDetailSummary from ruleRegistry
+    }
+
+    // INV_REQUIRE_TAX_INFO + INV_REQUIRE_TAX_AT_LINE both triggered:
+    // restrict TAX_INFO to InvoiceDetailSummary/Tax only (line-level Tax is covered by TAX_AT_LINE)
+    if (ruleDef.id === 'INV_REQUIRE_TAX_INFO') {
+      const taxAtLineTriggered = triggeredDescRules.some(r => r.ruleDef.id === 'INV_REQUIRE_TAX_AT_LINE');
+      if (taxAtLineTriggered) {
+        effectiveHintRaw = 'InvoiceDetailSummary/Tax';
+      }
+    }
+
     // cxmlHint may be a string or an array (for rules that map to multiple element paths)
-    const hints = Array.isArray(hintRaw) ? hintRaw : [hintRaw];
+    const hints = Array.isArray(effectiveHintRaw) ? effectiveHintRaw : [effectiveHintRaw];
 
     let anyMatched = false;
     for (const hint of hints) {
@@ -414,6 +453,23 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
         description,
       });
       anyMatched = true;
+    }
+
+    // cxmlHintFallback: if primary hints all missed, try a broader fallback hint
+    if (!anyMatched && ruleDef.cxmlHintFallback) {
+      const fbHint = ruleDef.cxmlHintFallback;
+      if (cxmlContainsHint(cxmlContent, fbHint)) {
+        const description = buildDescription(ruleDef.id, fbHint, language);
+        if (description) {
+          descriptionTriggers.push({
+            ruleId: ruleDef.id,
+            ruleText: ruleEntry ? ruleEntry.rule : ruleDef.englishText,
+            cxmlElement: fbHint,
+            description,
+          });
+          anyMatched = true;
+        }
+      }
     }
 
     // Extra hint: write an additional description to a parent/sibling element (once per rule, not per hint)
@@ -567,7 +623,13 @@ function buildOcDescriptions(answers, parsedRules, cxmlContent, language, matche
 
   // ── OC_REQUIRE_DELIVERY_DATE: build description with optional tolerance ────
   if (isRuleMatchedAndYes(parsedRules, 'OC_REQUIRE_DELIVERY_DATE', matchedMap) &&
-      cxmlContainsHint(cxmlContent, 'ConfirmationStatus/@deliveryDate')) {
+      !isOcRejectOnly(cxmlContent)) {
+    // Prefer specific hint; fall back to any deliveryDate attribute in the cXML
+    const deliveryDateHint = cxmlContainsHint(cxmlContent, 'ConfirmationStatus/@deliveryDate')
+      ? 'ConfirmationStatus/@deliveryDate'
+      : cxmlContent.includes('deliveryDate="') ? '@deliveryDate' : null;
+
+    if (deliveryDateHint) {
     // Scan parsedRules for tolerance entries (multilingual) — identify before/after by sub-rule text
     let beforeDays = NaN;
     let afterDays  = NaN;
@@ -606,9 +668,10 @@ function buildOcDescriptions(answers, parsedRules, cxmlContent, language, matche
 
     triggers.push({
       ruleId: 'OC_REQUIRE_DELIVERY_DATE',
-      cxmlElement: 'ConfirmationStatus/@deliveryDate',
+      cxmlElement: deliveryDateHint,
       description: desc,
     });
+    } // end if (deliveryDateHint)
   }
 
   // ── Past date check: only when OC_NO_PAST_DATES=Yes AND the relevant date rule is also Yes ──
@@ -624,27 +687,45 @@ function buildOcDescriptions(answers, parsedRules, cxmlContent, language, matche
     }
     return false;
   })();
-  if (noPastDates) {
+  if (noPastDates && !isOcRejectOnly(cxmlContent)) {
     const pastDateDesc = 'Past date is not allowed.';
-    if (isRuleMatchedAndYes(parsedRules, 'OC_REQUIRE_SHIP_DATE', matchedMap) &&
-        cxmlContainsHint(cxmlContent, 'ConfirmationStatus/@shipmentDate')) {
-      triggers.push({
-        ruleId: 'OC_NO_PAST_DATES_SHIP',
-        cxmlElement: 'ConfirmationStatus/@shipmentDate',
-        description: pastDateDesc,
-      });
+    if (isRuleMatchedAndYes(parsedRules, 'OC_REQUIRE_SHIP_DATE', matchedMap)) {
+      const shipHint = cxmlContainsHint(cxmlContent, 'ConfirmationStatus/@shipmentDate')
+        ? 'ConfirmationStatus/@shipmentDate'
+        : cxmlContent.includes('shipmentDate="') ? '@shipmentDate' : null;
+      if (shipHint) {
+        triggers.push({
+          ruleId: 'OC_NO_PAST_DATES_SHIP',
+          cxmlElement: shipHint,
+          description: pastDateDesc,
+        });
+      }
     }
-    if (isRuleMatchedAndYes(parsedRules, 'OC_REQUIRE_DELIVERY_DATE', matchedMap) &&
-        cxmlContainsHint(cxmlContent, 'ConfirmationStatus/@deliveryDate')) {
-      triggers.push({
-        ruleId: 'OC_NO_PAST_DATES_DELIVERY',
-        cxmlElement: 'ConfirmationStatus/@deliveryDate',
-        description: pastDateDesc,
-      });
+    if (isRuleMatchedAndYes(parsedRules, 'OC_REQUIRE_DELIVERY_DATE', matchedMap)) {
+      const delivHint = cxmlContainsHint(cxmlContent, 'ConfirmationStatus/@deliveryDate')
+        ? 'ConfirmationStatus/@deliveryDate'
+        : cxmlContent.includes('deliveryDate="') ? '@deliveryDate' : null;
+      if (delivHint) {
+        triggers.push({
+          ruleId: 'OC_NO_PAST_DATES_DELIVERY',
+          cxmlElement: delivHint,
+          description: pastDateDesc,
+        });
+      }
     }
   }
 
   return triggers;
+}
+
+/**
+ * Returns true if the OC cXML contains type="reject" but no non-reject confirmation types.
+ * In this case, shipmentDate / deliveryDate are not expected to be present.
+ */
+function isOcRejectOnly(cxmlContent) {
+  if (!cxmlContent.includes('type="reject"')) return false;
+  const nonRejectTypes = ['type="detail"', 'type="accept"', 'type="backordered"', 'type="allDetail"'];
+  return !nonRejectTypes.some(t => cxmlContent.includes(t));
 }
 
 /**

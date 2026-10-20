@@ -71,6 +71,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require an estimated shipping date on order confirmations',
     cxmlHint: 'ConfirmationStatus@shipmentDate',
+    cxmlHintFallback: '@shipmentDate',
   },
   {
     id: 'OC_ALLOW_PARTIAL_REJECT',
@@ -313,7 +314,7 @@ const RULES = [
     docType: 'Invoice',
     effect: 'description',
     englishText: 'Require suppliers to enter taxes at line item level',
-    cxmlHint: 'InvoiceDetailItem/Tax',
+    cxmlHint: 'Tax@_notUnder=InvoiceDetailSummary',
   },
   {
     id: 'INV_REQUIRE_TAX_INFO',
@@ -512,6 +513,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require delivery dates for order confirmations and ship notices',
     cxmlHint: 'ShipNoticeHeader@deliveryDate',
+    cxmlHintFallback: '@deliveryDate',
   },
   {
     id: 'ASN_REQUIRE_SHIP_DATE',
@@ -519,6 +521,7 @@ const RULES = [
     effect: 'description',
     englishText: 'Require an actual or estimated shipping date on ship notices',
     cxmlHint: 'ShipNoticeHeader@shipmentDate',
+    cxmlHintFallback: '@shipmentDate',
   },
   {
     id: 'ASN_REQUIRE_SHIP_NOTICE_TYPE',

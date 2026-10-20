@@ -446,7 +446,18 @@ function buildDescriptionMap(descriptionTriggers) {
 
     if (!elemName) continue;
 
-    entries.push({ pathSegments, elemName, attrConditions, attrTarget, desc });
+    // Extract _notUnder=X pseudo-condition from attrConditions (not a real XML attribute)
+    let notUnder = null;
+    if (attrConditions) {
+      const notUnderIdx = attrConditions.findIndex(c => c.name === '_notUnder');
+      if (notUnderIdx >= 0) {
+        notUnder = attrConditions[notUnderIdx].value;
+        attrConditions = attrConditions.filter((_, i) => i !== notUnderIdx);
+        if (attrConditions.length === 0) attrConditions = null;
+      }
+    }
+
+    entries.push({ pathSegments, elemName, attrConditions, attrTarget, notUnder, desc });
   }
 
   return entries;
@@ -501,6 +512,9 @@ function lookupDescriptionForBlock(block, entries) {
   for (const entry of entries) {
     if (entry.elemName !== block.elementName) continue;
     if (!pathMatches(block.pathSegments, entry.pathSegments)) continue;
+
+    // _notUnder: skip if the block's path contains the excluded ancestor
+    if (entry.notUnder && block.pathSegments.includes(entry.notUnder)) continue;
 
     // Check attribute conditions
     if (entry.attrConditions) {
