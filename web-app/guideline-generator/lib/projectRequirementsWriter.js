@@ -354,6 +354,27 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
         triggers.push({ ruleText: shipToText });
       }
 
+      const q6 = answers.q6;
+      console.log('[PR DEBUG] q6:', q6, '| q7:', answers.q7);
+      if (q6 === 'No') {
+        const paymentTermsNoI18N = {
+          en: 'Payment terms are not included in PO.',
+          zh: '采购订单中不包含付款条款。',
+          ja: '発注書に支払条件は含まれない。',
+        };
+        triggers.push({ ruleText: paymentTermsNoI18N[lang] || paymentTermsNoI18N.en });
+      }
+
+      const q7 = answers.q7;
+      if (q7 === 'No') {
+        const taxInfoNoI18N = {
+          en: 'Tax information is not included in PO.',
+          zh: '采购订单中不包含税务信息。',
+          ja: '発注書に税情報は含まれない。',
+        };
+        triggers.push({ ruleText: taxInfoNoI18N[lang] || taxInfoNoI18N.en });
+      }
+
       const hasNonCatalog = q4list.some(v => v.toLowerCase().includes('non-catalog') || v.toLowerCase().includes('non catalog'));
       if (hasNonCatalog && answers.q8) {
         const q8val = answers.q8 === 'Other' && answers.q8other
