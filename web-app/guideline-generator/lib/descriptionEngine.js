@@ -899,7 +899,11 @@ function buildPoDescriptions(answers, parsedRules, cxmlContent, language) {
     const invoiceInScope = (answers.q2 || []).includes('Invoice') || (answers.q3 || []).includes('Invoice');
     const paymentTermsRuleIsNo = invoiceInScope && checkRuleIsNo(parsedRules, 'Allow suppliers to omit payment terms in PO invoices');
 
-    const baseText = {
+    const baseText = q6 === 'Optional' ? {
+      en: 'Payment term is optional on POs.',
+      zh: '采购订单中的付款条款为可选项。',
+      ja: '発注書における支払条件はオプションです。',
+    } : {
       en: 'Payment terms are required on all POs.',
       zh: '所有采购订单均需提供付款条款。',
       ja: 'すべての発注書に支払条件が必要です。',
@@ -924,7 +928,11 @@ function buildPoDescriptions(answers, parsedRules, cxmlContent, language) {
   // ── Q7: Tax info ──────────────────────────────────────────────────────────
   const q7 = answers.q7;
   if ((q7 === 'Yes' || q7 === 'Optional') && cxmlContainsHint(cxmlContent, 'Tax')) {
-    const taxDesc = {
+    const taxDesc = q7 === 'Optional' ? {
+      en: 'Tax Element: Tax is optional on POs.',
+      zh: '采购订单中的税务信息为可选项。',
+      ja: '発注書における税情報はオプションです。',
+    } : {
       en: 'Tax Element: Tax is mandatory for all POs.',
       zh: '所有采购订单均需提供税务信息。',
       ja: 'すべての発注書に税情報が必須です。',
