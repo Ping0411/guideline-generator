@@ -279,6 +279,19 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
 
   const matchedMap = await matchRules(parsedRules, rules, docType);
 
+  // Fallback: if vectorMatcher returned nothing (e.g. on Render where port 7655 is unavailable),
+  // rebuild matchedMap from matchedId assigned by rulesParser.assignMatchedIds
+  if (matchedMap.size === 0) {
+    for (const [, entry] of parsedRules) {
+      if (entry.matchedId && !matchedMap.has(entry.matchedId)) {
+        matchedMap.set(entry.matchedId, entry);
+      }
+    }
+    if (matchedMap.size > 0) {
+      console.log(`[descriptionEngine] vectorMatcher empty — rebuilt matchedMap from matchedId (${matchedMap.size} entries)`);
+    }
+  }
+
   // First pass: collect all triggered description rules (before hint resolution)
   const JA_FORCED_ADDRESS_RULES = new Set([
     'INV_REQUIRE_BILL_TO',

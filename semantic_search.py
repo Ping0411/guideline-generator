@@ -34,7 +34,19 @@ _tags = None
 def _load():
     global _model, _collection, _tags
     if _model is None:
-        _model = SentenceTransformer(MODEL_NAME, local_files_only=True)
+        try:
+            _model = SentenceTransformer(MODEL_NAME, local_files_only=True)
+        except TypeError:
+            # Newer sentence-transformers dropped local_files_only — use cache_folder instead
+            import glob as _glob
+            _snap = _glob.glob(os.path.expanduser(
+                f'~/.cache/huggingface/hub/models--sentence-transformers--{MODEL_NAME}/snapshots/*/config.json'
+            ))
+            if _snap:
+                _local_path = os.path.dirname(_snap[0])
+                _model = SentenceTransformer(_local_path)
+            else:
+                _model = SentenceTransformer(MODEL_NAME)
     if _collection is None:
         client = chromadb.PersistentClient(path=DB_DIR)
         _collection = client.get_collection(COLLECTION_NAME)
