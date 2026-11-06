@@ -117,16 +117,33 @@ if errorlevel 1 (
 echo   Done.
 echo.
 
-echo   Installing Guideline Generator dependencies...
-cd web-app\guideline-generator
-call npm install --loglevel=error
-if errorlevel 1 (
-    echo   ERROR: Guideline Generator npm install failed.
-    pause
-    exit /b 1
+echo --------------------------------------------
+echo   Optional: Guideline Generator
+echo.
+echo   Includes EDI support for integration guideline generation.
+echo   Requires an additional ~150 MB of disk space.
+echo.
+set /p GG_INPUT="  Install Guideline Generator? [y/N]: "
+set GG_INSTALL=0
+if /i "%GG_INPUT%"=="y"   set GG_INSTALL=1
+if /i "%GG_INPUT%"=="yes" set GG_INSTALL=1
+if %GG_INSTALL%==1 (
+    echo   Installing Guideline Generator dependencies...
+    cd web-app\guideline-generator
+    call npm install --loglevel=error
+    if errorlevel 1 (
+        echo   ERROR: Guideline Generator npm install failed.
+        pause
+        exit /b 1
+    )
+    cd ..\..
+    type nul > .guideline_generator_enabled
+    echo   Done.
+) else (
+    echo   Skipping Guideline Generator.
+    if exist .guideline_generator_enabled del .guideline_generator_enabled
 )
-cd ..\..
-echo   Done.
+echo --------------------------------------------
 echo.
 
 :: ── Python dependencies ───────────────────────────────────────────────────────

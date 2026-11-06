@@ -51,6 +51,15 @@ Then run the setup script:
 
 The script installs all dependencies and builds the local search index. **The first run takes 15–30 minutes** — please be patient and keep the terminal window open until you see **"Setup complete!"**
 
+During setup, the script will ask:
+
+```
+Install Guideline Generator? [y/N]:
+```
+
+- Enter `y` or `yes` to install the Guideline Generator (includes EDI support, requires ~150 MB additional disk space)
+- Press Enter or type anything else to skip — you can always re-run setup later to install it
+
 ---
 
 ## Step 2 — Launch

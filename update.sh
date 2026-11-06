@@ -26,7 +26,12 @@ xattr -cr "Launch SAP Help Assistant.app" 2>/dev/null || true
 
 echo "[2/4] Installing / updating dependencies..."
 pip3 install -r web-app/requirements.txt --quiet || pip install -r web-app/requirements.txt --quiet || true
-(cd web-app/guideline-generator && npm install --loglevel=error)
+if [ -f ".guideline_generator_enabled" ]; then
+  echo "  Updating Guideline Generator dependencies..."
+  (cd web-app/guideline-generator && npm install --loglevel=error)
+else
+  echo "  Guideline Generator not installed — skipping."
+fi
 echo ""
 
 # ── Check if cache.json changed ───────────────────────────────────────────────

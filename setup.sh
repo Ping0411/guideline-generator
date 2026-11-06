@@ -84,9 +84,29 @@ npm install --loglevel=error
 echo "  Done."
 echo ""
 
-echo "  Installing Guideline Generator dependencies..."
-(cd web-app/guideline-generator && npm install --loglevel=error)
-echo "  Done."
+# ── Guideline Generator (optional) ───────────────────────────────────────────
+
+echo "--------------------------------------------"
+echo "  Optional: Guideline Generator"
+echo ""
+echo "  Includes EDI support for integration guideline generation."
+echo "  Requires an additional ~150 MB of disk space."
+echo ""
+echo -n "  Install Guideline Generator? [y/N]: "
+read GG_INPUT
+case "$GG_INPUT" in
+  [yY]|[yY][eE][sS])
+    echo "  Installing Guideline Generator dependencies..."
+    (cd web-app/guideline-generator && npm install --loglevel=error)
+    touch .guideline_generator_enabled
+    echo "  Done."
+    ;;
+  *)
+    echo "  Skipping Guideline Generator."
+    rm -f .guideline_generator_enabled
+    ;;
+esac
+echo "--------------------------------------------"
 echo ""
 
 # ── Python dependencies ───────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ chroma_db/
 *.bak
 pending-retag.json
 .cache_hash
+.guideline_generator_enabled
 edi_conversion_log.jsonl
 cache.json.bak.*
 tags.json.bak.*
