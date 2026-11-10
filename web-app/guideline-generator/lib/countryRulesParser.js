@@ -13,6 +13,7 @@ const ExcelJS = require('exceljs');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { assignMatchedIds } = require('./rulesParser');
 
 const YES_VALUES = new Set(['yes', '是', 'はい', 'y', 'true', '1']);
 const NO_VALUES  = new Set(['no',  '否', 'いいえ', 'n', 'false', '0']);
@@ -263,6 +264,9 @@ async function parseCountryRules(filePath, originalName) {
   for (const [key, entry] of result) {
     console.log(`  [rule] "${entry.rule.slice(0, 70)}" → ${entry.isYes ? 'YES' : entry.isNo ? 'NO' : '?'}`);
   }
+
+  await assignMatchedIds(result);
+
   return result;
 }
 
