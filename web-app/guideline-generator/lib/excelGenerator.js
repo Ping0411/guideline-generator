@@ -73,7 +73,7 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
     const multipleCountries = invoiceInScope && answers.q14mc === 'Yes';
     console.log('[README] invoiceInScope:', invoiceInScope, 'q14mc:', answers.q14mc, 'multipleCountries:', multipleCountries);
     const readmeRows = extractReadmeRows(tmplReadme, language, {
-      removeColumnDE: !ediFormat,
+      removeColumnDE: answers.q13 !== 'Yes',
       removeColumnC:  !(invoiceInScope && answers.q14mc === 'Yes'),
     });
     const wsReadme = output.addWorksheet('READ ME');

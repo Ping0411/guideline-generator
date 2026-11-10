@@ -672,9 +672,9 @@
   fetch('/api/config').then(r => r.json()).then(cfg => {
     ediEnabled = cfg.ediEnabled !== false;
     if (!ediEnabled) {
-      const q13block = document.getElementById('q13-block');
-      if (q13block) q13block.style.display = 'none';
-      state.q13 = 'No';
+      // Hide EDI format sub-question only; Q5 itself remains visible
+      const q13sub = document.getElementById('q13-sub');
+      if (q13sub) q13sub.style.display = 'none';
     }
   }).catch(() => {});
 
@@ -766,10 +766,13 @@
     toggle('q8-block', state.q4.includes('Non-Catalog PO'));
 
     // Q11 invoice type buttons — show/auto-select based on Q4 (Supported PO Types)
-    syncQ10InvoiceType('q10-catalog-po', 'Catalog PO Invoice',  state.q4.includes('Catalog PO'));
-    syncQ10InvoiceType('q10-non-catalog', 'Non-Catalog Invoice', state.q4.includes('Non-Catalog PO'));
-    syncQ10InvoiceType('q10-blanket-po',  'Blanket PO Invoice',  state.q4.includes('Blanket Order'));
-    syncQ10InvoiceType('q10-service-po',  'Service PO Invoice',  state.q4.includes('Service PO (Service structure)'));
+    const poInScope = state.q2.includes('PO') || state.q3.includes('PO');
+    const invoiceInScopeForQ10 = state.q2.includes('Invoice') || state.q3.includes('Invoice');
+    const showAllInvoiceTypes = !poInScope && invoiceInScopeForQ10;
+    syncQ10InvoiceType('q10-catalog-po', 'Catalog PO Invoice',  showAllInvoiceTypes || state.q4.includes('Catalog PO'),               !showAllInvoiceTypes);
+    syncQ10InvoiceType('q10-non-catalog', 'Non-Catalog Invoice', showAllInvoiceTypes || state.q4.includes('Non-Catalog PO'),            !showAllInvoiceTypes);
+    syncQ10InvoiceType('q10-blanket-po',  'Blanket PO Invoice',  showAllInvoiceTypes || state.q4.includes('Blanket Order'),             !showAllInvoiceTypes);
+    syncQ10InvoiceType('q10-service-po',  'Service PO Invoice',  showAllInvoiceTypes || state.q4.includes('Service PO (Service structure)'), !showAllInvoiceTypes);
 
     // Q8 Other text
     toggle('q8-other-wrap', state.q8 === 'Other');
@@ -791,16 +794,17 @@
   // Show/hide a Q11 invoice type button and keep state.q10 in sync.
   // If the PO type is selected → show button + add value to q10.
   // If the PO type is deselected → hide button + remove value from q10.
-  function syncQ10InvoiceType(btnId, value, shouldShow) {
+  // autoSelect=false: show the button but do not pre-select it.
+  function syncQ10InvoiceType(btnId, value, shouldShow, autoSelect = true) {
     const el = document.getElementById(btnId);
     if (!el) return;
     el.classList.toggle('hidden', !shouldShow);
-    if (shouldShow) {
+    if (shouldShow && autoSelect) {
       if (!state.q10.includes(value)) {
         state.q10.push(value);
         el.classList.add('selected');
       }
-    } else {
+    } else if (!shouldShow) {
       state.q10 = state.q10.filter(v => v !== value);
       el.classList.remove('selected');
     }

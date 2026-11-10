@@ -900,7 +900,7 @@ function buildPoDescriptions(answers, parsedRules, cxmlContent, language) {
     const paymentTermsRuleIsNo = invoiceInScope && checkRuleIsNo(parsedRules, 'Allow suppliers to omit payment terms in PO invoices');
 
     const baseText = q6 === 'Optional' ? {
-      en: 'Payment term is optional on POs.',
+      en: 'Payment terms are optional on POs.',
       zh: '采购订单中的付款条款为可选项。',
       ja: '発注書における支払条件はオプションです。',
     } : {

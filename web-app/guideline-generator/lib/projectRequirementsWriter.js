@@ -432,17 +432,39 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
 
       const q11decimal = answers.q11decimal;
       const q11rounding = answers.q11rounding;
+      const ROUNDING_JA = { 'Round Half-Up': '四捨五入', 'Round-Up': '切上げ', 'Round-Off': '切捨て' };
       const q11parts = [];
       if (q11decimal)  q11parts.push(t('decimalPlaces') + q11decimal);
-      if (q11rounding) q11parts.push(t('roundingRule') + q11rounding);
+      if (q11rounding) q11parts.push(t('roundingRule') + (lang === 'ja' && ROUNDING_JA[q11rounding] ? ROUNDING_JA[q11rounding] : q11rounding));
       if (q11parts.length > 0) triggers.push({ ruleText: q11parts.join(' | ') });
 
       const q12parts = [];
-      if (answers.q12maxlen)      q12parts.push(I18N.invoiceNumberMaxLen[lang](answers.q12maxlen));
-      if (answers.q12allowed)     q12parts.push(t('allowedSpecialChars') + answers.q12allowed + '.');
-      if (answers.q12disallowed)  q12parts.push(t('disallowedSpecialChars') + answers.q12disallowed + '.');
-      if (answers.q12other)       q12parts.push(answers.q12other);
-      if (q12parts.length > 0)    triggers.push({ ruleText: q12parts.join(' ') });
+      if (answers.q12maxlen)  q12parts.push(I18N.invoiceNumberMaxLen[lang](answers.q12maxlen));
+      if (answers.q12other)   q12parts.push(answers.q12other);
+
+      const GREEN_BOLD = { ...DATA_FONT, bold: true, color: { argb: 'FF008000' } };
+      const q12richText = [];
+      if (q12parts.length > 0) q12richText.push({ font: DATA_FONT, text: q12parts.join(' ') + ' ' });
+      if (answers.q12allowed) {
+        q12richText.push({ font: DATA_FONT, text: t('allowedSpecialChars') });
+        q12richText.push({ font: GREEN_BOLD, text: answers.q12allowed });
+        if (answers.q12disallowed) q12richText.push({ font: DATA_FONT, text: '; ' });
+      }
+      if (answers.q12disallowed) {
+        q12richText.push({ font: DATA_FONT, text: t('disallowedSpecialChars') });
+        q12richText.push({ font: GREEN_BOLD, text: answers.q12disallowed });
+      }
+      if (q12richText.length > 0) triggers.push({ richText: q12richText });
+
+      if (lang === 'ja') {
+        const jaInvoiceNote = [
+          '適格請求書には、',
+          '　i) from（送信者）もしくはshipTo（出荷先）いずれかのisoCountryCodeが"JP"であること',
+          '　ii) billFrom(請求元)の下に、事業者登録番号を登録する必要があり、詳細を請求書のサンプルをご参考ください',
+          '　iii) 請求書の税額計算について、税率ごとの日本の消費税額 計算となり、丸めは、1 つの請求書で "税カテゴリおよび税率" ごとに 1 回だけ実行する必要がある',
+        ].join('\n');
+        triggers.push({ ruleText: jaInvoiceNote, rowHeight: 75 });
+      }
     }
 
     triggersMap[docType] = triggers;
@@ -495,16 +517,26 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
       const row = worksheet.getRow(currentRow);
       const cell = row.getCell(1);
       const text = (lang !== 'en' && trigger[lang]) ? trigger[lang] : trigger.ruleText;
-      cell.value = text;
-      cell.font = DATA_FONT;
+      if (trigger.richText) {
+        cell.value = { richText: trigger.richText };
+      } else {
+        cell.value = text;
+        cell.font = DATA_FONT;
+      }
       try { worksheet.mergeCells(`A${currentRow}:${TITLE_MERGE_END_COL}${currentRow}`); } catch (_) {}
       // Re-fetch the master cell after merge to ensure alignment applies correctly
       const masterCell = worksheet.getCell(`A${currentRow}`);
       masterCell.alignment = { horizontal: 'left', vertical: 'top', wrapText: true };
-      // Estimate row height based on text length (merged width ≈ 100 chars, line height ≈ 15pt)
+      // Estimate row height: multi-line text uses actual line count, single-line uses char estimate
+      const heightText = trigger.richText
+        ? trigger.richText.map(r => r.text).join('')
+        : (text || '');
+      const newlineCount = heightText.split('\n').length;
       const charsPerLine = 100;
-      const lineCount = Math.max(1, Math.ceil((text || '').length / charsPerLine));
-      row.height = lineCount * 15;
+      const lineCount = newlineCount > 1
+        ? newlineCount
+        : Math.max(1, Math.ceil(heightText.length / charsPerLine));
+      row.height = trigger.rowHeight || (lineCount * 15);
       currentRow++;
     }
   }
