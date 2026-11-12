@@ -21,6 +21,11 @@ function cxmlContainsHint(cxmlContent, hint) {
   if (roleMatch) {
     return cxmlContent.includes(`role="${roleMatch[1]}"`);
   }
+  // For name-based hints (e.g. Extrinsic@name=supplierTaxID), match name="..." directly
+  const nameMatch = hint.match(/@name=(.+)$/);
+  if (nameMatch) {
+    return cxmlContent.includes(`name="${nameMatch[1]}"`);
+  }
   // For domain-based hints (e.g. IdReference@domain=deliveryNoteDate), match domain="..." directly
   const domainMatch = hint.match(/@domain=(.+)$/);
   if (domainMatch) {
@@ -53,207 +58,207 @@ function buildDescription(ruleId, hint, language) {
     'OC_REQUIRE_SHIP_DATE': {
       en: 'Estimated shipping date is required on order confirmation.',
       zh: '订单确认中的预计发货日期为必填项。',
-      ja: 'オーダー確認の出荷予定日は必須です。',
+      ja: 'オーダー確認の出荷予定日は必須である。',
     },
     'OC_REQUIRE_REJECT_REASON_HEADER': {
       en: 'Rejection reason at header level is required when rejecting an order.',
       zh: '拒绝订单时，抬头级拒绝原因为必填项。',
-      ja: '注文を拒否する際、ヘッダーレベルの拒否理由は必須です。',
+      ja: '注文を拒否する際、ヘッダーレベルの拒否理由は必須である。',
     },
     'OC_REQUIRE_REJECT_REASON_LINE': {
       en: 'Rejection reason at line item level is required when rejecting a line item.',
       zh: '拒绝行项目时，行级别的拒绝原因为必填项。',
-      ja: '明細を拒否する際、明細レベルの拒否理由は必須です。',
+      ja: '明細を拒否する際、明細レベルの拒否理由は必須である。',
     },
     'OC_REQUIRE_COMMENT_ON_CHANGE': {
       en: 'Comment at line item level is required when any changes to line item are made.',
       zh: '行项目有变更时，行级别备注为必填项。',
-      ja: '変更がある場合、明細レベルのコメントは必須です。',
+      ja: '変更がある場合、明細レベルのコメントは必須である。',
     },
     'ASN_REQUIRE_SHIP_DATE': {
       en: 'Actual or estimated shipping date is required on ship notice.',
       zh: '发货通知中的实际或预计发货日期为必填项。',
-      ja: '出荷通知の実際または出荷予定日は必須です。',
+      ja: '出荷通知の実際または出荷予定日は必須である。',
     },
     'ASN_REQUIRE_SHIP_NOTICE_TYPE': {
       en: 'Ship notice type is required on ship notice.',
       zh: '发货通知类型为必填项。',
-      ja: '出荷通知タイプは必須です。',
+      ja: '出荷通知タイプは必須である。',
     },
     'ASN_REQUIRE_PACKING_SLIP_UNIQUE': {
       en: 'Packing Slip ID must be unique per ship notice.',
       zh: '每份发货通知的装箱单ID必须唯一。',
-      ja: '出荷通知ごとにパッキングスリップIDは一意である必要があります。',
+      ja: '出荷通知ごとにパッキングスリップIDは一意である必要がある。',
     },
 
     // ── Invoice ──────────────────────────────────────────────────────────
     'INV_REQUIRE_CREDIT_MEMO_REASON': {
       en: 'Reason (Comments) is required on credit memo.',
       zh: '贷项通知单中的原因（备注）为必填项。',
-      ja: 'クレジットメモの理由（コメント）は必須です。',
+      ja: 'クレジットメモの理由（コメント）は必須である。',
     },
     'INV_REQUIRE_DELIVERY_NOTE_DATE': {
       en: 'Delivery note date is required for each material line item.',
       zh: '每个物料行项目的送货单日期为必填项。',
-      ja: '各物品明細の納品書日付は必須です。',
+      ja: '各物品明細の納品書日付は必須である。',
     },
     'INV_REQUIRE_SERVICE_DATES': {
       en: 'Service period start date and end date are required for each service line item.',
       zh: '每个服务行项目的服务期间开始日期和结束日期为必填项。',
-      ja: '各サービス明細のサービス期間開始日・終了日は必須です。',
+      ja: '各サービス明細のサービス期間開始日・終了日は必須である。',
     },
     'INV_REQUIRE_HEADER_SERVICE_DATES': {
       en: 'Service period start date and end date are required at invoice header level.',
       zh: '发票抬头级服务期间开始日期和结束日期为必填项。',
-      ja: '請求書ヘッダーレベルのサービス期間開始日・終了日は必須です。',
+      ja: '請求書ヘッダーレベルのサービス期間開始日・終了日は必須である。',
     },
     'INV_REQUIRE_DATE_NOT_BEFORE_ORDER': {
       en: 'Invoice date must not be earlier than the PO date.',
       zh: '发票日期不得早于采购订单日期。',
-      ja: '請求書日付は発注日より前であってはなりません。',
+      ja: '請求書日付は発注日より前であってはならない。',
     },
     'INV_REQUIRE_LINE_DESCRIPTION': {
       en: 'Line item description is required for each invoice line.',
       zh: '每个发票行项目的描述为必填项。',
-      ja: '各請求書明細の品目説明は必須です。',
+      ja: '各請求書明細の品目説明は必須である。',
     },
     'INV_REQUIRE_VALID_TAX_LIST': {
       en: "Tax category must be selected from buyer's predefined list.",
       zh: '税种类别必须从买家预定义列表中选择。',
-      ja: '税カテゴリはバイヤーの定義済みリストから選択する必要があります。',
+      ja: '税カテゴリはバイヤーの定義済みリストから選択する必要がある。',
     },
     'INV_REQUIRE_SUPPLIER_TAX_ID': {
       en: "Supplier tax ID is required on invoice.",
       zh: '发票中供应商税务ID为必填项。',
-      ja: '請求書のサプライヤー税務IDは必須です。',
+      ja: '請求書のサプライヤー税務IDは必須である。',
     },
     'INV_REQUIRE_TAX_AT_LINE': {
       en: 'Tax Element: Tax information at line level is required on invoice.',
       zh: 'Tax Element: 行项目级别的税务详情为必填项。',
-      ja: 'Tax Element: 明細レベルの税情報は必須です。',
+      ja: 'Tax Element: 明細レベルの税情報は必須である。',
     },
     'INV_REQUIRE_TAX_INFO': {
       en: 'Tax Element: Tax information is required on invoice.',
       zh: 'Tax Element: 发票中的税务信息为必填项。',
-      ja: 'Tax Element: 請求書の税情報は必須です。',
+      ja: 'Tax Element: 請求書の税情報は必須である。',
     },
     'INV_REQUIRE_VAT_INFO': {
       en: 'VAT information is required at header or line item level.',
       zh: '抬头级或行项目级的增值税信息为必填项。',
-      ja: 'ヘッダーまたは明細レベルのVAT情報は必須です。',
+      ja: 'ヘッダーまたは明細レベルのVAT情報は必須である。',
     },
     'INV_REQUIRE_BILL_TO': {
       en: 'Bill To address is required on invoice.',
       zh: '发票中的账单地址为必填项。',
-      ja: '請求書の請求先住所は必須です。',
+      ja: '請求書の請求先住所は必須である。',
     },
     'INV_REQUIRE_SOLD_TO': {
       en: 'Sold To address is required on invoice.',
       zh: '发票中的销售地址为必填项。',
-      ja: '請求書の販売先住所は必須です。',
+      ja: '請求書の販売先住所は必須である。',
     },
     'INV_REQUIRE_FROM': {
       en: 'From address is required on invoice.',
       zh: '发票中的发件方地址为必填项。',
-      ja: '請求書の差出人住所は必須です。',
+      ja: '請求書の差出人住所は必須である。',
     },
     'INV_REQUIRE_REMIT_TO': {
       en: 'Remit To address is required on invoice.',
       zh: '发票中的汇款地址为必填项。',
-      ja: '請求書の送金先住所は必須です。',
+      ja: '請求書の送金先住所は必須である。',
     },
     'INV_REQUIRE_BILL_FROM': {
       en: 'Bill From address is required on invoice.',
       zh: '发票中的账单来源地址为必填项。',
-      ja: '請求書の請求元住所は必須です。',
+      ja: '請求書の請求元住所は必須である。',
     },
     'INV_REQUIRE_SHIP_ADDRESSES': {
       'Contact@role=shipFrom': {
         en: 'Ship From address is required on invoice.',
         zh: '发票中的发货方地址为必填项。',
-        ja: '請求書の出荷元住所は必須です。',
+        ja: '請求書の出荷元住所は必須である。',
       },
       'Contact@role=shipTo': {
         en: 'Ship To address is required on invoice.',
         zh: '发票中的收货方地址为必填项。',
-        ja: '請求書の出荷先住所は必須です。',
+        ja: '請求書の出荷先住所は必須である。',
       },
     },
     'INV_REQUIRE_PENALTY_TERMS': {
       en: 'Late payment penalty information is required on invoice.',
       zh: '发票中的逾期付款罚款信息为必填项。',
-      ja: '請求書の延滞ペナルティ情報は必須です。',
+      ja: '請求書の延滞ペナルティ情報は必須である。',
     },
     'INV_REQUIRE_DISCOUNT_TERMS': {
       en: 'Discount terms are required on invoice.',
       zh: '发票中的折扣条款为必填项。',
-      ja: '請求書の割引条件は必須です。',
+      ja: '請求書の割引条件は必須である。',
     },
     'INV_REQUIRE_NET_TERMS': {
       en: 'Net payment terms are required on standard invoice.',
       zh: '标准发票中的净付款条款为必填项。',
-      ja: '標準請求書のネット支払条件は必須です。',
+      ja: '標準請求書のネット支払条件は必須である。',
     },
     'INV_REQUIRE_BANK_ACCOUNT': {
       en: 'Bank account details are required on invoice.',
       zh: '发票中的银行账户信息为必填项。',
-      ja: '請求書の銀行口座情報は必須です。',
+      ja: '請求書の銀行口座情報は必須である。',
     },
     'INV_REQUIRE_CUSTOMER_VAT_ID': {
       en: "Buyer's VAT ID is required on invoice.",
       zh: '发票中买方增值税ID为必填项。',
-      ja: '請求書のバイヤーVAT IDは必須です。',
+      ja: '請求書のバイヤーVAT IDは必須である。',
     },
     // mergeGroup BUYER_VAT_ID: single description for rules 299/308/310/311
     '_MERGE_BUYER_VAT_ID': {
       en: "Buyer's VAT ID is required on invoice.",
       zh: '发票中买方增值税ID为必填项。',
-      ja: '請求書のバイヤーVAT IDは必須です。',
+      ja: '請求書のバイヤーVAT IDは必須である。',
     },
     'INV_REQUIRE_VAT_DETAILS_DOMESTIC_INTRA_EU': {
       en: 'VAT details are required for domestic and intra-EU trade.',
       zh: '国内及欧盟内部交易需提供增值税详情。',
-      ja: '国内取引およびEU域内取引にはVAT詳細が必要です。',
+      ja: '国内取引およびEU域内取引にはVAT詳細が必要である。',
     },
     'INV_REQUIRE_SUPPLIER_VAT_ID': {
       en: "Supplier VAT/Tax ID is required on invoice.",
       zh: '发票中的供应商增值税/税务ID为必填项。',
-      ja: '請求書のサプライヤーVAT/税務IDは必須です。',
+      ja: '請求書のサプライヤーVAT/税務IDは必須である。',
     },
     'INV_REQUIRE_SUPPLY_DATE_FOR_VAT': {
       en: 'Supply date (taxPointDate) is required when tax category is VAT.',
       zh: '税种类别为增值税时，供应日期（taxPointDate）为必填项。',
-      ja: '税カテゴリがVATの場合、供給日（taxPointDate）は必須です。',
+      ja: '税カテゴリがVATの場合、供給日（taxPointDate）は必須である。',
     },
     'INV_REQUIRE_TAX_IN_LOCAL_CURRENCY': {
       en: 'Tax amount in local currency is required on invoice.',
       zh: '发票中以本地货币表示的税额为必填项。',
-      ja: '請求書の現地通貨建て税額は必須です。',
+      ja: '請求書の現地通貨建て税額は必須である。',
     },
     'INV_REQUIRE_TOTALS_IN_LOCAL_CURRENCY': {
       en: 'Subtotal and amount due in local currency are required on invoice.',
       zh: '发票中以本地货币表示的小计和应付金额为必填项。',
-      ja: '請求書の現地通貨建て小計・請求金額は必須です。',
+      ja: '請求書の現地通貨建て小計・請求金額は必須である。',
     },
     'INV_REQUIRE_ZERO_VAT_EXPLANATION': {
       en: 'exemptDetail is required on TaxDetail when VAT rate is zero.',
       zh: 'VAT税率为零时，TaxDetail上的exemptDetail为必填项。',
-      ja: 'VAT税率がゼロの場合、TaxDetailのexemptDetailは必須です。',
+      ja: 'VAT税率がゼロの場合、TaxDetailのexemptDetailは必須である。',
     },
     'INV_REQUIRE_ZERO_GST_EXPLANATION': {
       en: 'exemptDetail is required on TaxDetail when GST rate is zero.',
       zh: 'GST税率为零时，TaxDetail上的exemptDetail为必填项。',
-      ja: 'GST税率がゼロの場合、TaxDetailのexemptDetailは必須です。',
+      ja: 'GST税率がゼロの場合、TaxDetailのexemptDetailは必須である。',
     },
     'INV_REQUIRE_DETAILED_TAX_SUMMARY': {
       en: 'Detailed tax breakdown is required in invoice tax summary.',
       zh: '发票税务汇总中的详细税务明细为必填项。',
-      ja: '請求書税サマリーの詳細な税情報は必須です。',
+      ja: '請求書税サマリーの詳細な税情報は必須である。',
     },
     'INV_PAYMENT_TERMS_MUST_MATCH_PO': {
       en: 'Payment terms must be included on invoice and must match the PO.',
       zh: '付款条款必须包含在发票中且须与采购订单保持一致。',
-      ja: '支払条件は請求書に含め、発注書と一致させる必要があります。',
+      ja: '支払条件は請求書に含め、発注書と一致させる必要がある。',
     },
   };
 
@@ -279,17 +284,20 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
 
   const matchedMap = await matchRules(parsedRules, rules, docType);
 
-  // Fallback: if vectorMatcher returned nothing (e.g. on Render where port 7655 is unavailable),
-  // rebuild matchedMap from matchedId assigned by rulesParser.assignMatchedIds
-  if (matchedMap.size === 0) {
-    for (const [, entry] of parsedRules) {
-      if (entry.matchedId && !matchedMap.has(entry.matchedId)) {
-        matchedMap.set(entry.matchedId, entry);
+  // Always supplement matchedMap with entries from parsedRules.matchedIds.
+  // vectorMatcher may miss rules due to section filtering; rulesParser.assignMatchedIds
+  // covers all rules regardless of section, so we use it to fill any gaps.
+  const preSize = matchedMap.size;
+  for (const [, entry] of parsedRules) {
+    const ids = entry.matchedIds || (entry.matchedId ? [entry.matchedId] : []);
+    for (const id of ids) {
+      if (!matchedMap.has(id)) {
+        matchedMap.set(id, entry);
       }
     }
-    if (matchedMap.size > 0) {
-      console.log(`[descriptionEngine] vectorMatcher empty — rebuilt matchedMap from matchedId (${matchedMap.size} entries)`);
-    }
+  }
+  if (matchedMap.size > preSize) {
+    console.log(`[descriptionEngine] supplemented matchedMap from matchedIds: ${preSize} → ${matchedMap.size}`);
   }
 
   // First pass: collect all triggered description rules (before hint resolution)
@@ -321,6 +329,11 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
         const asnInScope = (answers.q2 || []).includes('ASN') || (answers.q3 || []).includes('ASN');
         if (!asnInScope) continue;
       }
+      // ASN_NO_MULTIPLE_SHIPTO (No): skip when ShipTo is always header-level (q5 === 'Header')
+      // because if ShipTo is only on header, multiple ShipTo per ASN is structurally impossible
+      if (ruleDef.id === 'ASN_NO_MULTIPLE_SHIPTO' && ruleEntry && !ruleEntry.isYes && answers.q5 === 'Header') {
+        continue;
+      }
       // INV_ALLOW_CUSTOM_TAX (247 YES alone): only write PR if 245/246 is NOT triggered
       if (ruleDef.id === 'INV_ALLOW_CUSTOM_TAX') {
         const validTaxEntry = matchedMap.get('INV_REQUIRE_VALID_TAX_LIST');
@@ -328,14 +341,64 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
       }
       // INV date rules handled separately in buildInvoiceDateProjectReqs
       if (['INV_DATE_NOT_BEFORE_ORDER', 'INV_ALLOW_BACKDATING', 'INV_ALLOW_FUTUREDATING'].includes(ruleDef.id)) continue;
+      // OC_FULL_CONFIRM_BEFORE_FULFILLMENT: if the delivery-date subrule is also Yes, append extra sentence
+      if (ruleDef.id === 'OC_FULL_CONFIRM_BEFORE_FULFILLMENT') {
+        const deliveryDateSubruleYes = (() => {
+          const target = (ruleEntry.rule || ruleDef.englishText).toLowerCase().replace(/\.$/, '');
+          for (const [, e] of parsedRules) {
+            if (!e.rule || !e.subrule1) continue;
+            const ruleNorm = e.rule.toLowerCase().replace(/\.$/, '');
+            if (ruleNorm.includes(target) || target.includes(ruleNorm)) {
+              if (e.isYes) return true;
+            }
+          }
+          return false;
+        })();
+        if (deliveryDateSubruleYes) {
+          projectReqTriggers.push({
+            ruleId: 'OC_FULL_CONFIRM_BEFORE_FULFILLMENT_DELIVERY_DATE',
+            ruleText: 'Delivery date on OC must match the delivery date on the purchase order.',
+            zh: 'OC中的交货日期必须与采购订单中的交货日期一致。',
+            ja: 'オーダー確認の中の配達予定日は注文書の納入希望日と一致する必要がある。',
+          });
+        }
+      }
       const isNo = !ruleEntry.isYes;
-      projectReqTriggers.push({
-        ruleId: ruleDef.id,
-        ruleText: (isNo && ruleDef.projectReqTextNo) ? ruleDef.projectReqTextNo
-          : (ruleDef.projectReqText || ruleEntry.rule),
-        zh: (isNo && ruleDef.zhNo) ? ruleDef.zhNo : (ruleDef.zh || null),
-        ja: (isNo && ruleDef.jaNo) ? ruleDef.jaNo : (ruleDef.ja || null),
-      });
+      const prText = (isNo && ruleDef.projectReqTextNo) ? ruleDef.projectReqTextNo
+        : (ruleDef.projectReqText || ruleEntry.rule);
+      const prRuleText = ruleEntry ? ruleEntry.rule : ruleDef.englishText;
+      // Tolerance check for projectReq rules
+      if (containsToleranceKeyword(prRuleText) || containsToleranceKeyword(ruleDef.projectReqText)) {
+        const tolVals = extractToleranceValuesFromParsedRules(parsedRules, prRuleText);
+        if (tolVals.length > 0) {
+          const tolStr = tolVals.map(t => `${t.subrule}: ${t.value}`).join('; ');
+          projectReqTriggers.push({
+            ruleId: ruleDef.id,
+            ruleText: prText + ` (${tolStr})`,
+            zh: (isNo && ruleDef.zhNo) ? ruleDef.zhNo : (ruleDef.zh || null),
+            ja: (isNo && ruleDef.jaNo) ? ruleDef.jaNo : (ruleDef.ja || null),
+          });
+        } else {
+          projectReqTriggers.push({
+            ruleId: ruleDef.id,
+            ruleText: prText,
+            zh: (isNo && ruleDef.zhNo) ? ruleDef.zhNo : (ruleDef.zh || null),
+            ja: (isNo && ruleDef.jaNo) ? ruleDef.jaNo : (ruleDef.ja || null),
+          });
+          unmatchedTriggers.push({
+            ruleId: ruleDef.id,
+            ruleText: prRuleText,
+            reason: 'tolerance_missing',
+          });
+        }
+      } else {
+        projectReqTriggers.push({
+          ruleId: ruleDef.id,
+          ruleText: prText,
+          zh: (isNo && ruleDef.zhNo) ? ruleDef.zhNo : (ruleDef.zh || null),
+          ja: (isNo && ruleDef.jaNo) ? ruleDef.jaNo : (ruleDef.ja || null),
+        });
+      }
       continue;
     }
 
@@ -360,6 +423,14 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
         ruleId: ruleDef.id,
         ruleText: baseText + taxStr,
       });
+      // Warn if no tax values were found in the rules file
+      if (taxValues.length === 0) {
+        unmatchedTriggers.push({
+          ruleId: ruleDef.id,
+          ruleText: ruleEntry.rule,
+          reason: 'tax_values_missing',
+        });
+      }
       continue;
     }
 
@@ -415,6 +486,11 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
             description,
           });
         }
+      } else {
+        unmatchedTriggers.push({
+          ruleId: ruleDef.id,
+          ruleText: ruleEntry ? ruleEntry.rule : ruleDef.englishText,
+        });
       }
       continue;
     }
@@ -506,6 +582,33 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
       }
     }
 
+    // Tolerance check for description rules
+    if (anyMatched) {
+      const ruleTextForTol = ruleEntry ? ruleEntry.rule : ruleDef.englishText;
+      const hasTolKeyword = containsToleranceKeyword(ruleTextForTol) ||
+        [...parsedRules.values()].some(e =>
+          (e.rule || '').toLowerCase().trim() === ruleTextForTol.toLowerCase().trim() &&
+          (containsToleranceKeyword(e.subrule1) || containsToleranceKeyword(e.subrule2))
+        );
+      if (hasTolKeyword) {
+        const tolVals = extractToleranceValuesFromParsedRules(parsedRules, ruleTextForTol);
+        if (tolVals.length > 0) {
+          const tolStr = tolVals.map(t => `${t.subrule}: ${t.value}`).join('; ');
+          // Append tolerance info to the last pushed description trigger for this rule
+          const lastIdx = descriptionTriggers.map(t => t.ruleId).lastIndexOf(ruleDef.id);
+          if (lastIdx >= 0) {
+            descriptionTriggers[lastIdx].description += ` (${tolStr})`;
+          }
+        } else {
+          unmatchedTriggers.push({
+            ruleId: ruleDef.id,
+            ruleText: ruleTextForTol,
+            reason: 'tolerance_missing',
+          });
+        }
+      }
+    }
+
     // Rule fired but no hint path matched the cXML — surface for manual review
     if (!anyMatched) {
       unmatchedTriggers.push({
@@ -524,7 +627,7 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
   // Invoice-specific: INV_ALLOW_CANCEL (triggerOnBoth → handle YES/NO manually)
   // INV_DATE rules: merge rules 4/5/6 into one PR line
   if (docType === 'Invoice') {
-    buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language);
+    buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language, parsedRules);
   }
 
   // OC-specific descriptions from question answers
@@ -536,25 +639,80 @@ async function evaluateRules(docType, parsedRules, cxmlContent, answers) {
     const ocRejectDescs = buildOcRejectDescriptions(answers, parsedRules, cxmlContent, language, matchedMap);
     descriptionTriggers.push(...ocRejectDescs);
 
-    // OC reject Project Requirements (rule 1: Partially / Fully)
+    // OC_NO_REJECT_ENTIRE_PO: Yes → not allowed, No → allowed
+    const ocNoRejectEntry = matchedMap.get('OC_NO_REJECT_ENTIRE_PO');
+    if (ocNoRejectEntry) {
+      const rejectReasonRequired = (() => {
+        const rrEntry = matchedMap.get('OC_REQUIRE_REJECT_REASON_HEADER');
+        return rrEntry && rrEntry.isYes;
+      })();
+      if (ocNoRejectEntry.isYes) {
+        projectReqTriggers.push({
+          ruleId: 'OC_NO_REJECT_ENTIRE_PO_PR',
+          ruleText: 'Suppliers are not allowed to reject entire purchase orders.',
+          zh: '供应商不允许拒绝整张采购订单。',
+          ja: 'サプライヤは注文書全体を却下することが許可されない。',
+        });
+      } else {
+        const suffix = rejectReasonRequired ? ' Rejection reason is required.' : '';
+        const suffixZh = rejectReasonRequired ? '拒绝时需提供拒绝原因。' : '';
+        const suffixJa = rejectReasonRequired ? '却下理由のご提供も必要である。' : '';
+        projectReqTriggers.push({
+          ruleId: 'OC_NO_REJECT_ENTIRE_PO_PR',
+          ruleText: `Suppliers are allowed to reject entire purchase orders.${suffix}`,
+          zh: `供应商可以拒绝整张采购订单。${suffixZh}`,
+          ja: `サプライヤは注文書全体を却下することが許可される。${suffixJa}`,
+        });
+      }
+    }
+
+    // OC reject Project Requirements (rule 1: No / Partially / Fully)
     const ocPartialEntry = matchedMap.get('OC_ALLOW_PARTIAL_REJECT');
     if (ocPartialEntry) {
       const val = (ocPartialEntry.value || '').trim().toLowerCase();
-      if (val === 'partially' || val === 'partial') {
+      const isNo       = val === 'no'       || val === 'いいえ' || val === '否';
+      const isPartial  = val === 'partially' || val === 'partial' || val === '一部' || val === '部分';
+      const isFully    = val === 'fully'     || val === 'full'    || val === '完全';
+      const lineRejectReasonRequired = (() => {
+        const rrEntry = matchedMap.get('OC_REQUIRE_REJECT_REASON_LINE');
+        return rrEntry && rrEntry.isYes;
+      })();
+      const lineReasonSuffix   = lineRejectReasonRequired ? ' Rejection reason is required.' : '';
+      const lineReasonSuffixZh = lineRejectReasonRequired ? '拒绝时需提供拒绝原因。' : '';
+      const lineReasonSuffixJa = lineRejectReasonRequired ? '却下理由のご提供も必要である。' : '';
+      if (isNo) {
         projectReqTriggers.push({
           ruleId: 'OC_ALLOW_PARTIAL_REJECT_PR',
-          ruleText: 'Allows suppliers to reject partial quantities at the line-item level.',
-          zh: '允许供应商拒绝行项目级的部分数量。',
-          ja: 'サプライヤは明細レベルで一部の数量を却下することができる。',
+          ruleText: 'Suppliers are not allowed to reject quantities at the line-item level.',
+          zh: '供应商不允许拒绝行项目级数量。',
+          ja: 'サプライヤは明細レベルで数量を却下することができない。',
         });
-      } else if (val === 'fully' || val === 'full') {
+      } else if (isPartial) {
+        projectReqTriggers.push({
+          ruleId: 'OC_ALLOW_PARTIAL_REJECT_PR',
+          ruleText: `Suppliers are allowed to partially reject quantities at the line-item level.${lineReasonSuffix}`,
+          zh: `允许供应商拒绝行项目级的部分数量。${lineReasonSuffixZh}`,
+          ja: `サプライヤは明細レベルで一部の数量を却下することができる。${lineReasonSuffixJa}`,
+        });
+      } else if (isFully) {
         projectReqTriggers.push({
           ruleId: 'OC_ALLOW_FULL_REJECT_PR',
-          ruleText: "Allows suppliers to fully reject the line item. Partial rejections aren't allowed.",
-          zh: '允许供应商完全拒绝行项目。不允许部分拒绝。',
-          ja: 'サプライヤは明細を完全に却下することができます。一部却下は許可されない。',
+          ruleText: `Suppliers are allowed to fully reject line items, but partial rejection is not allowed.${lineReasonSuffix}`,
+          zh: `允许供应商完全拒绝行项目。不允许部分拒绝。${lineReasonSuffixZh}`,
+          ja: `サプライヤは明細を完全に却下することができるが、一部却下は許可されない。${lineReasonSuffixJa}`,
         });
       }
+    }
+
+    // OC_REQUIRE_COMMENT_ON_CHANGE: Yes → write to Project Requirements
+    const ocCommentEntry = matchedMap.get('OC_REQUIRE_COMMENT_ON_CHANGE');
+    if (ocCommentEntry && ocCommentEntry.isYes) {
+      projectReqTriggers.push({
+        ruleId: 'OC_REQUIRE_COMMENT_ON_CHANGE_PR',
+        ruleText: 'Require suppliers to enter a comment at the order confirmation line-item level when there are any changes to unit price, supplier part ID or description.',
+        zh: '当单价、供应商部件标识符或描述有变更时，供应商需在订单确认行项目级别进行说明。',
+        ja: '単価、サプライヤー品目ID、または品目説明に変更がある場合、オーダー確認の明細レベルでコメントの入力が必要である。',
+      });
     }
   }
 
@@ -581,7 +739,7 @@ function buildOcDescriptions(answers, parsedRules, cxmlContent, language, matche
       const headerDesc = {
         en: 'Only "allDetail" is allowed as header confirmation type.',
         zh: '抬头确认类型只允许使用 "allDetail"。',
-        ja: 'ヘッダー確認タイプは "allDetail" のみ使用可能です。',
+        ja: 'ヘッダー確認タイプは "allDetail" のみ使用可能である。',
       };
       triggers.push({
         ruleId: 'OC_ENHANCED_HEADER_TYPE',
@@ -602,7 +760,7 @@ function buildOcDescriptions(answers, parsedRules, cxmlContent, language, matche
       const itemInDesc = {
         en: 'ItemIn element is required when header confirmation type is "allDetail".',
         zh: '当抬头确认类型为 "allDetail" 时，ItemIn 为必填项。',
-        ja: 'ヘッダー確認タイプが "allDetail" の場合、ItemIn は必須です。',
+        ja: 'ヘッダー確認タイプが "allDetail" の場合、ItemIn は必須である。',
       };
       triggers.push({
         ruleId: 'OC_ENHANCED_ITEMIN',
@@ -782,7 +940,7 @@ function buildOcRejectDescriptions(answers, parsedRules, cxmlContent, language, 
     const desc = {
       en: 'Rejection reason is required when rejecting an order.',
       zh: '拒绝订单时，拒绝原因为必填项。',
-      ja: '注文を拒否する際、拒否理由は必須です。',
+      ja: '注文を拒否する際、拒否理由は必須である。',
     };
 
     // Case D-a: type="reject" + Comments + at least one Extrinsic
@@ -828,7 +986,7 @@ function buildOcRejectDescriptions(answers, parsedRules, cxmlContent, language, 
       const desc = {
         en: 'Rejection reason is required when rejecting a line item.',
         zh: '拒绝行项目时，拒绝原因为必填项。',
-        ja: '明細を拒否する際、拒否理由は必須です。',
+        ja: '明細を拒否する際、拒否理由は必須である。',
       };
       triggers.push({
         ruleId: 'OC_REQUIRE_REJECT_REASON_LINE',
@@ -880,8 +1038,8 @@ function buildPoDescriptions(answers, parsedRules, cxmlContent, language) {
       zh: isHeader ? 'ShipTo 在抬头级发送。'
         : isLine   ? 'ShipTo 在行项目级别发送。'
         : 'ShipTo 可以在抬头级或行项目级别发送。',
-      ja: isHeader ? 'ShipTo はヘッダーレベルで送信されます。'
-        : isLine   ? 'ShipTo は明細レベルで送信されます。'
+      ja: isHeader ? 'ShipTo はヘッダーレベルで送信される。'
+        : isLine   ? 'ShipTo は明細レベルで送信される。'
         : 'ShipTo はヘッダーまたは明細レベルで送信される場合があります。',
     };
     triggers.push({
@@ -902,16 +1060,16 @@ function buildPoDescriptions(answers, parsedRules, cxmlContent, language) {
     const baseText = q6 === 'Optional' ? {
       en: 'Payment terms are optional on POs.',
       zh: '采购订单中的付款条款为可选项。',
-      ja: '発注書における支払条件はオプションです。',
+      ja: '発注書における支払条件はオプションである。',
     } : {
       en: 'Payment terms are required on all POs.',
       zh: '所有采购订单均需提供付款条款。',
-      ja: 'すべての発注書に支払条件が必要です。',
+      ja: 'すべての発注書に支払条件が必要である。',
     };
     const extraText = {
       en: ' Need to be returned on invoice.',
       zh: '需在发票中回传。',
-      ja: '請求書に返送する必要があります。',
+      ja: '請求書に返送する必要がある。',
     };
 
     const desc = paymentTermsRuleIsNo
@@ -931,11 +1089,11 @@ function buildPoDescriptions(answers, parsedRules, cxmlContent, language) {
     const taxDesc = q7 === 'Optional' ? {
       en: 'Tax Element: Tax is optional on POs.',
       zh: '采购订单中的税务信息为可选项。',
-      ja: '発注書における税情報はオプションです。',
+      ja: '発注書における税情報はオプションである。',
     } : {
       en: 'Tax Element: Tax is mandatory for all POs.',
       zh: '所有采购订单均需提供税务信息。',
-      ja: 'すべての発注書に税情報が必須です。',
+      ja: 'すべての発注書に税情報が必須である。',
     };
     triggers.push({
       ruleId: 'PO_TAX_INFO',
@@ -969,7 +1127,17 @@ function checkRuleIsNo(parsedRules, canonicalText) {
  * Build Invoice Date merged PR line from rules 4/5/6,
  * and handle INV_ALLOW_CANCEL YES/NO PR output.
  */
-function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language) {
+function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language, parsedRules) {
+  // Helper: get entry by ruleId — from matchedMap first, then parsedRules fallback
+  function getEntry(ruleId) {
+    if (matchedMap.has(ruleId)) return matchedMap.get(ruleId);
+    if (!parsedRules) return null;
+    for (const [, entry] of parsedRules) {
+      const ids = entry.matchedIds || (entry.matchedId ? [entry.matchedId] : []);
+      if (ids.includes(ruleId)) return entry;
+    }
+    return null;
+  }
   // Rule 1: INV_ALLOW_CANCEL — handled via triggerOnBoth in main loop already
   // (projectReqText / projectReqTextNo picked up by standard logic)
 
@@ -997,12 +1165,12 @@ function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language) {
   };
   const p = phrases[language] || null;
 
-  const rule4 = matchedMap.get('INV_DATE_NOT_BEFORE_ORDER');
+  const rule4 = getEntry('INV_DATE_NOT_BEFORE_ORDER');
   if (rule4 && rule4.isYes) {
     parts.push(p ? p.notBeforeOrder : 'Invoice date must not be before the order date.');
   }
 
-  const rule5 = matchedMap.get('INV_ALLOW_BACKDATING');
+  const rule5 = getEntry('INV_ALLOW_BACKDATING');
   if (rule5) {
     const val = (rule5.value || '').trim();
     const num = parseDaysValue(val);
@@ -1013,7 +1181,7 @@ function buildInvoiceDateProjectReqs(matchedMap, projectReqTriggers, language) {
     }
   }
 
-  const rule6 = matchedMap.get('INV_ALLOW_FUTUREDATING');
+  const rule6 = getEntry('INV_ALLOW_FUTUREDATING');
   if (rule6) {
     const val = (rule6.value || '').trim();
     const num = parseDaysValue(val);
@@ -1158,4 +1326,52 @@ function extractTaxValues(parsedRules, mainRuleText) {
   }
 
   return results;
+}
+
+/**
+ * Check if a rule text contains tolerance-related keywords.
+ */
+function containsToleranceKeyword(text) {
+  const t = (text || '').toLowerCase();
+  return t.includes('tolerance') || t.includes('容限') || t.includes('許容範囲');
+}
+
+/**
+ * Extract tolerance value(s) from Transaction Rules parsedRules for a triggered rule.
+ * Looks for rows with the same rule text that have a numeric value in the value column,
+ * or tolerance info embedded in the rule text itself (e.g. country rules).
+ * Returns array of { subrule, value } objects, or empty array if none found.
+ */
+function extractToleranceValuesFromParsedRules(parsedRules, ruleText) {
+  const ruleNorm = (ruleText || '').toLowerCase().trim();
+  const results = [];
+  for (const [, entry] of parsedRules) {
+    if ((entry.rule || '').toLowerCase().trim() !== ruleNorm) continue;
+    const subruleText = [entry.subrule1, entry.subrule2].filter(Boolean).join(' ');
+    const hasTolInSubrule = containsToleranceKeyword(entry.subrule1) || containsToleranceKeyword(entry.subrule2);
+    const hasTolInRule = containsToleranceKeyword(entry.rule);
+
+    if (hasTolInSubrule) {
+      const val = (entry.value || '').trim();
+      if (val && /\d/.test(val)) {
+        results.push({ subrule: subruleText, value: val });
+      }
+    } else if (hasTolInRule) {
+      // Country rules: tolerance value embedded in rule text e.g. "Exception Tolerance: 10%"
+      const inlineMatch = (entry.rule || '').match(/tolerance[:\s]+(\d[\d.]*\s*%?)/i);
+      if (inlineMatch) {
+        results.push({ subrule: entry.rule, value: inlineMatch[1].trim() });
+      }
+    }
+  }
+  return results;
+}
+
+/**
+ * Extract tolerance value from a country rules entry's rule text.
+ * e.g. "Exception Tolerance: 10%" → "10%"
+ */
+function extractToleranceValueFromRuleText(ruleText) {
+  const match = (ruleText || '').match(/tolerance[:\s]+(\d[\d.]*\s*%?)/i);
+  return match ? match[1].trim() : null;
 }

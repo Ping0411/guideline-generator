@@ -62,14 +62,21 @@ async function assignMatchedIds(rulesMap) {
   const lang = detectRulesLanguage(rulesMap);
   if (lang === 'en') {
     // English rules: match directly against ruleRegistry englishText
+    // Build a map first to collect all matching ruleIds per normalized text
     const allRules = ['OC', 'ASN', 'Invoice', 'PO'].flatMap(d => getRulesForDocType(d));
+    const enTextToIds = new Map(); // normText(englishText) → ruleId[]
+    for (const ruleDef of allRules) {
+      const key = normText(ruleDef.englishText);
+      const existing = enTextToIds.get(key) || [];
+      existing.push(ruleDef.id);
+      enTextToIds.set(key, existing);
+    }
     for (const [, entry] of rulesMap) {
       const entryNorm = normText(entry.rule);
-      for (const ruleDef of allRules) {
-        if (normText(ruleDef.englishText) === entryNorm) {
-          entry.matchedId = ruleDef.id;
-          break;
-        }
+      const ids = enTextToIds.get(entryNorm);
+      if (ids && ids.length > 0) {
+        entry.matchedId = ids[0];
+        entry.matchedIds = ids;
       }
     }
     return;
@@ -79,25 +86,32 @@ async function assignMatchedIds(rulesMap) {
   const { enToZh, enToJa } = await loadMapping();
   const lookup = lang === 'ja' ? enToJa : enToZh;
 
-  // Build: translated-norm → ruleId
+  // Build: translated-norm → ruleId[] (array to handle same text mapping to multiple docTypes)
   const allRules = ['OC', 'ASN', 'Invoice', 'PO'].flatMap(d => getRulesForDocType(d));
-  const translatedToId = new Map(); // normText(translated) → ruleId
+  const translatedToIds = new Map(); // normText(translated) → ruleId[]
   for (const ruleDef of allRules) {
-    const enKey = ruleDef.englishText.toLowerCase().replace(/\.$/, '');
+    const enKey = normText(ruleDef.englishText);
     const translated = lookup.get(enKey);
     if (translated) {
-      translatedToId.set(normText(translated), ruleDef.id);
+      const tKey = normText(translated);
+      const existing = translatedToIds.get(tKey) || [];
+      existing.push(ruleDef.id);
+      translatedToIds.set(tKey, existing);
     }
     // Also index by English in case some rows are in English
-    translatedToId.set(normText(ruleDef.englishText), ruleDef.id);
+    const eKey = normText(ruleDef.englishText);
+    const existingEn = translatedToIds.get(eKey) || [];
+    if (!existingEn.includes(ruleDef.id)) existingEn.push(ruleDef.id);
+    translatedToIds.set(eKey, existingEn);
   }
 
   let matched = 0;
   for (const [, entry] of rulesMap) {
     const key = normText(entry.rule);
-    const id = translatedToId.get(key);
-    if (id) {
-      entry.matchedId = id;
+    const ids = translatedToIds.get(key);
+    if (ids && ids.length > 0) {
+      entry.matchedId = ids[0];   // primary (first match)
+      entry.matchedIds = ids;     // all matches (for multi-docType rules)
       matched++;
     }
   }
@@ -124,6 +138,13 @@ async function parseTransactionRules(filePath) {
 
     const key = normalizeKey(rule, sub1, sub2);
     const { isYes, isNo, raw } = parseValue(rawVal);
+
+    // If this key already exists from a non-BPO section, do not overwrite it with a BPO entry.
+    // BPO (Blanket PO) invoice rules are excluded from matching; the non-BPO entry takes priority.
+    const isBpo = section.toLowerCase().includes('blanket') ||
+                  section.includes('包括注文書') ||
+                  section.includes('一揽子订购单');
+    if (isBpo && rules.has(key)) return;
 
     rules.set(key, { section, rule, subrule1: sub1, subrule2: sub2, value: raw, isYes, isNo });
   });

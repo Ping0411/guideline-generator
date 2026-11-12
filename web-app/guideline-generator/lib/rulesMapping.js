@@ -16,6 +16,12 @@ const ExcelJS = require('exceljs');
 const MAPPING_FILE = path.join(__dirname, '..', 'templates', 'Rules Mapping.xlsx');
 const SHEET_NAME = 'Ruels Mapping';
 
+function normText(s) {
+  return (s || '').trim().toLowerCase()
+    .replace(/[。．、，,.!！?？。:：;；]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
 let _cache = null;
 
 /**
@@ -40,8 +46,8 @@ async function loadMapping() {
     const zh = (row.getCell('C').value || '').toString().trim();
     const ja = (row.getCell('D').value || '').toString().trim();
     if (en) {
-      // Normalize key: lowercase, strip trailing period for flexible matching
-      const key = en.toLowerCase().replace(/\.$/, '');
+      // Normalize key: lowercase, collapse multiple spaces, strip trailing period
+      const key = normText(en);
       if (zh) enToZh.set(key, zh);
       if (ja) enToJa.set(key, ja);
     }
@@ -67,8 +73,8 @@ async function getTargetsForLanguage(targets, language) {
 
   return targets.map(t => ({
     id: t.id,
-    // Normalize lookup key: lowercase, strip trailing period
-    text: lookup.get(t.text.toLowerCase().replace(/\.$/, '')) || t.text,
+    // Normalize lookup key: lowercase, collapse multiple spaces, strip trailing period
+    text: lookup.get(normText(t.text)) || t.text,
   }));
 }
 

@@ -792,14 +792,16 @@
   }
 
   // Show/hide a Q11 invoice type button and keep state.q10 in sync.
-  // If the PO type is selected → show button + add value to q10.
+  // If the PO type is selected → show button + auto-select only if button was previously hidden.
   // If the PO type is deselected → hide button + remove value from q10.
   // autoSelect=false: show the button but do not pre-select it.
   function syncQ10InvoiceType(btnId, value, shouldShow, autoSelect = true) {
     const el = document.getElementById(btnId);
     if (!el) return;
+    const wasHidden = el.classList.contains('hidden');
     el.classList.toggle('hidden', !shouldShow);
-    if (shouldShow && autoSelect) {
+    if (shouldShow && autoSelect && wasHidden) {
+      // Only auto-select when button transitions from hidden → visible
       if (!state.q10.includes(value)) {
         state.q10.push(value);
         el.classList.add('selected');
@@ -1077,14 +1079,39 @@
       }
 
       if (result.unmatchedTriggers && result.unmatchedTriggers.length) {
-        html += `<div style="font-size:12px;font-weight:600;color:#b8860b;margin-top:10px;margin-bottom:6px;">`;
-        html += `⚠️ The following rules were triggered but no matching element was found in the uploaded cXML. Please add descriptions for these fields manually:`;
-        html += `</div>`;
-        html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;">`;
-        for (const t of result.unmatchedTriggers) {
-          html += `<li style="margin-bottom:4px;">${t.ruleText}</li>`;
+        const cxmlMissing  = result.unmatchedTriggers.filter(t => t.reason !== 'tolerance_missing' && t.reason !== 'tax_values_missing');
+        const tolMissing   = result.unmatchedTriggers.filter(t => t.reason === 'tolerance_missing');
+        const taxMissing   = result.unmatchedTriggers.filter(t => t.reason === 'tax_values_missing');
+        if (cxmlMissing.length) {
+          html += `<div style="font-size:12px;font-weight:600;color:#b8860b;margin-top:10px;margin-bottom:6px;">`;
+          html += `⚠️ The following rules were triggered but no matching element was found in the uploaded cXML. Please add descriptions for these fields manually:`;
+          html += `</div>`;
+          html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;">`;
+          for (const t of cxmlMissing) {
+            html += `<li style="margin-bottom:4px;">${t.ruleText}</li>`;
+          }
+          html += `</ul>`;
         }
-        html += `</ul>`;
+        if (tolMissing.length) {
+          html += `<div style="font-size:12px;font-weight:600;color:#b8860b;margin-top:10px;margin-bottom:6px;">`;
+          html += `⚠️ The following rules contain tolerance requirements but no tolerance value was found. Please add the tolerance value manually:`;
+          html += `</div>`;
+          html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;">`;
+          for (const t of tolMissing) {
+            html += `<li style="margin-bottom:4px;">${t.ruleText}</li>`;
+          }
+          html += `</ul>`;
+        }
+        if (taxMissing.length) {
+          html += `<div style="font-size:12px;font-weight:600;color:#b8860b;margin-top:10px;margin-bottom:6px;">`;
+          html += `⚠️ Suppliers are required to select tax values from a valid list defined by the buyer, but no tax value list was found in the uploaded rules file. Please add the valid tax values to the guideline manually:`;
+          html += `</div>`;
+          html += `<ul style="font-size:13px;padding-left:18px;color:#b8860b;">`;
+          for (const t of taxMissing) {
+            html += `<li style="margin-bottom:4px;">${t.ruleText}</li>`;
+          }
+          html += `</ul>`;
+        }
       }
 
       if (result.projectReqTriggers.length) {
