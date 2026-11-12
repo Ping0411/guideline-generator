@@ -1319,10 +1319,8 @@ function extractTaxValues(parsedRules, mainRuleText) {
       const category = match[2].trim();
       const description = match[3].trim();
       results.push(`${rate}/${category}/${description}`);
-    } else {
-      // Fallback: use raw value as-is
-      results.push(raw);
     }
+    // Non-matching subrules (e.g. "Apply this rule to electronic invoices") are not tax values — skip
   }
 
   return results;
