@@ -493,8 +493,8 @@
 
         <!-- Q8 (conditional on Non-Catalog PO in Q4) -->
         <div class="q-block hidden" id="q8-block">
-          <div class="q-label"><span class="q-num">Q9</span> How to identify non-catalog PO?</div>
-          <div class="options" data-q="q8" data-type="single">
+          <div class="q-label"><span class="q-num">Q9</span> How to identify non-catalog PO? <span style="font-weight:400;font-size:13px;color:#888;">(Select all that apply)</span></div>
+          <div class="options" data-q="q8" data-type="multi">
             <div class="option-btn" data-value='isAdHoc="yes"'>isAdHoc="yes"</div>
             <div class="option-btn" data-value='SupplierPartID is "NotAvailable"'>SupplierPartID is "NotAvailable"</div>
             <div class="option-btn" data-value="Other">Other</div>
@@ -687,7 +687,7 @@
     q5: null,
     q6: null,
     q7: null,
-    q8: null,
+    q8: [],
     q8other: '',
     q9: null,
     q10: [],
@@ -775,7 +775,7 @@
     syncQ10InvoiceType('q10-service-po',  'Service PO Invoice',  showAllInvoiceTypes || state.q4.includes('Service PO (Service structure)'), !showAllInvoiceTypes);
 
     // Q8 Other text
-    toggle('q8-other-wrap', state.q8 === 'Other');
+    toggle('q8-other-wrap', state.q8.includes('Other'));
 
     // Q14mc: only show when Invoice is in scope (Q2 or Q3)
     const invoiceInScope = state.q2.includes('Invoice') || state.q3.includes('Invoice');

@@ -314,6 +314,16 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
     row.height = undefined;
   }
 
+  // ── 2b. In Scope Countries (Japan when language is ja) ───────────────────
+  const inScopeCountriesValueRow = findValueRowAfter(worksheet, 'In Scope Countries');
+  if (inScopeCountriesValueRow > 0 && answers.q1 === 'ja') {
+    const row = worksheet.getRow(inScopeCountriesValueRow);
+    const cell = row.getCell(1);
+    cell.value = 'Japan';
+    cell.font = DATA_FONT;
+    row.height = undefined;
+  }
+
   // ── 3. Delete template fixed lines that are language-conditional
   // These rows exist in the template with （Chinese） marker; always delete them here.
   // For zh/ja, the correct language text is dynamically pushed in step 4 instead.
@@ -376,29 +386,36 @@ function fillProjectRequirements(worksheet, answers, evalResults, cxmlFileList) 
       }
 
       const hasNonCatalog = q4list.some(v => v.toLowerCase().includes('non-catalog') || v.toLowerCase().includes('non catalog'));
-      if (hasNonCatalog && answers.q8) {
-        const q8val = answers.q8 === 'Other' && answers.q8other
-          ? answers.q8other
-          : answers.q8;
+      const q8list = Array.isArray(answers.q8) ? answers.q8 : (answers.q8 ? [answers.q8] : []);
+      if (hasNonCatalog && q8list.length > 0) {
+        const bothSelected = q8list.includes('isAdHoc="yes"') && q8list.includes('SupplierPartID is "NotAvailable"');
         const nonCatalogI18N = {
           isAdHoc: {
             en: 'Non-Catalog POs are identified by the attribute isAdHoc="yes" on the ItemOut element.',
             zh: '当 ItemOut 元素的 isAdHoc 属性为"yes"时，该采购订单被定义为 Non-Catalog PO。',
-            ja: 'Non-Catalog POとは、ItemOut要素のisAdHoc属性が「yes」に設定されているPOを指します。',
+            ja: 'Non-Catalog POとは、ItemOut要素のisAdHoc属性が「yes」に設定されているものを指す。',
           },
           notAvailable: {
             en: 'Non-Catalog POs are identified when SupplierPartID is set to "NotAvailable".',
             zh: 'SupplierPartID为"NotAvailable"的采购订单被视为 Non-Catalog PO。',
-            ja: 'Non-Catalog POは、SupplierPartIDが「NotAvailable」に設定されているものを指します。',
+            ja: 'Non-Catalog POとは、SupplierPartIDが「NotAvailable」に設定されているものを指す。',
+          },
+          both: {
+            en: 'Non-Catalog POs are identified by the attribute isAdHoc="yes" on the ItemOut element, or when SupplierPartID is set to "NotAvailable".',
+            zh: '当 ItemOut 元素的 isAdHoc 属性为"yes"，或 SupplierPartID 为"NotAvailable"时，该采购订单被定义为 Non-Catalog PO。',
+            ja: 'Non-Catalog POとは、ItemOut要素のisAdHoc属性が「yes」に設定されているもの、またはSupplierPartIDが「NotAvailable」に設定されているものを指す。',
           },
         };
         let q8text;
-        if (q8val === 'isAdHoc="yes"') {
+        if (bothSelected) {
+          q8text = nonCatalogI18N.both[lang] || nonCatalogI18N.both.en;
+        } else if (q8list.includes('isAdHoc="yes"')) {
           q8text = nonCatalogI18N.isAdHoc[lang] || nonCatalogI18N.isAdHoc.en;
-        } else if (q8val === 'SupplierPartID is "NotAvailable"') {
+        } else if (q8list.includes('SupplierPartID is "NotAvailable"')) {
           q8text = nonCatalogI18N.notAvailable[lang] || nonCatalogI18N.notAvailable.en;
         } else {
-          q8text = `Non-Catalog PO identification: ${q8val}`;
+          const resolvedVal = q8list[0] === 'Other' && answers.q8other ? answers.q8other : q8list[0];
+          q8text = `Non-Catalog PO identification: ${resolvedVal}`;
         }
         triggers.push({ ruleText: q8text });
       }

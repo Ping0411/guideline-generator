@@ -277,6 +277,62 @@ async function generateExcel(answers, evalResults, cxmlFiles, ediFormat) {
       copySheetContent(tmplShipTo, wsShipTo);
       fillShipToDetail(wsShipTo, tmplShipTo, cxmlFiles);
     }
+
+    // Move the two Japanese PO sheets to immediately after the last PO/PO_CHANGE sheet.
+    // Build the set of sheet names that were created from PO/PO_CHANGE files in step 4.
+    const poSheetNames = new Set(
+      sortedCxmlFiles
+        .filter(f => f.docType === 'PO' || f.docType === 'PO_CHANGE')
+        .map(f => {
+          const label = resolveLabel(f);
+          if (!label) return null;
+          if (docTypeCounts[label] > 1) {
+            // replicate the numbering logic from step 4
+            return null; // handled below
+          }
+          return sanitizeSheetName(label);
+        })
+        .filter(Boolean)
+    );
+    // Also cover numbered variants (e.g. "Material PO-New 1", "Material PO-New 2")
+    sortedCxmlFiles
+      .filter(f => f.docType === 'PO' || f.docType === 'PO_CHANGE')
+      .forEach(f => {
+        const label = resolveLabel(f);
+        if (label && docTypeCounts[label] > 1) {
+          // The exact numbered name was assigned during step 4; match by prefix
+          output.worksheets.forEach(ws => {
+            if (ws.name.startsWith(label)) poSheetNames.add(ws.name);
+          });
+        }
+      });
+
+    const sheets = output._worksheets.filter(Boolean);
+    let lastPoIdx = -1;
+    sheets.forEach((ws, i) => {
+      if (poSheetNames.has(ws.name)) lastPoIdx = i;
+    });
+
+    if (lastPoIdx >= 0) {
+      const jaSheetsToMove = [SHEET_JA_DESIRED_DATE, SHEET_JA_SHIPTO_DETAIL]
+        .map(n => sheets.find(ws => ws.name === n))
+        .filter(Boolean);
+
+      if (jaSheetsToMove.length > 0) {
+        // Remove the ja sheets from their current positions (end of array)
+        const remaining = sheets.filter(ws => !jaSheetsToMove.includes(ws));
+        // Insert them right after lastPoIdx (which is index in `sheets`, not `remaining`)
+        const insertAfterName = sheets[lastPoIdx].name;
+        const insertPos = remaining.findIndex(ws => ws.name === insertAfterName) + 1;
+        remaining.splice(insertPos, 0, ...jaSheetsToMove);
+        // Rebuild _worksheets (1-indexed) and fix orderNo
+        output._worksheets.length = 1; // keep the empty slot at index 0
+        remaining.forEach((ws, i) => {
+          ws.orderNo = i + 1;
+          output._worksheets[i + 1] = ws;
+        });
+      }
+    }
   }
 
   // ── 6b. Chinese PO sheets (only when q1=zh and PO is in scope) ───────────
